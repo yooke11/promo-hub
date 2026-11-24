@@ -59,7 +59,10 @@ async def _auto_scroll(page, steps: int):
         await page.wait_for_timeout(700 + random.randint(0, 400))
 
 
-async def collect_source(browser: Browser, source: Source) -> list[RawPromotion]:
+async def collect_source(browser: Browser, source: Source, diag: dict | None = None) -> list[RawPromotion]:
+    """diag: 진단 정보(진입 페이지 상태·제목·링크 수·JSON 수, 상세별 상품 수)를 채워 줌 → crawl_runs.diag 저장."""
+    diag = diag if diag is not None else {}
+    diag.setdefault("entries", []); diag.setdefault("details", [])
     ctx = await _new_context(browser, source.mobile)
     robots = RobotsCache(ctx)
     raws: list[RawPromotion] = []
@@ -82,9 +85,14 @@ async def collect_source(browser: Browser, source: Source) -> list[RawPromotion]
         for entry in source.entry_urls:
             if source.respect_robots and not await robots.allowed(entry):
                 log.warning("[%s] robots.txt 비허용: %s", source.id, entry)
+                diag["entries"].append({"url": entry, "robots": "disallow"})
                 continue
+            ent = {"url": entry}
+            diag["entries"].append(ent)
             try:
-                await page.goto(entry, wait_until="domcontentloaded", timeout=45_000)
+                n_json_before = len(json_payloads)
+                resp = await page.goto(entry, wait_until="domcontentloaded", timeout=45_000)
+                ent["status"] = resp.status if resp else None
                 try:
                     await page.wait_for_load_state("networkidle", timeout=12_000)
                 except Exception:
@@ -94,13 +102,20 @@ async def collect_source(browser: Browser, source: Source) -> list[RawPromotion]
                 found = extract_from_html(html, page.url, source)
                 log.info("[%s] DOM %d건 ← %s", source.id, len(found), entry)
                 raws += found
+                ent.update(final=page.url[:200], title=(await page.title())[:80], html=len(html),
+                           links=html.count("<a "), dom=len(found), json=len(json_payloads) - n_json_before,
+                           text=(await page.evaluate("document.body ? document.body.innerText.slice(0,160) : ''")).replace("\n", " "))
             except Exception as e:
                 log.warning("[%s] 진입 실패 %s: %s", source.id, entry, e)
+                ent["error"] = repr(e)[:200]
             await asyncio.sleep(source.delay_sec)
 
+        n_json_promos = 0
         for url, body in json_payloads:
             got = extract_from_json(body, url, source)
+            n_json_promos += len(got)
             raws += got
+        diag["json_promos"] = n_json_promos
         log.info("[%s] JSON 응답 %d개 분석, 누적 후보 %d", source.id, len(json_payloads), len(raws))
 
         merged = merge(raws)
@@ -124,8 +139,14 @@ async def collect_source(browser: Browser, source: Source) -> list[RawPromotion]
                 lists += [products_from_json(body, u) for u, body in detail_json]
                 r.products = merge_products(lists, source.product_limit)
                 log.info("[%s] 상품 %d개 ← %s", source.id, len(r.products), r.title[:30])
+                if len(diag["details"]) < 12:
+                    diag["details"].append({"url": page.url[:160], "ld": len(lists[0]), "dom": len(lists[1]),
+                        "json": sum(len(x) for x in lists[2:]), "json_resp": len(detail_json), "kept": len(r.products),
+                        "links": html.count("<a ")})
             except Exception as e:
                 log.debug("[%s] 상세 실패 %s: %s", source.id, r.url, e)
+                if len(diag["details"]) < 12:
+                    diag["details"].append({"url": r.url[:160], "error": repr(e)[:160]})
             await asyncio.sleep(source.delay_sec)
         return merged
     finally:
@@ -151,12 +172,14 @@ async def run(config: Config, store: Store | None, only: list[str] | None = None
                 if store:
                     store.upsert_source(src.id, src.name, src.channel_type, src.rank)
                     run_id = store.start_run(src.id)
+                diag: dict = {}
                 try:
-                    raws = await collect_source(browser, src)
+                    raws = await collect_source(browser, src, diag)
                     promos = [p for p in (normalize(r) for r in raws) if p]
+                    diag["raw"] = len(raws)
                     new = store.upsert_promotions(promos) if store else 0
                     if sink:
-                        new = sink.send(build_payload(src, promos, started))
+                        new = sink.send(build_payload(src, promos, started, diag=diag))
                     if store:
                         store.finish_run(run_id, len(promos), new, True)
                     n_items = sum(len(p.products) for p in promos)
@@ -167,7 +190,7 @@ async def run(config: Config, store: Store | None, only: list[str] | None = None
                         store.finish_run(run_id, 0, 0, False, repr(e))
                     if sink:
                         try:
-                            sink.send(build_payload(src, [], started, ok=False, error=repr(e)))
+                            sink.send(build_payload(src, [], started, ok=False, error=repr(e), diag=diag))
                         except Exception:
                             pass
                     summary[src.id] = {"error": repr(e)}

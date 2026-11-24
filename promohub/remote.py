@@ -32,12 +32,14 @@ def promotion_payload(p: Promotion) -> dict:
     }
 
 
-def build_payload(source, promos: list[Promotion], started_at: datetime, ok: bool = True, error: str = "") -> dict:
+def build_payload(source, promos: list[Promotion], started_at: datetime, ok: bool = True, error: str = "",
+                  diag: dict | None = None) -> dict:
     return {
         "source": {"id": source.id, "name": source.name, "channel_type": source.channel_type, "rank": source.rank},
         "promotions": [promotion_payload(p) for p in promos],
         "seen_at": datetime.now(timezone.utc).isoformat(),
-        "run": {"found": len(promos), "ok": ok, "error": error[:500], "started_at": started_at.isoformat()},
+        "run": {"found": len(promos), "ok": ok, "error": error[:500], "started_at": started_at.isoformat(),
+                "diag": diag or {}},
     }
 
 

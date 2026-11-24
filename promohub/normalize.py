@@ -14,7 +14,8 @@ KST = timezone(timedelta(hours=9))
 # ── URL ─────────────────────────────────────────────
 TRACKING_PARAMS = re.compile(
     r"^(utm_.*|jaehuid|ref|refer|referrer|src|source|nv_.*|n_.*|gclid|fbclid|"
-    r"trackingid|sc_.*|spm|clickid|traceid|ckey|ad.*id|mkt_.*|_ga|from)$",
+    r"trackingid|trackingcd|t_.*|sc_.*|spm|clickid|traceid|ckey|ad.*id|adp|ici|src_.*|mkt_.*|_ga|from|"
+    r"pos|position|area|module|click.*|banner.*|tracking.*|ver|scm|pvid|_trk.*)$",
     re.I,
 )
 
