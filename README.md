@@ -19,12 +19,11 @@
 보안 구조: 웹은 공개 읽기 전용 키로 **조회만** 합니다(RLS). 쓰기는 `ingest(token, payload)` 함수 하나로만 가능하고, 이 함수는 수집 토큰(해시만 DB에 저장)이 맞을 때만 동작합니다.
 
 ### GitHub Actions 연결(최초 1회)
-1. GitHub에서 새 저장소(예: `promo-hub`)를 만들고 이 폴더 전체를 올립니다(.github 폴더 포함).
-2. 저장소 Settings → Secrets and variables → Actions
-   - **Variables** 탭: `SUPABASE_URL` = `https://wjfbcbiyzoymqqnoemvu.supabase.co`, `SUPABASE_ANON_KEY` = `sb_publishable_-DNHcg_lvpePh3aeXGRXGw_qDJAkXI5`
-   - **Secrets** 탭: `PROMOHUB_INGEST_TOKEN` = 따로 전달받은 수집 토큰
-3. Actions 탭 → collect → Run workflow 로 첫 수집을 바로 실행(이후 3시간마다 자동).
-4. 공개 저장소면 Actions 무료, 비공개면 월 2,000분 무료 한도(4묶음 × 하루 8회면 초과 가능 → 주기를 6시간으로 늘리거나 공개 저장소 권장).
+저장소: https://github.com/yooke11/promo-hub (공개 — Actions 무료)
+1. Settings → Secrets and variables → Actions → **Secrets** 탭 → New repository secret
+   - Name `PROMOHUB_INGEST_TOKEN`, Secret = 따로 전달받은 수집 토큰
+   (Supabase 주소·공개 키는 워크플로 파일에 이미 들어 있음)
+2. Actions 탭 → collect → Run workflow 로 첫 수집을 바로 실행(이후 3시간마다 자동).
 
 ### 해외 IP 차단 대비
 GitHub Actions 서버는 해외(미국) IP라 일부 국내 쇼핑몰이 접속을 막을 수 있습니다. 특정 채널이 계속 0건이면(사이트 상단 '마지막 수집'·Supabase `crawl_runs` 확인) 그 채널만 사내 PC에서 `scripts/collect_windows.bat --only 채널id` 로 돌리세요. 같은 DB로 올라갑니다.

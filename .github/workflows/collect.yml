@@ -23,10 +23,17 @@ jobs:
       matrix:
         shard: [0, 1, 2, 3]       # 50개 채널을 4묶음으로 병렬 수집
     env:
-      SUPABASE_URL: ${{ vars.SUPABASE_URL }}
-      SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
+      # 공개돼도 되는 값(읽기 전용 publishable 키)은 여기 직접 둡니다. 비밀값은 수집 토큰 하나뿐.
+      SUPABASE_URL: https://wjfbcbiyzoymqqnoemvu.supabase.co
+      SUPABASE_ANON_KEY: sb_publishable_-DNHcg_lvpePh3aeXGRXGw_qDJAkXI5
       PROMOHUB_INGEST_TOKEN: ${{ secrets.PROMOHUB_INGEST_TOKEN }}
     steps:
+      - name: 수집 토큰 확인
+        run: |
+          if [ -z "$PROMOHUB_INGEST_TOKEN" ]; then
+            echo "::error::저장소 Settings > Secrets and variables > Actions > Secrets 에 PROMOHUB_INGEST_TOKEN 을 등록하세요."
+            exit 1
+          fi
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
