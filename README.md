@@ -14,7 +14,7 @@
 |---|---|
 | 웹사이트 | https://promo-hub-one.vercel.app (Vercel · yooke team / promo-hub) |
 | DB·API | Supabase 프로젝트 `promo-hub` (서울 리전) — 테이블 sources·promotions·promotion_items·crawl_runs, 화면용 뷰 v_promotions·v_items·v_sources |
-| 자동 수집 | GitHub Actions `.github/workflows/collect.yml` — 3시간마다, 50개 채널을 4묶음으로 병렬 수집 → Supabase `ingest` 함수로 적재 |
+| 자동 수집 | GitHub Actions `.github/workflows/collect.yml` — 매일 새벽 5시(한국 시간), 50개 채널을 4묶음으로 병렬 수집 → Supabase `ingest` 함수로 적재 |
 
 보안 구조: 웹은 공개 읽기 전용 키로 **조회만** 합니다(RLS). 쓰기는 `ingest(token, payload)` 함수 하나로만 가능하고, 이 함수는 수집 토큰(해시만 DB에 저장)이 맞을 때만 동작합니다.
 
@@ -23,7 +23,7 @@
 1. Settings → Secrets and variables → Actions → **Secrets** 탭 → New repository secret
    - Name `PROMOHUB_INGEST_TOKEN`, Secret = 따로 전달받은 수집 토큰
    (Supabase 주소·공개 키는 워크플로 파일에 이미 들어 있음)
-2. Actions 탭 → collect → Run workflow 로 첫 수집을 바로 실행(이후 3시간마다 자동).
+2. Actions 탭 → collect → Run workflow 로 첫 수집을 바로 실행(이후 매일 새벽 5시 자동).
 
 ### 해외 IP 차단 대비
 GitHub Actions 서버는 해외(미국) IP라 일부 국내 쇼핑몰이 접속을 막을 수 있습니다. 특정 채널이 계속 0건이면(사이트 상단 '마지막 수집'·Supabase `crawl_runs` 확인) 그 채널만 사내 PC에서 `scripts/collect_windows.bat --only 채널id` 로 돌리세요. 같은 DB로 올라갑니다.

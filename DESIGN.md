@@ -51,7 +51,7 @@
 - 웹: Vercel `promo-hub` → https://promo-hub-one.vercel.app (정적 페이지, Supabase REST 직접 조회)
 - DB/API: Supabase `promo-hub`(ap-northeast-2). 뷰 `v_promotions`(상태·D-day·대표 상품 4개 계산), `v_items`(진행 중 기획전 상품 검색), `v_sources`(채널별 마지막 수집)
 - 적재: `public.ingest(p_token, p_payload)` SECURITY DEFINER 함수 — 토큰 해시 확인 후 채널 단위 upsert, 상품 목록 교체(first_seen 유지), crawl_runs 기록
-- 수집: GitHub Actions 3시간 주기 × 4개 병렬 묶음. 해외 IP 차단 채널은 사내 PC 배치로 보완
+- 수집: GitHub Actions 매일 05:00(KST) × 4개 병렬 묶음. 해외 IP 차단 채널은 사내 PC 배치로 보완
 
 ## 4. 아키텍처
 
