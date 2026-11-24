@@ -21,7 +21,9 @@ def test_real_files_load():
     root = Path(__file__).resolve().parents[1] / "config"
     cands = yaml.safe_load((root / "candidates.yaml").read_text(encoding="utf-8"))["sources"]
     src = yaml.safe_load((root / "sources.yaml").read_text(encoding="utf-8"))["sources"]
-    assert not ({c["id"] for c in cands} & {s["id"] for s in src})
+    # 선정 후 sources.yaml 에 옮겨진 후보(rank 101+)만 겹칠 수 있다 — 기존 50곳과는 겹치지 않아야 한다.
+    base = {s["id"] for s in src if s.get("rank", 999) <= 100}
+    assert not ({c["id"] for c in cands} & base)
     picked, rep = sel.select(src, cands, {c["id"]: 5 for c in cands})
     assert all(r["total"] <= 20 for r in rep.values())
     text = sel.append_sources(picked[:2], {c["id"]: 5 for c in cands}, "2026-11-25")

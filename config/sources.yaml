@@ -725,3 +725,161 @@ sources:
   - /(specials|promotions?|trending|new-products|c/[\w-]*sale)
   product_patterns:
   - /pr/[\w-]+/\d+
+
+- id: enuri   # 2026-11-25 유형별 상위 선정(시험 수집 기획전 4건)
+  enabled: false   # 2026-11-25 시험 수집 품질 미달
+  name: 에누리
+  channel_type: openmarket
+  rank: 102
+  domains:
+  - enuri.com
+  mobile: false
+  entry_urls:
+  - https://www.enuri.com/
+- id: amazon   # 2026-11-25 유형별 상위 선정(시험 수집 기획전 10건)
+  name: 아마존
+  channel_type: crossborder
+  rank: 105
+  domains:
+  - amazon.com
+  mobile: false
+  entry_urls:
+  - https://www.amazon.com/
+- id: rakuten   # 2026-11-25 유형별 상위 선정(시험 수집 기획전 31건)
+  name: 라쿠텐
+  channel_type: crossborder
+  rank: 113
+  domains:
+  - rakuten.co.jp
+  mobile: false
+  entry_urls:
+  - https://www.rakuten.co.jp/
+- id: kyobobook   # 2026-11-25 유형별 상위 선정(시험 수집 기획전 34건)
+  name: 교보문고
+  channel_type: vertical
+  rank: 137
+  domains:
+  - kyobobook.co.kr
+  mobile: false
+  entry_urls:
+  - https://www.kyobobook.co.kr/
+- id: cjthemarket   # 2026-11-25 유형별 상위 선정(시험 수집 기획전 15건)
+  name: CJ더마켓
+  channel_type: vertical
+  rank: 140
+  domains:
+  - cjthemarket.com
+  mobile: false
+  entry_urls:
+  - https://www.cjthemarket.com/
+- id: rankingdak   # 2026-11-25 유형별 상위 선정(시험 수집 기획전 14건)
+  enabled: false   # 2026-11-25 시험 수집 품질 미달
+  name: 랭킹닭컴
+  channel_type: vertical
+  rank: 142
+  domains:
+  - rankingdak.com
+  mobile: false
+  entry_urls:
+  - https://www.rankingdak.com/
+- id: hanssem   # 2026-11-25 유형별 상위 선정(시험 수집 기획전 9건)
+  name: 한샘몰
+  channel_type: vertical
+  rank: 146
+  domains:
+  - hanssem.com
+  mobile: false
+  entry_urls:
+  - https://mall.hanssem.com/
+- id: fashionplus   # 2026-11-25 유형별 상위 선정(시험 수집 기획전 121건)
+  name: 패션플러스
+  channel_type: fashion
+  rank: 125
+  domains:
+  - fashionplus.co.kr
+  mobile: false
+  entry_urls:
+  - https://www.fashionplus.co.kr/
+- id: hiver   # 2026-11-25 유형별 상위 선정(시험 수집 기획전 5건)
+  enabled: false   # 2026-11-25 시험 수집 품질 미달
+  name: 하이버
+  channel_type: fashion
+  rank: 128
+  domains:
+  - hiver.co.kr
+  mobile: false
+  entry_urls:
+  - https://www.hiver.co.kr/
+- id: northface   # 2026-11-25 유형별 상위 선정(시험 수집 기획전 20건)
+  name: 노스페이스
+  channel_type: fashion
+  rank: 134
+  domains:
+  - thenorthfacekorea.co.kr
+  mobile: false
+  entry_urls:
+  - https://www.thenorthfacekorea.co.kr/
+- id: shoppingnt   # 2026-11-25 유형별 상위 선정(시험 수집 기획전 20건)
+  name: 쇼핑엔티
+  channel_type: homeshopping
+  rank: 123
+  domains:
+  - shoppingntmall.com
+  mobile: false
+  entry_urls:
+  - https://www.shoppingntmall.com/
+- id: dyson   # 2026-11-25 유형별 상위 선정(시험 수집 기획전 10건)
+  name: 다이슨
+  channel_type: brand
+  rank: 151
+  domains:
+  - dyson.co.kr
+  mobile: false
+  entry_urls:
+  - https://www.dyson.co.kr/
+- id: dongwonmall   # 2026-11-25 유형별 상위 선정(시험 수집 기획전 59건)
+  name: 동원몰
+  channel_type: brand
+  rank: 154
+  domains:
+  - dongwonmall.com
+  mobile: false
+  entry_urls:
+  - https://www.dongwonmall.com/
+- id: otokimall   # 2026-11-25 유형별 상위 선정(시험 수집 기획전 18건)
+  name: 오뚜기몰
+  channel_type: brand
+  rank: 156
+  domains:
+  - otokimall.com
+  mobile: false
+  entry_urls:
+  - https://www.otokimall.com/
+- id: innisfree   # 2026-11-25 유형별 상위 선정(시험 수집 기획전 14건)
+  name: 이니스프리
+  channel_type: brand
+  rank: 160
+  domains:
+  - innisfree.com
+  mobile: false
+  entry_urls:
+  - https://www.innisfree.com/kr/ko/
+- id: nongshimmall   # 2026-11-25 유형별 상위 선정(시험 수집 기획전 3건)
+  enabled: false   # 2026-11-25 시험 수집 품질 미달
+  name: 농심몰
+  channel_type: brand
+  rank: 161
+  domains:
+  - nongshimmall.com
+  mobile: false
+  entry_urls:
+  - https://www.nongshimmall.com/
+- id: shilladfs   # 2026-11-25 유형별 상위 선정(시험 수집 기획전 24건)
+  name: 신라면세점
+  channel_type: department
+  rank: 115
+  domains:
+  - shilladfs.com
+  mobile: false
+  entry_urls:
+  - https://www.shilladfs.com/estore/kr/ko
