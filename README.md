@@ -14,7 +14,7 @@
 |---|---|
 | 웹사이트 | https://promo-hub-one.vercel.app (Vercel · yooke team / promo-hub) |
 | DB·API | Supabase 프로젝트 `promo-hub` (서울 리전) — 테이블 sources·promotions·promotion_items·crawl_runs, 화면용 뷰 v_promotions·v_items·v_sources |
-| 자동 수집 | GitHub Actions `.github/workflows/collect.yml` — 매일 새벽 5시(한국 시간), 50개 채널을 4묶음으로 병렬 수집 → Supabase `ingest` 함수로 적재 |
+| 자동 수집 | GitHub Actions `.github/workflows/collect.yml` — 매일 새벽 5시(한국 시간), 50개 채널을 8묶음으로 병렬 수집 → Supabase `ingest` 함수로 적재 |
 
 보안 구조: 웹은 공개 읽기 전용 키로 **조회만** 합니다(RLS). 쓰기는 `ingest(token, payload)` 함수 하나로만 가능하고, 이 함수는 수집 토큰(해시만 DB에 저장)이 맞을 때만 동작합니다.
 
