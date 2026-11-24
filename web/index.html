@@ -384,14 +384,14 @@ const countBy = (arr, f) => { const m = new Map(); arr.forEach(i => [].concat(f(
 function renderSide(){
   const base = DATA.filter(i => !st.ctypes.size || st.ctypes.has(i.channel_type));
   const bySrc = countBy(base, i => i.source_id), byCat = countBy(base, i => i.category), byBen = countBy(base, i => i.benefits), byCt = countBy(DATA, i => i.channel_type);
-  const srcs = SOURCES.filter(s => !st.ctypes.size || st.ctypes.has(s.channel_type));
+  const srcs = SOURCES.filter(s => (!st.ctypes.size || st.ctypes.has(s.channel_type)) && (bySrc.get(s.id) || st.sources.has(s.id)));
   const shown = st.allSrc || st.ctypes.size ? srcs : srcs.slice(0, 15);
   const cats = [...byCat.entries()].sort((a,b) => b[1]-a[1]);
   $("side").innerHTML = `
     <div class="grp"><h4>채널 유형</h4><div class="chips">
       ${Object.entries(CT).filter(([k]) => byCt.get(k)).map(([k,l]) => `<button class="chip" data-ctype="${k}" aria-pressed="${st.ctypes.has(k)}">${l}<span class="n">${byCt.get(k)}</span></button>`).join("")}</div></div>
     <div class="grp"><h4><span>채널 (트래픽 순위)</span><span>${srcs.length}</span></h4><div class="chips">
-      ${shown.map(s => `<button class="chip" data-src="${esc(s.id)}" aria-pressed="${st.sources.has(s.id)}"><span class="rk">${s.rank ?? ""}</span><span class="dot" style="background:${srcColor(s.id)}"></span>${esc(s.name)}<span class="n">${bySrc.get(s.id)||0}</span></button>`).join("")}</div>
+      ${shown.map(s => `<button class="chip" data-src="${esc(s.id)}" aria-pressed="${st.sources.has(s.id)}"><span class="rk">${s.rank < 100 ? s.rank : ""}</span><span class="dot" style="background:${srcColor(s.id)}"></span>${esc(s.name)}<span class="n">${bySrc.get(s.id)||0}</span></button>`).join("")}</div>
       ${shown.length < srcs.length ? `<button class="more" id="allsrc">채널 ${srcs.length - shown.length}개 더 보기</button>` : ""}</div>
     <div class="grp"><h4>상품 가격대</h4><div class="range">
       <input id="minp" inputmode="numeric" placeholder="최소 원" value="${esc(st.minP)}"><span>~</span><input id="maxp" inputmode="numeric" placeholder="최대 원" value="${esc(st.maxP)}"></div>

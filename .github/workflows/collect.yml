@@ -9,6 +9,10 @@ on:
         description: "특정 채널만 (쉼표 구분 id, 비우면 전체)"
         required: false
         default: ""
+      config:
+        description: "설정 파일(config/ 아래). 비우면 sources.yaml, 후보 시험 수집은 candidates.yaml"
+        required: false
+        default: ""
 
 concurrency:
   group: collect
@@ -21,7 +25,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [0, 1, 2, 3, 4, 5, 6, 7]   # 50개 채널을 8묶음으로 병렬 수집(약 15~25분)
+        shard: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]   # 채널을 16묶음으로 병렬 수집
     env:
       # 공개돼도 되는 값(읽기 전용 publishable 키)은 여기 직접 둡니다. 비밀값은 수집 토큰 하나뿐.
       SUPABASE_URL: https://wjfbcbiyzoymqqnoemvu.supabase.co
@@ -43,16 +47,13 @@ jobs:
       - run: python -m playwright install --with-deps chromium
       - name: 수집 → Supabase 적재
         run: |
-          if [ -n "${{ github.event.inputs.only }}" ]; then
-            # 지정 채널도 8묶음으로 나눠 병렬 수집(진단용 재수집이 빨리 끝나도록)
-            python -m promohub.cli collect --sink supabase --only "${{ github.event.inputs.only }}" --shard ${{ matrix.shard }}/8
-          else
-            python -m promohub.cli collect --sink supabase --shard ${{ matrix.shard }}/8
-          fi
+          CFG="config/${{ github.event.inputs.config || 'sources.yaml' }}"
+          ONLY="${{ github.event.inputs.only }}"
+          python -m promohub.cli collect --sink supabase --config "$CFG" ${ONLY:+--only "$ONLY"} --shard ${{ matrix.shard }}/16
 
   keywords:
     needs: collect
-    if: always() && github.event.inputs.only == ''
+    if: always() && github.event.inputs.only == '' && github.event.inputs.config == ''
     runs-on: ubuntu-latest
     timeout-minutes: 40
     env:
@@ -73,7 +74,7 @@ jobs:
 
   compare:
     needs: collect
-    if: always() && github.event.inputs.only == ''
+    if: always() && github.event.inputs.only == '' && github.event.inputs.config == ''
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
