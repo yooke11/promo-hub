@@ -49,7 +49,7 @@ jobs:
             python -m promohub.cli collect --sink supabase --shard ${{ matrix.shard }}/8
           fi
 
-  enrich:
+  keywords:
     needs: collect
     if: always()
     runs-on: ubuntu-latest
@@ -69,9 +69,23 @@ jobs:
       - run: pip install -r requirements.txt
       - name: 검색광고 추천 키워드 생성
         run: python -m promohub.cli keywords --limit 500
-      - run: python -m playwright install --with-deps chromium
-      - name: 웹 최저가 비교(에누리 가격비교, 하루 400개 상품)
-        run: python -m promohub.cli compare --limit 400
+
+  compare:
+    needs: collect
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      SUPABASE_URL: https://wjfbcbiyzoymqqnoemvu.supabase.co
+      SUPABASE_ANON_KEY: sb_publishable_-DNHcg_lvpePh3aeXGRXGw_qDJAkXI5
+      PROMOHUB_INGEST_TOKEN: ${{ secrets.PROMOHUB_INGEST_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12", cache: pip }
+      - run: pip install -r requirements.txt && python -m playwright install --with-deps chromium
+      - name: 웹 최저가 비교(에누리 가격비교, 최대 400개·35분)
+        run: python -m promohub.cli compare --limit 400 --budget 2100
 
   test:
     runs-on: ubuntu-latest

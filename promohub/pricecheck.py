@@ -194,18 +194,35 @@ def send_results(rows: list[PriceResult]) -> int:
     return n
 
 
-def run(limit: int = 400, client=None, source: str = "enuri") -> dict:
+def run(limit: int = 400, client=None, source: str = "enuri", budget_s: float | None = None) -> dict:
     if client is None:
+        stats = {"targets": 0, "matched": 0, "no_match": 0, "error": 0, "cheaper": 0}
         with EnuriShop() as c:
-            stats = run(limit, c, source)
-            stats["diag"] = c.diag
-            log_run(source, stats)
+            try:
+                stats = run(limit, c, source, budget_s)
+            except Exception as e:
+                stats["fatal"] = str(e)[:300]
+                raise
+            finally:
+                stats["diag"] = c.diag
+                log_run(source, stats)  # 중간에 끊겨도 실행 기록은 남긴다
             return stats
     targets = fetch_targets(limit)
     log.info("가격 비교 대상 %d개", len(targets))
     results, buf = [], []
-    stats = {"targets": len(targets), "matched": 0, "no_match": 0, "error": 0, "cheaper": 0}
+    stats = {"targets": len(targets), "matched": 0, "no_match": 0, "error": 0, "cheaper": 0, "done": 0}
+    t0 = time.monotonic()
     for t in targets:
+        if budget_s and time.monotonic() - t0 > budget_s:
+            stats["stopped"] = "time_budget"
+            log.warning("시간 예산 %ds 소진 — %d개에서 중단", budget_s, stats["done"])
+            break
+        d = getattr(client, "diag", None) or {}
+        if stats["done"] == 15 and stats["matched"] == 0 and d.get("empty", 0) + d.get("blocked", 0) >= 15:
+            stats["stopped"] = "no_results_first_15"
+            log.error("처음 15개에서 결과 0건 — 차단/구조변경 의심, 중단")
+            break
+        stats["done"] += 1
         try:
             res = evaluate(t, client.search(clean_query(t["name"], t.get("brand", ""))))
         except Exception as e:
@@ -220,7 +237,7 @@ def run(limit: int = 400, client=None, source: str = "enuri") -> dict:
         if res.market_lowest and t.get("price") and t["price"] <= res.market_lowest:
             stats["cheaper"] += 1
         buf.append(res)
-        if len(buf) >= 100:
+        if len(buf) >= 25:
             send_results(buf); results += buf; buf = []
     if buf:
         send_results(buf); results += buf
