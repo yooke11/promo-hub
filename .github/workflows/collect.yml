@@ -44,14 +44,15 @@ jobs:
       - name: 수집 → Supabase 적재
         run: |
           if [ -n "${{ github.event.inputs.only }}" ]; then
-            [ "${{ matrix.shard }}" = "0" ] && python -m promohub.cli collect --sink supabase --only "${{ github.event.inputs.only }}" || true
+            # 지정 채널도 8묶음으로 나눠 병렬 수집(진단용 재수집이 빨리 끝나도록)
+            python -m promohub.cli collect --sink supabase --only "${{ github.event.inputs.only }}" --shard ${{ matrix.shard }}/8
           else
             python -m promohub.cli collect --sink supabase --shard ${{ matrix.shard }}/8
           fi
 
   keywords:
     needs: collect
-    if: always()
+    if: always() && github.event.inputs.only == ''
     runs-on: ubuntu-latest
     timeout-minutes: 40
     env:
@@ -72,7 +73,7 @@ jobs:
 
   compare:
     needs: collect
-    if: always()
+    if: always() && github.event.inputs.only == ''
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
