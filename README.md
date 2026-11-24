@@ -25,6 +25,11 @@
    (Supabase 주소·공개 키는 워크플로 파일에 이미 들어 있음)
 2. Actions 탭 → collect → Run workflow 로 첫 수집을 바로 실행(이후 매일 새벽 5시 자동).
 
+### 웹 최저가 비교 켜기(네이버 쇼핑 검색 API)
+1. https://developers.naver.com → Application → 애플리케이션 등록 → 사용 API **검색** 선택, 환경 **WEB**(서비스 URL: https://promo-hub-one.vercel.app)
+2. 발급된 Client ID / Client Secret을 저장소 Secrets에 `NAVER_CLIENT_ID`, `NAVER_CLIENT_SECRET`으로 등록
+3. 다음 새벽 수집 뒤 자동으로 하루 최대 3,000개 상품을 비교(하루 한도 25,000회 내)
+
 ### 해외 IP 차단 대비
 GitHub Actions 서버는 해외(미국) IP라 일부 국내 쇼핑몰이 접속을 막을 수 있습니다. 특정 채널이 계속 0건이면(사이트 상단 '마지막 수집'·Supabase `crawl_runs` 확인) 그 채널만 사내 PC에서 `scripts/collect_windows.bat --only 채널id` 로 돌리세요. 같은 DB로 올라갑니다.
 

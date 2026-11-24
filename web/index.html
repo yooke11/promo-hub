@@ -69,16 +69,40 @@
   .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column;cursor:pointer;
         transition:transform .15s ease,box-shadow .15s ease;text-align:left;padding:0}
   .card:hover{transform:translateY(-2px);box-shadow:0 10px 28px -12px rgba(0,0,0,.25)}
-  .head{position:relative;padding:14px 14px 12px;color:#fff;min-height:104px;display:flex;flex-direction:column;justify-content:flex-end}
+  .head{position:relative;padding:12px 14px 12px;color:#fff;min-height:118px;display:flex;flex-direction:column;justify-content:space-between;gap:10px}
+  .head .htop{display:flex;align-items:flex-start;gap:8px}
+  .chname{font-size:18px;font-weight:900;letter-spacing:-.02em;line-height:1.15;text-shadow:0 1px 2px rgba(0,0,0,.25)}
+  .chtype{display:block;font-size:11px;font-weight:600;opacity:.85;margin-top:2px;letter-spacing:0}
+  .head .flagr{margin-left:auto;display:flex;gap:5px;flex:none}
   .head .big{font-size:28px;font-weight:900;letter-spacing:-.03em;line-height:1}
   .head .cat{font-size:12px;opacity:.9;margin-top:4px}
-  .flags{position:absolute;top:10px;left:10px;right:10px;display:flex;justify-content:space-between;gap:6px}
   .tag{font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px;background:var(--accent);color:#fff}
   .dday{font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px;background:rgba(0,0,0,.55);color:#fff}
   .dday.hot{background:var(--accent)}.dday.up{background:var(--soon)}
   .body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:6px;flex:1}
-  .src{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-2)}
-  .src .kind{margin-left:auto;color:var(--ink-3)}
+  .chip-ch{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:800;color:var(--ink);letter-spacing:-.01em}
+  .chip-ch .dot{width:10px;height:10px}
+  .vsm{display:flex;gap:5px;align-items:center;flex-wrap:wrap;font-size:11.5px;color:var(--ink-3);margin-top:2px}
+  .badge{font-size:11px;font-weight:800;padding:2px 7px;border-radius:6px;white-space:nowrap}
+  .badge.low{background:color-mix(in srgb,#11845b 16%,transparent);color:#11845b}
+  .badge.high{background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent)}
+  .badge.x{background:var(--chip);color:var(--ink-2)}
+  .cmpline{font-size:12px;color:var(--ink-2);display:flex;gap:6px;align-items:center}
+  .cmpline b{color:#11845b}
+  .mini .ok{color:#11845b;font-size:10.5px;font-weight:800}
+  /* 가격 비교 탭 */
+  .pc-intro{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;margin-bottom:14px;color:var(--ink-2);font-size:13.5px}
+  .pc-intro b{color:var(--ink)}
+  table.ct{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;font-size:13.5px;margin-bottom:22px}
+  .ct th{font-size:12px;color:var(--ink-3);font-weight:600;text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+  .ct td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+  .ct td.r,.ct th.r{text-align:right}
+  .ct .chn{font-weight:900;font-size:15px;letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
+  .ct .rk{color:var(--ink-3);font-size:12px;width:22px;display:inline-block;text-align:right}
+  .meter{height:8px;background:var(--chip);border-radius:99px;overflow:hidden;min-width:90px}
+  .meter i{display:block;height:100%;background:#11845b;border-radius:99px}
+  .neg{color:#11845b;font-weight:800}.pos{color:var(--accent);font-weight:800}
+  h3.sec{font-size:16px;margin:6px 0 10px;letter-spacing:-.01em}
   .ttl{font-weight:700;font-size:15px;letter-spacing:-.01em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
   .bens{display:flex;gap:4px;flex-wrap:wrap}
   .ben{font-size:11px;padding:2px 7px;border-radius:6px;background:var(--chip);color:var(--ink-2)}
@@ -109,6 +133,7 @@
   .pcard .pimg{aspect-ratio:1}
   .pcard .pb{padding:9px 10px 11px;display:flex;flex-direction:column;gap:3px;flex:1}
   .pcard .br{font-size:11.5px;color:var(--ink-3)}
+  .pcard .chtag{position:absolute;top:8px;left:8px;z-index:2;color:#fff;font-size:12px;font-weight:900;padding:3px 9px;border-radius:999px;letter-spacing:-.01em;box-shadow:0 2px 6px rgba(0,0,0,.18)}
   .pcard .nm{font-size:13px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
   .price{display:flex;gap:5px;align-items:baseline;flex-wrap:wrap;margin-top:auto}
   .price em{font-style:normal;color:var(--accent);font-weight:800}
@@ -131,6 +156,7 @@
   .dh{padding:18px 20px 14px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
   .dh .x{position:absolute;top:12px;right:12px;border:0;background:var(--chip);width:36px;height:36px;border-radius:50%;font-size:18px}
   .dh h2{margin:0;font-size:20px;letter-spacing:-.02em;line-height:1.3;padding-right:40px}
+  .dh .chbig{display:inline-flex;align-self:flex-start;align-items:center;gap:6px;color:#fff;font-weight:900;font-size:15px;padding:5px 12px;border-radius:999px}
   .dh .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--ink-2)}
   .go{display:inline-flex;align-items:center;gap:6px;background:var(--ink);color:var(--bg);border-radius:10px;padding:9px 14px;font-weight:700;font-size:13px;align-self:flex-start}
   .db{padding:16px 20px 40px;overflow:auto;flex:1}
@@ -196,6 +222,7 @@
       <div class="seg">
         <button data-view="cards" aria-pressed="true">기획전</button>
         <button data-view="products" aria-pressed="false">상품</button>
+        <button data-view="compare" aria-pressed="false">가격비교</button>
         <button data-view="timeline" aria-pressed="false">타임라인</button>
       </div>
     </div>
@@ -211,7 +238,7 @@ const CT = {openmarket:"오픈마켓·종합몰", crossborder:"해외직구", de
 const PALETTE = ["#ff4d2e","#1f6feb","#11845b","#8a3ffc","#d99a00","#d0287a","#0e8f9c","#5b6b00","#b5521b","#3f51b5","#c2185b","#2e7d32","#6a4c93","#00796b"];
 const BENEFITS = ["할인","쿠폰","적립","카드혜택","경품·추첨","사은품","1+1","무료배송"];
 const SORTS = {cards:[["ending","마감 임박순"],["new","최근 발견순"],["discount","할인율 높은순"],["rank","채널 순위순"]],
-               products:[["discount","할인율 높은순"],["price","낮은 가격순"],["price_desc","높은 가격순"],["ending","기획전 마감순"]]};
+               products:[["discount","할인율 높은순"],["vs_market","웹 최저가보다 싼 순"],["price","낮은 가격순"],["price_desc","높은 가격순"],["ending","기획전 마감순"]]};
 const DAY = 864e5, today = new Date(); today.setHours(0,0,0,0);
 const $ = id => document.getElementById(id);
 
@@ -288,7 +315,7 @@ function serverProducts(){
   if(st.sources.size) f.push(`source_id=in.(${[...st.sources].map(encodeURIComponent).join(",")})`);
   if(st.ctypes.size) f.push(`channel_type=in.(${[...st.ctypes].join(",")})`);
   if(st.cats.size) f.push(`category=in.(${[...st.cats].map(c => '"'+encodeURIComponent(c)+'"').join(",")})`);
-  f.push("order=" + ({discount:"discount_rate.desc.nullslast,price.asc", price:"price.asc.nullslast", price_desc:"price.desc.nullslast", ending:"end_date.asc.nullslast"}[st.sort] || "discount_rate.desc.nullslast"));
+  f.push("order=" + ({discount:"discount_rate.desc.nullslast,price.asc", vs_market:"vs_market_pct.asc.nullslast", price:"price.asc.nullslast", price_desc:"price.desc.nullslast", ending:"end_date.asc.nullslast"}[st.sort] || "discount_rate.desc.nullslast"));
   return "v_items?" + f.join("&");
 }
 function requestProducts(){
@@ -335,7 +362,7 @@ function products(){
     if(q && !itemText(p).includes(q) && !(pr.title.toLowerCase().includes(q))) return;
     out.push({...p, promo:pr});
   }));
-  const key = {discount:p => -(p.discount_rate||0), price:p => p.price ?? 1e12, price_desc:p => -(p.price ?? -1), ending:p => p.promo.end_date||"9999"}[st.sort] || (p => -(p.discount_rate||0));
+  const key = {discount:p => -(p.discount_rate||0), vs_market:p => vsPct(p) ?? 1e9, price:p => p.price ?? 1e12, price_desc:p => -(p.price ?? -1), ending:p => p.promo.end_date||"9999"}[st.sort] || (p => -(p.discount_rate||0));
   return out.sort((a,b) => { const x=key(a), y=key(b); return (x>y)-(x<y); });
 }
 const countBy = (arr, f) => { const m = new Map(); arr.forEach(i => [].concat(f(i)).forEach(k => m.set(k,(m.get(k)||0)+1))); return m; };
@@ -376,6 +403,21 @@ function renderKpis(){
   $("kpis").innerHTML = k.map(([v,l,n,c]) => `<button class="kpi ${c}" ${v?`data-status="${v}"`:`data-view="products"`} aria-pressed="${!!v && st.status===v}"><b class="num">${n}</b><span>${l}</span></button>`).join("");
 }
 
+/* ── 웹 최저가 비교 ── */
+const vsPct = p => (p.market_lowest > 0 && p.price != null) ? Math.round((p.price - p.market_lowest) * 1000 / p.market_lowest) / 10 : null;
+function vsBadge(p){
+  const v = vsPct(p); if(v == null) return "";
+  if(v <= 0) return `<span class="badge low">웹 최저가${v < 0 ? ` ${v}%` : ""}</span>`;
+  return `<span class="badge high">웹보다 +${v}%</span>`;
+}
+function vsLine(p){
+  const parts = [];
+  if(p.market_lowest > 0) parts.push(`${vsBadge(p)}<span>웹 최저 <span class="num">${won(p.market_lowest)}</span>${p.market_mall ? ` · ${esc(p.market_mall)}` : ""}</span>`);
+  if(p.cross_lowest && p.cross_lowest < p.price) parts.push(`<span class="badge x">다른 기획전 ${won(p.cross_lowest)}</span>`);
+  return parts.length ? `<span class="vsm">${parts.join("")}</span>` : "";
+}
+const ctLabel = t => CT[t] || "";
+
 /* ── 조각 ── */
 function pimg(p, cls=""){
   const ph = `<span class="ph">${esc((p.brand ? p.brand+" " : "") + p.name).slice(0,22)}</span>`;
@@ -396,24 +438,25 @@ function stripHtml(i){
   const its = i.items.filter(inPrice); if(!its.length) return "";
   const n = i.item_count ?? i.items.length;
   if(st.pmode === "text"){
-    return `<div class="tlist">${its.slice(0,4).map(p => `<div><span class="nm">${esc(p.name)}</span>${p.discount_rate?`<em>${p.discount_rate}%</em>`:""}<b class="num">${won(p.price)||"-"}</b></div>`).join("")}</div>
+    return `<div class="tlist">${its.slice(0,4).map(p => `<div><span class="nm">${esc(p.name)}</span>${p.discount_rate?`<em>${p.discount_rate}%</em>`:""}<b class="num">${won(p.price)||"-"}</b>${vsBadge(p)}</div>`).join("")}</div>
       ${n > 4 ? `<div class="morep">상품 ${n}개 · 최저 ${won(i.min_price ?? Math.min(...i.items.map(p=>p.price||1e12)))}</div>` : ""}`;
   }
-  return `<div class="strip">${its.slice(0,4).map(p => `<div class="mini">${pimg(p)}<div class="pr">${p.discount_rate?`<em>${p.discount_rate}%</em>`:""}<span class="num">${won(p.price)||"-"}</span></div></div>`).join("")}</div>
+  return `<div class="strip">${its.slice(0,4).map(p => `<div class="mini">${pimg(p)}<div class="pr">${p.discount_rate?`<em>${p.discount_rate}%</em>`:""}<span class="num">${won(p.price)||"-"}</span></div>${vsPct(p)!=null ? (vsPct(p)<=0 ? `<div class="ok">✓ 웹 최저가</div>` : `<div class="ok" style="color:var(--accent)">웹 +${vsPct(p)}%</div>`) : ""}</div>`).join("")}</div>
     ${n > 4 ? `<div class="morep">상품 ${n}개 더 보기 ›</div>` : ""}`;
 }
 
 function card(i){
   const c = srcColor(i.source_id);
+  const cmp = (i.compared||0) > 0 ? `<div class="cmpline">웹 최저가 이하 <b>${i.cheaper_cnt||0}/${i.compared}</b>개</div>` : "";
   return `<button class="card" data-open="${esc(i.id)}">
     <div class="head" style="background:linear-gradient(135deg, ${c}, color-mix(in srgb, ${c} 55%, #000))">
-      <div class="flags"><span>${i.is_new ? `<span class="tag">NEW</span>` : ""}</span>${ddayTag(i)}</div>
-      <div class="big">${i.max_discount ? `~${i.max_discount}%` : esc(i.kind)}</div><div class="cat">${esc(i.category)}</div></div>
+      <div class="htop"><div class="chname">${esc(i.source_name)}<span class="chtype">${esc(ctLabel(i.channel_type))} · ${esc(i.kind)}</span></div>
+        <div class="flagr">${i.is_new ? `<span class="tag">NEW</span>` : ""}${ddayTag(i)}</div></div>
+      <div><div class="big">${i.max_discount ? `~${i.max_discount}%` : esc(i.kind)}</div><div class="cat">${esc(i.category)}</div></div></div>
     <div class="body">
-      <div class="src"><span class="dot" style="background:${c}"></span>${esc(i.source_name)}<span class="kind">${esc(i.kind)}</span></div>
       <div class="ttl">${esc(i.title)}</div>
       <div class="bens">${i.benefits.filter(b => b!=="할인").map(b => `<span class="ben">${b}</span>`).join("")}</div>
-      ${stripHtml(i)}
+      ${stripHtml(i)}${cmp}
       <div class="period"><span class="num">${esc(periodText(i))}</span></div>
     </div></button>`;
 }
@@ -422,17 +465,60 @@ function productsView(list, inDrawer=false){
   if(!list.length) return `<div class="empty">조건에 맞는 상품이 없습니다.</div>`;
   const lim = inDrawer ? list : list.slice(0, 400);
   if(st.pmode === "text"){
-    return `<table class="pt"><thead><tr><th>상품</th><th class="r">할인</th><th class="r">판매가</th><th class="r hide-m">정가</th>${inDrawer?"":`<th class="hide-m">기획전</th>`}</tr></thead><tbody>
-      ${lim.map(p => `<tr><td><a href="${esc(p.url || (p.promo||{}).url || "#")}" target="_blank" rel="noopener">${p.brand?`<span class="sub">${esc(p.brand)}</span> `:""}${esc(p.name)}</a></td>
+    return `<table class="pt"><thead><tr>${inDrawer?"":`<th>쇼핑몰</th>`}<th>상품</th><th class="r">할인</th><th class="r">판매가</th><th class="r hide-m">정가</th><th class="r">웹 최저가</th><th class="r">차이</th></tr></thead><tbody>
+      ${lim.map(p => { const v = vsPct(p); return `<tr>${inDrawer?"":`<td style="white-space:nowrap"><span class="chip-ch"><span class="dot" style="background:${srcColor(p.promo.source_id)}"></span>${esc(p.promo.source_name)}</span></td>`}
+        <td><a href="${esc(p.url || (p.promo||{}).url || "#")}" target="_blank" rel="noopener">${p.brand?`<span class="sub">${esc(p.brand)}</span> `:""}${esc(p.name)}</a>${inDrawer?"":`<div class="sub">${esc(p.promo.title.slice(0,30))}</div>`}</td>
         <td class="r d num">${p.discount_rate ? p.discount_rate+"%" : ""}</td><td class="r num"><b>${won(p.price)||"-"}</b></td>
         <td class="r num hide-m sub"><s>${won(p.original_price)}</s></td>
-        ${inDrawer?"":`<td class="hide-m sub">${esc(p.promo.source_name)} · ${esc(p.promo.title.slice(0,24))}</td>`}</tr>`).join("")}</tbody></table>
+        <td class="r num">${p.market_lowest ? `${won(p.market_lowest)}<div class="sub">${esc(p.market_mall||"")}</div>` : `<span class="sub">-</span>`}</td>
+        <td class="r num ${v==null?"":v<=0?"neg":"pos"}">${v==null?"":(v>0?"+":"")+v+"%"}</td></tr>`; }).join("")}</tbody></table>
       ${lim.length < list.length ? `<div class="tl-note">상위 ${lim.length}개만 표시했습니다. 필터로 좁혀 보세요.</div>` : ""}`;
   }
   return `<div class="pgrid">${lim.map(p => `<a class="pcard" href="${esc(p.url || (p.promo||{}).url || "#")}" target="_blank" rel="noopener">
-      ${pimg(p)}<div class="pb">${p.brand?`<span class="br">${esc(p.brand)}</span>`:""}<span class="nm">${esc(p.name)}</span>${priceHtml(p)}
-      ${inDrawer?"":`<span class="from"><span class="dot" style="background:${srcColor(p.promo.source_id)}"></span>${esc(p.promo.source_name)} · ${esc(p.promo.title)}</span>`}</div></a>`).join("")}</div>
+      <span style="position:relative;display:block">${inDrawer?"":`<span class="chtag" style="background:${srcColor(p.promo.source_id)}">${esc(p.promo.source_name)}</span>`}${pimg(p)}</span>
+      <div class="pb">${p.brand?`<span class="br">${esc(p.brand)}</span>`:""}<span class="nm">${esc(p.name)}</span>${priceHtml(p)}${vsLine(p)}
+      ${inDrawer?"":`<span class="from">${esc(p.promo.title)}</span>`}</div></a>`).join("")}</div>
     ${lim.length < list.length ? `<div class="tl-note">상위 ${lim.length}개만 표시했습니다. 필터로 좁혀 보세요.</div>` : ""}`;
+}
+
+/* ── 가격 비교 탭 ── */
+let CCACHE = null;
+function channelStats(){
+  if(MODE === "supabase"){
+    if(CCACHE) return CCACHE;
+    Promise.all([sb("v_channel_price?select=*&order=rank.asc"),
+                 sb("v_items?select=*&market_lowest=gt.0&order=vs_market_pct.asc&limit=40")])
+      .then(([ch, top]) => { const byId = new Map(DATA.map(i => [i.id, i]));
+        CCACHE = {ch, top: top.map(r => ({...r, promo: byId.get(r.promotion_id) || {id:r.promotion_id, title:r.promotion_title, url:r.promotion_url, source_id:r.source_id, source_name:r.source_name}}))}; render(); })
+      .catch(e => { console.warn(e); CCACHE = {ch:[], top:[]}; render(); });
+    return null;
+  }
+  const by = new Map(), all = [];
+  DATA.forEach(pr => pr.items.forEach(p => { const v = vsPct(p); if(v == null) return;
+    all.push({...p, promo:pr});
+    if(!by.has(pr.source_id)) by.set(pr.source_id, {source_id:pr.source_id, source_name:pr.source_name, channel_type:pr.channel_type, rank:srcRank(pr.source_id), vs:[]});
+    by.get(pr.source_id).vs.push(v); }));
+  const med = a => { const s = [...a].sort((x,y)=>x-y), m = s.length>>1; return s.length%2 ? s[m] : (s[m-1]+s[m])/2; };
+  const ch = [...by.values()].map(c => ({...c, compared:c.vs.length, at_or_below:c.vs.filter(v => v<=0).length,
+    lowest_share_pct: Math.round(1000*c.vs.filter(v => v<=0).length/c.vs.length)/10, median_vs_market_pct: Math.round(med(c.vs)*10)/10}));
+  return {ch, top: all.sort((a,b) => vsPct(a)-vsPct(b)).slice(0,40)};
+}
+function compareView(){
+  const d = channelStats();
+  if(d === null) return `<div class="empty">가격 비교 데이터를 불러오는 중…</div>`;
+  let ch = d.ch.filter(c => (!st.ctypes.size || st.ctypes.has(c.channel_type)) && (!st.sources.size || st.sources.has(c.source_id)));
+  const sortKey = st.sort === "rank" ? (c => c.rank) : (c => -c.lowest_share_pct);
+  ch = ch.sort((a,b) => sortKey(a)-sortKey(b));
+  const intro = `<div class="pc-intro"><b>웹 최저가 비교</b> — 각 쇼핑몰 기획전에 담긴 상품을 네이버 쇼핑에서 같은 상품(이름·용량 일치)으로 찾아, <b>그 쇼핑몰을 뺀 웹 최저가</b>와 비교합니다.
+    '웹 최저가 이하 비율'이 높을수록 그 쇼핑몰의 기획전 가격이 실제로 싸다는 뜻입니다. 가격은 수집 시점 기준이며 쿠폰·카드 할인은 반영되지 않을 수 있습니다.</div>`;
+  if(!ch.length) return intro + `<div class="empty"><b>아직 비교된 상품이 없습니다</b>네이버 쇼핑 검색 API 키가 등록되면 매일 새벽 수집 뒤 자동으로 비교됩니다.</div>`;
+  const tbl = `<h3 class="sec">쇼핑몰별 가격 경쟁력</h3><table class="ct"><thead><tr><th>쇼핑몰</th><th class="r">비교 상품</th><th>웹 최저가 이하 비율</th><th class="r">웹 최저가 대비(중앙값)</th></tr></thead><tbody>
+    ${ch.map(c => `<tr><td><div class="chn"><span class="rk">${c.rank ?? ""}</span><span class="dot" style="background:${srcColor(c.source_id)};width:12px;height:12px"></span>${esc(c.source_name)}</div><div class="sub" style="margin-left:30px">${esc(ctLabel(c.channel_type))}</div></td>
+      <td class="r num">${c.compared}개</td>
+      <td><div style="display:flex;align-items:center;gap:10px"><div class="meter" style="flex:1"><i style="width:${Math.min(100,c.lowest_share_pct||0)}%"></i></div><b class="num">${c.lowest_share_pct ?? 0}%</b></div></td>
+      <td class="r num ${c.median_vs_market_pct<=0?"neg":"pos"}">${c.median_vs_market_pct>0?"+":""}${c.median_vs_market_pct}%</td></tr>`).join("")}</tbody></table>`;
+  const top = d.top.filter(p => (!st.sources.size || st.sources.has(p.promo.source_id)) && vsPct(p) <= 0);
+  return intro + tbl + `<h3 class="sec">웹 최저가보다 싸게 파는 기획전 상품</h3>` + (top.length ? productsView(top) : `<div class="empty">웹 최저가보다 싼 상품이 아직 없습니다.</div>`);
 }
 
 function timeline(list){
@@ -462,6 +548,9 @@ function render(){
     $("count").innerHTML = "";
     $("view").innerHTML = `<div class="empty"><b>첫 수집을 기다리는 중입니다</b>${SOURCES.length}개 채널이 등록돼 있고, 자동 수집이 돌면 기획전·상품이 여기에 채워집니다.<br>
       <button class="go" id="trydemo">샘플 데이터로 화면 미리보기</button></div>`;
+  }else if(st.view === "compare"){
+    $("count").innerHTML = `가격 비교`;
+    $("view").innerHTML = compareView();
   }else if(st.view === "products"){
     const list = products();
     if(list === null){ return; }
@@ -474,6 +563,7 @@ function render(){
       : st.view === "cards" ? `<div class="grid">${list.map(card).join("")}</div>` : timeline(list);
   }
   $("pmode").style.display = st.view === "timeline" ? "none" : "";
+  $("sort").style.display = st.view === "compare" ? "none" : "";
   document.querySelectorAll("[data-pmode]").forEach(b => b.setAttribute("aria-pressed", b.dataset.pmode === st.pmode));
   document.querySelectorAll(".bar [data-view]").forEach(b => b.setAttribute("aria-pressed", b.dataset.view === st.view));
 }
@@ -503,9 +593,11 @@ function drawDrawer(){
   let its = [...i.items];
   if(dsort === "price") its.sort((a,b) => (a.price??1e12)-(b.price??1e12));
   if(dsort === "discount") its.sort((a,b) => (b.discount_rate||0)-(a.discount_rate||0));
+  if(dsort === "vs") its.sort((a,b) => (vsPct(a) ?? 1e9)-(vsPct(b) ?? 1e9));
   $("drawer").innerHTML = `<div class="dh" style="position:relative">
       <button class="x" id="dclose" aria-label="닫기">×</button>
-      <div class="row"><span class="dot" style="background:${c}"></span>${esc(i.source_name)} · ${esc(i.kind)} · ${esc(i.category)} ${ddayTag(i)}</div>
+      <span class="chbig" style="background:${c}">${esc(i.source_name)}</span>
+      <div class="row">${esc(ctLabel(i.channel_type))} · ${esc(i.kind)} · ${esc(i.category)} ${ddayTag(i)}${(i.compared||0)>0 ? ` · 웹 최저가 이하 <b style="color:#11845b">${i.cheaper_cnt||0}/${i.compared}</b>개` : ""}</div>
       <h2>${esc(i.title)}</h2>
       ${i.description ? `<div class="row">${esc(i.description)}</div>` : ""}
       <div class="row num">${esc(periodText(i))}${i.max_discount ? ` · <b style="color:var(--accent)">최대 ${i.max_discount}%</b>` : ""} ${i.benefits.map(b => `<span class="ben">${b}</span>`).join("")}</div>
@@ -513,7 +605,7 @@ function drawDrawer(){
     </div>
     <div class="db">
       <div class="bar"><div class="count">판매 상품 ${its.length}개</div><div class="sp"></div>
-        <div class="seg">${[["position","노출순"],["price","낮은 가격"],["discount","할인율"]].map(([v,l]) => `<button data-dsort="${v}" aria-pressed="${dsort===v}">${l}</button>`).join("")}</div></div>
+        <div class="seg">${[["position","노출순"],["price","낮은 가격"],["discount","할인율"],["vs","웹보다 싼 순"]].map(([v,l]) => `<button data-dsort="${v}" aria-pressed="${dsort===v}">${l}</button>`).join("")}</div></div>
       ${its.length ? productsView(its, true) : `<div class="empty">이 기획전에서 수집된 상품이 없습니다.<br>이벤트형 페이지이거나 상품 목록을 읽지 못했습니다.</div>`}
     </div>`;
 }
@@ -598,7 +690,10 @@ function demoData(){
       const prods = ev ? [] : Array.from({length: 4 + Math.floor(rnd()*7)}, () => {
         const [nm, base] = pick(POOL[cat] || POOL["종합"]); const rate = rnd() < .15 ? null : 5 + Math.floor(rnd()*(src.channel_type==="crossborder"?12:9))*5;
         const price = Math.round(base*(0.85 + rnd()*.25)/100)*100 - 100 + 100, orig = rate ? Math.round(price/(1-rate/100)/100)*100 : null;
-        return {name:nm, brand: BR[cat] && src.channel_type!=="crossborder" ? pick(BR[cat]) : "", url:"#", image_url:"", price, original_price: orig, discount_rate: rate};
+        const MALLS = ["쿠팡","11번가","G마켓","SSG닷컴","롯데ON","네이버 가격비교","옥션"].filter(m => !m.startsWith(src.name.slice(0,2)));
+        const ml = rnd() < .75 ? Math.round(price*(0.9 + rnd()*.25)/100)*100 : null;
+        return {name:nm, brand: BR[cat] && src.channel_type!=="crossborder" ? pick(BR[cat]) : "", url:"#", image_url:"", price, original_price: orig, discount_rate: rate,
+                market_lowest: ml, market_mall: ml ? pick(MALLS) : ""};
       }).filter((p,i,a) => a.findIndex(q => q.name===p.name) === i);
       const maxd = Math.max(0, ...prods.map(p => p.discount_rate||0)) || null;
       const title = ev ? pick(["출석체크 쿠폰 이벤트","룰렛 돌리고 경품 응모","럭키드로우 추첨 이벤트","댓글 이벤트"]) : pick(T[cat] || T["종합"]);
@@ -608,7 +703,8 @@ function demoData(){
       items.push({id:"demo"+(k++), source_id:src.id, source_name:src.name, channel_type:src.channel_type, url:"#", title, description:"",
         start_date: iso(sd), end_date: ed==null?null:iso(ed), category: ev ? "종합" : cat, kind: ev ? "이벤트" : "기획전", benefits:bens, max_discount:maxd,
         status, d_day: dd, is_new: rnd() < .15, first_seen: new Date(+today - Math.floor(rnd()*7)*DAY).toISOString(),
-        items: prods, item_count: prods.length, min_price: prods.length ? Math.min(...prods.map(p => p.price)) : null});
+        items: prods, item_count: prods.length, min_price: prods.length ? Math.min(...prods.map(p => p.price)) : null,
+        compared: prods.filter(p => p.market_lowest).length, cheaper_cnt: prods.filter(p => p.market_lowest && p.price <= p.market_lowest).length});
     }
   });
   return {items, sources:S};

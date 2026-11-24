@@ -49,6 +49,25 @@ jobs:
             python -m promohub.cli collect --sink supabase --shard ${{ matrix.shard }}/8
           fi
 
+  compare:
+    needs: collect
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: https://wjfbcbiyzoymqqnoemvu.supabase.co
+      SUPABASE_ANON_KEY: sb_publishable_-DNHcg_lvpePh3aeXGRXGw_qDJAkXI5
+      PROMOHUB_INGEST_TOKEN: ${{ secrets.PROMOHUB_INGEST_TOKEN }}
+      NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
+      NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12", cache: pip }
+      - run: pip install httpx pyyaml beautifulsoup4
+      - name: 웹 최저가 비교(네이버 쇼핑 검색 API, 키 없으면 건너뜀)
+        run: python -m promohub.cli compare --limit 3000
+
   test:
     runs-on: ubuntu-latest
     steps:

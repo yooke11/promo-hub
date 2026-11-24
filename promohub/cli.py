@@ -33,6 +33,8 @@ def main(argv=None):
     s = sub.add_parser("serve")
     s.add_argument("--port", type=int, default=8000)
     s.add_argument("--host", default="127.0.0.1")
+    pc = sub.add_parser("compare", help="기획전 상품의 웹 최저가(네이버 쇼핑) 비교 → Supabase 저장")
+    pc.add_argument("--limit", type=int, default=3000)
     e = sub.add_parser("export")
     e.add_argument("out")
     args = ap.parse_args(argv)
@@ -80,6 +82,13 @@ def main(argv=None):
     elif args.cmd == "serve":
         import uvicorn
         uvicorn.run("promohub.api:app", host=args.host, port=args.port)
+
+    elif args.cmd == "compare":
+        if not (os.environ.get("NAVER_CLIENT_ID") and os.environ.get("NAVER_CLIENT_SECRET")):
+            print("NAVER_CLIENT_ID / NAVER_CLIENT_SECRET 이 없어 가격 비교를 건너뜁니다.")
+            return 0
+        from .pricecheck import run as compare_run
+        print(json.dumps(compare_run(args.limit), ensure_ascii=False))
 
     elif args.cmd == "export":
         from .store import Store
