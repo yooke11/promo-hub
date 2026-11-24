@@ -1,0 +1,14 @@
+{
+  "data": {
+    "modules": [
+      {
+        "type": "BANNER_CAROUSEL",
+        "items": [
+          {"bannerTitle": "무진장 겨울 블랙프라이데이", "subTitle": "최대 80% + 쿠폰팩", "linkUrl": "https://www.musinsa.com/campaign/mujinjang2026w", "imageUrl": "https://image.msscdn.net/b/1.jpg", "displayStartDate": "2026-11-20T11:00:00", "displayEndDate": "2026-12-04T10:59:59"},
+          {"bannerTitle": "러닝 페어", "subTitle": "러닝화 30% 쿠폰", "linkUrl": "/campaign/runningfair", "imageUrl": "//image.msscdn.net/b/2.jpg", "startDt": 1763950000000, "endDt": "20261207"},
+          {"bannerTitle": "신상품", "linkUrl": "/products/123456"}
+        ]
+      }
+    ]
+  }
+}

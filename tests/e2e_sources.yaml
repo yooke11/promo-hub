@@ -1,0 +1,9 @@
+defaults: {scroll_steps: 1, detail_limit: 10, delay_sec: 0.1, respect_robots: true}
+common_include_patterns: ["(event|plan|promotion)s?[/?=]"]
+common_exclude_patterns: []
+sources:
+  - id: testmall
+    name: 테스트몰
+    channel_type: mall
+    entry_urls: ["http://127.0.0.1:8765/index.html"]
+    product_patterns: ["/goods/"]

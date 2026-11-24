@@ -1,0 +1,694 @@
+# 수집 대상: 국내 쇼핑몰 트래픽 상위 50 (추정 순위)
+# 순위 근거(2026-11 작성): Similarweb 이커머스 KR 상위 5(2026-10, 웹 방문) · Semrush KR 리테일 상위 20(2026-10, 웹 방문)
+#                         · 와이즈앱 종합몰/버티컬 앱 사용자 순위(2026-02~08) 공개치를 교차해 추정. 유료 순위표가 생기면 rank 값만 교체.
+# 제외: 쇼핑몰이 아닌 사이트(게임·커뮤니티), 서비스 종료(위메프·티몬), 중고거래·배달앱.
+#
+# 필드
+#  rank            트래픽 추정 순위(화면 정렬·수집 순서에 사용)
+#  domains         이 도메인(하위 포함) 링크만 기획전으로 인정
+#  entry_urls      수집 시작 페이지(메인·이벤트 목록). 여러 개 가능
+#  include_patterns 기획전/이벤트 URL 정규식(공통 패턴과 합쳐짐)
+#  product_patterns 상품 상세 URL 정규식 → 기획전 안의 판매 상품 추출에 사용(공통 패턴과 합쳐짐)
+#  mobile          true면 모바일 UA로 접속
+# ※ URL·패턴은 사이트 개편 시 바뀝니다. 운영 전 `python -m promohub.cli probe <id>` 로 채널별 1회 점검하세요.
+
+defaults:
+  scroll_steps: 8
+  detail_limit: 30
+  product_limit: 40
+  delay_sec: 2.0
+  respect_robots: true
+common_include_patterns:
+- (event|events|exhibit|exhibition|exhibitions|plan|planshop|promotion|promotions|campaign|campaigns|special|festa|fair)s?[/?=.]
+- 기획전|이벤트
+common_exclude_patterns:
+- login|logout|member|cart|order|mypage|customer|cs/|notice|faq|policy|terms|app-download|join|signup
+- \.(jpg|jpeg|png|gif|webp|svg|css|js)(\?|$)
+sources:
+- id: coupang
+  name: 쿠팡
+  channel_type: openmarket
+  rank: 1
+  domains:
+  - coupang.com
+  mobile: false
+  entry_urls:
+  - https://www.coupang.com/
+  - https://www.coupang.com/np/goldbox
+  include_patterns:
+  - /np/campaigns/\d+
+  - /np/promotion
+  - /np/events?
+  - /np/goldbox
+  product_patterns:
+  - /vp/products/\d+
+- id: navershopping
+  name: 네이버플러스 스토어
+  channel_type: openmarket
+  rank: 2
+  domains:
+  - naver.com
+  mobile: true
+  entry_urls:
+  - https://shopping.naver.com/ns/home
+  include_patterns:
+  - shopping\.naver\.com/.*(plan|promotion|event|exhibition|festa|special)
+  - brand\.naver\.com/.*/(plan|event)
+  product_patterns:
+  - /products/\d+
+- id: aliexpress
+  name: 알리익스프레스
+  channel_type: crossborder
+  rank: 3
+  domains:
+  - aliexpress.com
+  mobile: false
+  entry_urls:
+  - https://ko.aliexpress.com/
+  include_patterns:
+  - /(p|ssr)/[\w-]*(sale|promo|campaign|choice)|/gcp/|campaign
+  product_patterns:
+  - /item/\d+\.html
+- id: temu
+  name: 테무
+  channel_type: crossborder
+  rank: 4
+  domains:
+  - temu.com
+  mobile: false
+  entry_urls:
+  - https://www.temu.com/kr
+  include_patterns:
+  - /(channel|activity|promotion|lightning|sale)
+  product_patterns:
+  - -g-\d+\.html
+- id: lotteon
+  name: 롯데ON
+  channel_type: openmarket
+  rank: 5
+  domains:
+  - lotteon.com
+  mobile: true
+  entry_urls:
+  - https://www.lotteon.com/p/display/main/lotteon
+  include_patterns:
+  - lotteon\.com/.*(planning|event|promotion|display/(shop|plan))
+  product_patterns:
+  - /p/product/
+- id: ssg
+  name: SSG.COM
+  channel_type: openmarket
+  rank: 6
+  domains:
+  - ssg.com
+  mobile: true
+  entry_urls:
+  - https://www.ssg.com/
+  - https://www.ssg.com/event/eventMain.ssg
+  include_patterns:
+  - ssg\.com/.*(event|plan|disp/(dispShop|planShop)|special)
+  product_patterns:
+  - itemView\.ssg|itemId=
+- id: gmarket
+  name: G마켓
+  channel_type: openmarket
+  rank: 7
+  domains:
+  - gmarket.co.kr
+  mobile: true
+  entry_urls:
+  - https://m.gmarket.co.kr/
+  - https://www.gmarket.co.kr/
+  include_patterns:
+  - gmarket\.co\.kr/(n/)?(e|event|promotion|plan|superdeal|bigs|special)/
+  - gmarket\.co\.kr/.*/promotion
+  product_patterns:
+  - goodscode=|/n/item\?
+- id: 11st
+  name: 11번가
+  channel_type: openmarket
+  rank: 8
+  domains:
+  - 11st.co.kr
+  mobile: true
+  entry_urls:
+  - https://m.11st.co.kr/
+  - https://www.11st.co.kr/
+  include_patterns:
+  - 11st\.co\.kr/.*(exhibitions?|MallPlan|plan|event|promotion)
+  product_patterns:
+  - /products/\d+
+- id: oliveyoung
+  name: 올리브영
+  channel_type: vertical
+  rank: 9
+  domains:
+  - oliveyoung.co.kr
+  mobile: true
+  entry_urls:
+  - https://www.oliveyoung.co.kr/store/main/main.do
+  include_patterns:
+  - oliveyoung\.co\.kr/.*(planshop|event|plan|promotion|getPlanShop|getEvent)
+  product_patterns:
+  - goodsNo=
+- id: musinsa
+  name: 무신사
+  channel_type: fashion
+  rank: 10
+  domains:
+  - musinsa.com
+  mobile: true
+  entry_urls:
+  - https://www.musinsa.com/main/musinsa/recommend
+  - https://www.musinsa.com/campaign
+  include_patterns:
+  - musinsa\.com/(campaign|event|events|exhibition|plan)
+  - musinsa\.com/content/\d+
+  product_patterns:
+  - /products/\d+
+  - /goods/\d+
+- id: auction
+  name: 옥션
+  channel_type: openmarket
+  rank: 11
+  domains:
+  - auction.co.kr
+  mobile: true
+  entry_urls:
+  - https://m.auction.co.kr/
+  - https://www.auction.co.kr/
+  include_patterns:
+  - promotion\.auction\.co\.kr
+  - auction\.co\.kr/(n/)?(e|event|promotion|plan|special)/
+  product_patterns:
+  - itemno=|/item/
+- id: shein
+  name: 쉬인
+  channel_type: crossborder
+  rank: 12
+  domains:
+  - shein.com
+  mobile: false
+  entry_urls:
+  - https://kr.shein.com/
+  include_patterns:
+  - /(campaign|sale|promotion|flash|activity)
+  product_patterns:
+  - -p-\d+\.html
+- id: daisomall
+  name: 다이소몰
+  channel_type: vertical
+  rank: 13
+  domains:
+  - daisomall.co.kr
+  mobile: true
+  entry_urls:
+  - https://www.daisomall.co.kr/
+  include_patterns:
+  - daisomall\.co\.kr/.*(event|plan|exhibit|promotion)
+  product_patterns:
+  - pdNo=|/pd/
+- id: kurly
+  name: 컬리
+  channel_type: vertical
+  rank: 14
+  domains:
+  - kurly.com
+  mobile: true
+  entry_urls:
+  - https://www.kurly.com/main
+  include_patterns:
+  - kurly\.com/.*(collection|event|promotion|special|benefit)
+  product_patterns:
+  - /goods/\d+
+- id: gsshop
+  name: GS SHOP
+  channel_type: homeshopping
+  rank: 15
+  domains:
+  - gsshop.com
+  mobile: true
+  entry_urls:
+  - https://m.gsshop.com/
+  - https://www.gsshop.com/
+  include_patterns:
+  - gsshop\.com/.*(event|plan|planprd|exhibit|promotion|section)
+  product_patterns:
+  - prdid=|/prd/
+- id: cjonstyle
+  name: CJ온스타일
+  channel_type: homeshopping
+  rank: 16
+  domains:
+  - cjonstyle.com
+  mobile: true
+  entry_urls:
+  - https://display.cjonstyle.com/
+  include_patterns:
+  - cjonstyle\.com/.*(event|plan|exhibit|promotion|special)
+  product_patterns:
+  - /item/\d+
+- id: samsung
+  name: 삼성닷컴
+  channel_type: brand
+  rank: 17
+  domains:
+  - samsung.com
+  mobile: false
+  entry_urls:
+  - https://www.samsung.com/sec/
+  include_patterns:
+  - /sec/(event|promotion|offer|benefit|special)
+  product_patterns:
+  - /sec/[\w/-]+/buy
+- id: uniqlo
+  name: 유니클로
+  channel_type: fashion
+  rank: 18
+  domains:
+  - uniqlo.com
+  mobile: true
+  entry_urls:
+  - https://www.uniqlo.com/kr/ko/
+  include_patterns:
+  - /kr/ko/(feature|special|campaign|event|spl)
+  product_patterns:
+  - /products/E\d+
+- id: ably
+  name: 에이블리
+  channel_type: fashion
+  rank: 19
+  domains:
+  - a-bly.com
+  mobile: true
+  entry_urls:
+  - https://m.a-bly.com/
+  include_patterns:
+  - a-bly\.com/.*(event|exhibition|plan|promotion|today)
+  product_patterns:
+  - /goods/\d+
+- id: zigzag
+  name: 지그재그
+  channel_type: fashion
+  rank: 20
+  domains:
+  - zigzag.kr
+  mobile: true
+  entry_urls:
+  - https://zigzag.kr/
+  include_patterns:
+  - zigzag\.kr/.*(event|exhibition|promotion|campaign|benefit)
+  product_patterns:
+  - /catalog/products/\d+
+- id: kakaogift
+  name: 카카오톡 선물하기
+  channel_type: openmarket
+  rank: 21
+  domains:
+  - kakao.com
+  mobile: true
+  entry_urls:
+  - https://gift.kakao.com/home
+  include_patterns:
+  - gift\.kakao\.com/.*(promotion|event|exhibition|theme|special)
+  product_patterns:
+  - /product/\d+
+- id: ohouse
+  name: 오늘의집
+  channel_type: vertical
+  rank: 22
+  domains:
+  - ohou.se
+  mobile: true
+  entry_urls:
+  - https://ohou.se/store
+  include_patterns:
+  - ohou\.se/.*(exhibitions?|event|promotion|deals)
+  product_patterns:
+  - /productions/\d+
+- id: hmall
+  name: 현대홈쇼핑(Hmall)
+  channel_type: homeshopping
+  rank: 23
+  domains:
+  - hmall.com
+  mobile: true
+  entry_urls:
+  - https://www.hmall.com/
+  include_patterns:
+  - hmall\.com/.*(event|plan|exhibit|promotion|dpe)
+  product_patterns:
+  - slitmCd=
+- id: kream
+  name: KREAM
+  channel_type: fashion
+  rank: 24
+  domains:
+  - kream.co.kr
+  mobile: true
+  entry_urls:
+  - https://kream.co.kr/
+  include_patterns:
+  - kream\.co\.kr/(exhibitions?|events?|promotion)
+  product_patterns:
+  - /products/\d+
+- id: lotteimall
+  name: 롯데홈쇼핑
+  channel_type: homeshopping
+  rank: 25
+  domains:
+  - lotteimall.com
+  mobile: true
+  entry_urls:
+  - https://m.lotteimall.com/
+  - https://www.lotteimall.com/
+  include_patterns:
+  - lotteimall\.com/.*(event|planshop|plan|exhibit|promotion)
+  product_patterns:
+  - goods_no=|/goods/
+- id: nike
+  name: 나이키
+  channel_type: fashion
+  rank: 26
+  domains:
+  - nike.com
+  mobile: false
+  entry_urls:
+  - https://www.nike.com/kr/
+  include_patterns:
+  - /kr/(w|launch|events?|promo)
+  product_patterns:
+  - /kr/t/
+- id: 29cm
+  name: 29CM
+  channel_type: fashion
+  rank: 27
+  domains:
+  - 29cm.co.kr
+  mobile: true
+  entry_urls:
+  - https://www.29cm.co.kr/
+  include_patterns:
+  - 29cm\.co\.kr/.*(exhibition|event|special|campaign|content|plan)
+  product_patterns:
+  - /products?/\d+
+- id: lfmall
+  name: LF몰
+  channel_type: fashion
+  rank: 28
+  domains:
+  - lfmall.co.kr
+  mobile: true
+  entry_urls:
+  - https://www.lfmall.co.kr/
+  include_patterns:
+  - lfmall\.co\.kr/.*(event|exhibition|plan|promotion|special)
+  product_patterns:
+  - /product(s)?/|productId=
+- id: ikea
+  name: 이케아
+  channel_type: vertical
+  rank: 29
+  domains:
+  - ikea.com
+  mobile: false
+  entry_urls:
+  - https://www.ikea.com/kr/ko/
+  include_patterns:
+  - /kr/ko/(offers|campaigns|ideas|new|this-is-ikea/.*event)
+  product_patterns:
+  - /kr/ko/p/
+- id: ssfshop
+  name: SSF샵
+  channel_type: fashion
+  rank: 30
+  domains:
+  - ssfshop.com
+  mobile: true
+  entry_urls:
+  - https://www.ssfshop.com/
+  include_patterns:
+  - ssfshop\.com/.*(event|plan|special|exhibition|promotion)
+  product_patterns:
+  - /goods/|GoodsDetail
+- id: costco
+  name: 코스트코
+  channel_type: department
+  rank: 31
+  domains:
+  - costco.co.kr
+  mobile: false
+  entry_urls:
+  - https://www.costco.co.kr/
+  include_patterns:
+  - /(c/)?(SpecialPriceOffers|WhatsNew|OnlineOnly|promotion|event)
+  product_patterns:
+  - /p/\d+
+- id: kolonmall
+  name: 코오롱몰
+  channel_type: fashion
+  rank: 32
+  domains:
+  - kolonmall.com
+  mobile: true
+  entry_urls:
+  - https://www.kolonmall.com/
+  include_patterns:
+  - kolonmall\.com/.*(event|exhibition|plan|special|promotion)
+  product_patterns:
+  - /Product/\d+|/products?/
+- id: hnsmall
+  name: 홈앤쇼핑
+  channel_type: homeshopping
+  rank: 33
+  domains:
+  - hnsmall.com
+  mobile: true
+  entry_urls:
+  - https://www.hnsmall.com/
+  include_patterns:
+  - hnsmall\.com/.*(event|plan|exhibit|promotion|special)
+  product_patterns:
+  - goods_code=|/goods/
+- id: wconcept
+  name: W컨셉
+  channel_type: fashion
+  rank: 34
+  domains:
+  - wconcept.co.kr
+  mobile: true
+  entry_urls:
+  - https://www.wconcept.co.kr/
+  include_patterns:
+  - wconcept\.co\.kr/.*(event|exhibition|special|plan|promotion)
+  product_patterns:
+  - /Product/\d+
+- id: himart
+  name: 롯데하이마트
+  channel_type: brand
+  rank: 35
+  domains:
+  - e-himart.co.kr
+  mobile: true
+  entry_urls:
+  - https://www.e-himart.co.kr/
+  include_patterns:
+  - e-himart\.co\.kr/.*(event|exhibit|plan|promotion|special)
+  product_patterns:
+  - goodsNo=|/goods/
+- id: thehyundai
+  name: 더현대닷컴
+  channel_type: department
+  rank: 36
+  domains:
+  - thehyundai.com
+  mobile: true
+  entry_urls:
+  - https://www.thehyundai.com/
+  include_patterns:
+  - thehyundai\.com/.*(event|plan|exhibit|promotion|special)
+  product_patterns:
+  - slitmCd=|/item/
+- id: homeplus
+  name: 홈플러스
+  channel_type: department
+  rank: 37
+  domains:
+  - homeplus.co.kr
+  mobile: true
+  entry_urls:
+  - https://mfront.homeplus.co.kr/
+  include_patterns:
+  - homeplus\.co\.kr/.*(event|plan|exhibit|promotion|leaflet)
+  product_patterns:
+  - /item\?|itemNo=
+- id: danawa
+  name: 다나와
+  channel_type: openmarket
+  rank: 38
+  domains:
+  - danawa.com
+  mobile: false
+  entry_urls:
+  - https://shop.danawa.com/
+  - https://www.danawa.com/
+  include_patterns:
+  - danawa\.com/.*(event|plan|exhibition|promotion|special)
+  product_patterns:
+  - pcode=|prod\.danawa\.com/info
+- id: yes24
+  name: 예스24
+  channel_type: vertical
+  rank: 39
+  domains:
+  - yes24.com
+  mobile: false
+  entry_urls:
+  - https://www.yes24.com/
+  include_patterns:
+  - yes24\.com/.*(event|campaign|plan|promotion|special)
+  product_patterns:
+  - /Product/Goods/\d+|/goods/\d+
+- id: lge
+  name: LG전자
+  channel_type: brand
+  rank: 40
+  domains:
+  - lge.co.kr
+  mobile: false
+  entry_urls:
+  - https://www.lge.co.kr/
+  include_patterns:
+  - lge\.co\.kr/(benefits|event|promotion|exhibition|special)
+  product_patterns:
+  - /[\w-]+/[\w.-]+-\w+$
+- id: adidas
+  name: 아디다스
+  channel_type: fashion
+  rank: 41
+  domains:
+  - adidas.co.kr
+  mobile: false
+  entry_urls:
+  - https://www.adidas.co.kr/
+  include_patterns:
+  - adidas\.co\.kr/(sale|outlet|campaign|promo|events?)
+  product_patterns:
+  - /[\w-]+/[A-Z]{2}\d{4}\.html
+- id: nsmall
+  name: NS홈쇼핑
+  channel_type: homeshopping
+  rank: 42
+  domains:
+  - nsmall.com
+  mobile: true
+  entry_urls:
+  - https://www.nsmall.com/
+  include_patterns:
+  - nsmall\.com/.*(event|plan|exhibit|promotion|special)
+  product_patterns:
+  - /goods/|partNumber=
+- id: skstoa
+  name: SK스토아
+  channel_type: homeshopping
+  rank: 43
+  domains:
+  - skstoa.com
+  mobile: true
+  entry_urls:
+  - https://www.skstoa.com/
+  include_patterns:
+  - skstoa\.com/.*(event|plan|exhibit|promotion|special)
+  product_patterns:
+  - /goods/|goodsCode=
+- id: kshop
+  name: KT알파쇼핑
+  channel_type: homeshopping
+  rank: 44
+  domains:
+  - kshop.co.kr
+  mobile: true
+  entry_urls:
+  - https://www.kshop.co.kr/
+  include_patterns:
+  - kshop\.co\.kr/.*(event|plan|exhibit|promotion|special)
+  product_patterns:
+  - /goods/|goodsNo=
+- id: shinsegaetv
+  name: 신세계라이브쇼핑
+  channel_type: homeshopping
+  rank: 45
+  domains:
+  - shinsegaetvshopping.com
+  mobile: true
+  entry_urls:
+  - https://www.shinsegaetvshopping.com/
+  include_patterns:
+  - shinsegaetvshopping\.com/.*(event|plan|exhibit|promotion|special)
+  product_patterns:
+  - /item/|itemId=
+- id: gongyoung
+  name: 공영쇼핑
+  channel_type: homeshopping
+  rank: 46
+  domains:
+  - gongyoungshop.kr
+  mobile: true
+  entry_urls:
+  - https://www.gongyoungshop.kr/
+  include_patterns:
+  - gongyoungshop\.kr/.*(event|plan|exhibit|promotion|special)
+  product_patterns:
+  - /goods/|goodsNo=
+- id: brandi
+  name: 브랜디
+  channel_type: fashion
+  rank: 47
+  domains:
+  - brandi.co.kr
+  mobile: true
+  entry_urls:
+  - https://www.brandi.co.kr/
+  include_patterns:
+  - brandi\.co\.kr/.*(event|exhibition|plan|promotion)
+  product_patterns:
+  - /products/\d+
+- id: oasis
+  name: 오아시스마켓
+  channel_type: vertical
+  rank: 48
+  domains:
+  - oasis.co.kr
+  mobile: true
+  entry_urls:
+  - https://www.oasis.co.kr/
+  include_patterns:
+  - oasis\.co\.kr/.*(event|plan|exhibit|promotion|special)
+  product_patterns:
+  - /product/detail/
+- id: 10x10
+  name: 텐바이텐
+  channel_type: vertical
+  rank: 49
+  domains:
+  - 10x10.co.kr
+  mobile: true
+  entry_urls:
+  - https://www.10x10.co.kr/
+  include_patterns:
+  - 10x10\.co\.kr/.*(event|plan|exhibit|promotion|diarystory)
+  product_patterns:
+  - itemid=
+- id: iherb
+  name: 아이허브
+  channel_type: crossborder
+  rank: 50
+  domains:
+  - iherb.com
+  mobile: false
+  entry_urls:
+  - https://kr.iherb.com/
+  include_patterns:
+  - /(specials|promotions?|trending|new-products|c/[\w-]*sale)
+  product_patterns:
+  - /pr/[\w-]+/\d+
