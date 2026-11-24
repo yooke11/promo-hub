@@ -49,24 +49,29 @@ jobs:
             python -m promohub.cli collect --sink supabase --shard ${{ matrix.shard }}/8
           fi
 
-  compare:
+  enrich:
     needs: collect
     if: always()
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 40
     env:
       SUPABASE_URL: https://wjfbcbiyzoymqqnoemvu.supabase.co
       SUPABASE_ANON_KEY: sb_publishable_-DNHcg_lvpePh3aeXGRXGw_qDJAkXI5
       PROMOHUB_INGEST_TOKEN: ${{ secrets.PROMOHUB_INGEST_TOKEN }}
-      NAVER_CLIENT_ID: ${{ secrets.NAVER_CLIENT_ID }}
-      NAVER_CLIENT_SECRET: ${{ secrets.NAVER_CLIENT_SECRET }}
+      # 선택: 네이버 검색광고 API(키워드 검색량). 없으면 규칙 기반 키워드만 생성
+      NAVER_AD_API_KEY: ${{ secrets.NAVER_AD_API_KEY }}
+      NAVER_AD_SECRET: ${{ secrets.NAVER_AD_SECRET }}
+      NAVER_AD_CUSTOMER_ID: ${{ secrets.NAVER_AD_CUSTOMER_ID }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.12", cache: pip }
-      - run: pip install httpx pyyaml beautifulsoup4
-      - name: 웹 최저가 비교(네이버 쇼핑 검색 API, 키 없으면 건너뜀)
-        run: python -m promohub.cli compare --limit 3000
+      - run: pip install -r requirements.txt
+      - name: 검색광고 추천 키워드 생성
+        run: python -m promohub.cli keywords --limit 500
+      - run: python -m playwright install --with-deps chromium
+      - name: 웹 최저가 비교(에누리 가격비교, 하루 400개 상품)
+        run: python -m promohub.cli compare --limit 400
 
   test:
     runs-on: ubuntu-latest

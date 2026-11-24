@@ -1,6 +1,7 @@
 """기획전 상품의 '웹 최저가' 비교.
 
-흐름: Supabase v_price_targets(진행 중 기획전 상품, 미조회 또는 3일 경과) → 네이버 쇼핑 검색 API로 같은 상품 검색
+출처: 에누리 가격비교 검색(기본). 네이버 쇼핑 검색 API는 2026-07-31 종료돼 키가 있어도 동작하지 않음(코드는 호환용으로 남김).
+흐름: Supabase v_price_targets(진행 중 기획전 상품, 미조회 또는 3일 경과) → 가격비교 검색으로 같은 상품 검색
      → 이름·용량 매칭으로 같은 상품만 추림 → 같은 쇼핑몰 판매처는 빼고 최저가 산출 → ingest_prices RPC로 저장.
 
 환경변수: SUPABASE_URL, SUPABASE_ANON_KEY, PROMOHUB_INGEST_TOKEN, NAVER_CLIENT_ID, NAVER_CLIENT_SECRET
@@ -193,8 +194,13 @@ def send_results(rows: list[PriceResult]) -> int:
     return n
 
 
-def run(limit: int = 3000, client: NaverShop | None = None) -> dict:
-    client = client or NaverShop()
+def run(limit: int = 400, client=None, source: str = "enuri") -> dict:
+    if client is None:
+        with EnuriShop() as c:
+            stats = run(limit, c, source)
+            stats["diag"] = c.diag
+            log_run(source, stats)
+            return stats
     targets = fetch_targets(limit)
     log.info("가격 비교 대상 %d개", len(targets))
     results, buf = [], []
@@ -205,6 +211,9 @@ def run(limit: int = 3000, client: NaverShop | None = None) -> dict:
         except Exception as e:
             if "검색 API 401" in str(e) or "검색 API 403" in str(e):
                 raise
+            if stats["error"] >= 20 and stats["matched"] == 0:
+                log.error("연속 실패로 중단: %s", e)
+                break
             res = PriceResult(item_key=t["item_key"], query=t["name"][:60], status="error")
             log.warning("검색 실패 %s: %s", t["name"][:30], e)
         stats[{"ok": "matched"}.get(res.status, res.status)] += 1
@@ -217,3 +226,81 @@ def run(limit: int = 3000, client: NaverShop | None = None) -> dict:
         send_results(buf); results += buf
     stats["api_calls"] = client.calls
     return stats
+
+
+# ── 에누리 가격비교 (네이버 쇼핑 검색 API 종료 2026-07-31 이후 기본 출처) ─────────
+ENURI_SEARCH = "https://www.enuri.com/search.jsp?keyword={q}"
+ENURI_PRODUCT_PATTERNS = [r"modelno=", r"/detail\.jsp", r"/vip\.jsp", r"/v/\d+", r"/prod/\d+"]
+_MALLS_RE = re.compile(r"(?:판매처|쇼핑몰|몰)\s*(\d{1,4})|(\d{1,4})\s*(?:개\s*)?(?:판매처|쇼핑몰|몰)")
+
+
+def parse_enuri_html(html: str, page_url: str) -> list[dict]:
+    """에누리 검색 결과 HTML → 네이버 응답과 같은 모양 [{title, lprice, mallName, link}]."""
+    from .products import compile_product_patterns, products_from_html, products_from_jsonld, merge_products
+    pats = [re.compile(p, re.I) for p in ENURI_PRODUCT_PATTERNS]
+    prods = merge_products([products_from_jsonld(html, page_url), products_from_html(html, page_url, pats)], limit=40)
+    out = []
+    for p in prods:
+        if not p.price:
+            continue
+        out.append({"title": p.name, "lprice": str(p.price), "mallName": "에누리 최저가", "link": p.url})
+    return out
+
+
+class EnuriShop:
+    """Playwright로 에누리 검색 결과를 읽는다. 검색 간 지연으로 서버 부하를 줄인다."""
+
+    def __init__(self, delay: float = 2.0, headless: bool = True):
+        self.delay, self.headless = delay, headless
+        self.calls = 0
+        self.diag: dict = {"pages": 0, "empty": 0, "blocked": 0, "samples": []}
+        self._pw = self._browser = self._page = None
+
+    def __enter__(self):
+        from playwright.sync_api import sync_playwright
+        self._pw = sync_playwright().start()
+        self._browser = self._pw.chromium.launch(headless=self.headless)
+        ctx = self._browser.new_context(locale="ko-KR", timezone_id="Asia/Seoul",
+                                        user_agent=("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                                                    "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"))
+        self._page = ctx.new_page()
+        return self
+
+    def __exit__(self, *a):
+        try:
+            self._browser.close()
+        finally:
+            self._pw.stop()
+
+    def search(self, query: str, display: int = 30) -> list[dict]:
+        from urllib.parse import quote
+        time.sleep(self.delay)
+        self.calls += 1
+        url = ENURI_SEARCH.format(q=quote(query))
+        resp = self._page.goto(url, wait_until="domcontentloaded", timeout=30_000)
+        try:
+            self._page.wait_for_load_state("networkidle", timeout=8_000)
+        except Exception:
+            pass
+        html = self._page.content()
+        items = parse_enuri_html(html, self._page.url)[:display]
+        self.diag["pages"] += 1
+        status = resp.status if resp else None
+        if status and status >= 400:
+            self.diag["blocked"] += 1
+        if not items:
+            self.diag["empty"] += 1
+        if len(self.diag["samples"]) < 5:
+            self.diag["samples"].append({"q": query, "status": status, "html": len(html), "items": len(items),
+                                         "title": self._page.title()[:60],
+                                         "first": items[0] if items else None})
+        return items
+
+
+def log_run(source: str, stats: dict):
+    url = os.environ["SUPABASE_URL"].rstrip("/") + "/rest/v1/rpc/log_price_run"
+    body = {"p_token": os.environ["PROMOHUB_INGEST_TOKEN"], "p_source": source, "p_stats": stats}
+    try:
+        httpx.post(url, content=json.dumps(body, ensure_ascii=False, default=str).encode(), headers=_sb_headers(), timeout=30)
+    except Exception as e:
+        log.warning("가격 비교 실행 기록 실패: %s", e)

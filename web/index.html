@@ -103,6 +103,20 @@
   .meter i{display:block;height:100%;background:#11845b;border-radius:99px}
   .neg{color:#11845b;font-weight:800}.pos{color:var(--accent);font-weight:800}
   h3.sec{font-size:16px;margin:6px 0 10px;letter-spacing:-.01em}
+  /* 검색광고 추천 키워드 */
+  .kw{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;margin-bottom:16px}
+  .kw-h{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+  .kw-h b{font-size:15px}
+  .kw-h .sp{flex:1}
+  .kw-h button{border:1px solid var(--line);background:var(--chip);border-radius:8px;padding:6px 10px;font-size:12.5px;font-weight:700}
+  .kw ol{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 14px}
+  .kw li{display:flex;align-items:baseline;gap:8px;padding:5px 0;border-bottom:1px dashed var(--line)}
+  .kw li .r{color:var(--ink-3);font-size:11.5px;width:16px;text-align:right;flex:none}
+  .kw li .k{font-weight:800;font-size:14px;letter-spacing:-.01em}
+  .kw li .t{font-size:10.5px;padding:1px 6px;border-radius:5px;background:var(--chip);color:var(--ink-2);white-space:nowrap}
+  .kw li .v{margin-left:auto;font-size:11.5px;color:var(--ink-3);white-space:nowrap}
+  .kw .note{font-size:11.5px;color:var(--ink-3);margin-top:8px}
+  @media (max-width:600px){ .kw ol{grid-template-columns:1fr} }
   .ttl{font-weight:700;font-size:15px;letter-spacing:-.01em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
   .bens{display:flex;gap:4px;flex-wrap:wrap}
   .ben{font-size:11px;padding:2px 7px;border-radius:6px;background:var(--chip);color:var(--ink-2)}
@@ -509,9 +523,9 @@ function compareView(){
   let ch = d.ch.filter(c => (!st.ctypes.size || st.ctypes.has(c.channel_type)) && (!st.sources.size || st.sources.has(c.source_id)));
   const sortKey = st.sort === "rank" ? (c => c.rank) : (c => -c.lowest_share_pct);
   ch = ch.sort((a,b) => sortKey(a)-sortKey(b));
-  const intro = `<div class="pc-intro"><b>웹 최저가 비교</b> — 각 쇼핑몰 기획전에 담긴 상품을 네이버 쇼핑에서 같은 상품(이름·용량 일치)으로 찾아, <b>그 쇼핑몰을 뺀 웹 최저가</b>와 비교합니다.
+  const intro = `<div class="pc-intro"><b>웹 최저가 비교</b> — 각 쇼핑몰 기획전에 담긴 상품을 가격비교 사이트(에누리)에서 같은 상품(이름·용량 일치)으로 찾아 <b>웹 최저가</b>와 비교합니다.
     '웹 최저가 이하 비율'이 높을수록 그 쇼핑몰의 기획전 가격이 실제로 싸다는 뜻입니다. 가격은 수집 시점 기준이며 쿠폰·카드 할인은 반영되지 않을 수 있습니다.</div>`;
-  if(!ch.length) return intro + `<div class="empty"><b>아직 비교된 상품이 없습니다</b>네이버 쇼핑 검색 API 키가 등록되면 매일 새벽 수집 뒤 자동으로 비교됩니다.</div>`;
+  if(!ch.length) return intro + `<div class="empty"><b>아직 비교된 상품이 없습니다</b>매일 새벽 수집 뒤 하루 400개 상품씩 자동으로 비교됩니다(첫 결과는 다음 새벽 수집 이후).</div>`;
   const tbl = `<h3 class="sec">쇼핑몰별 가격 경쟁력</h3><table class="ct"><thead><tr><th>쇼핑몰</th><th class="r">비교 상품</th><th>웹 최저가 이하 비율</th><th class="r">웹 최저가 대비(중앙값)</th></tr></thead><tbody>
     ${ch.map(c => `<tr><td><div class="chn"><span class="rk">${c.rank ?? ""}</span><span class="dot" style="background:${srcColor(c.source_id)};width:12px;height:12px"></span>${esc(c.source_name)}</div><div class="sub" style="margin-left:30px">${esc(ctLabel(c.channel_type))}</div></td>
       <td class="r num">${c.compared}개</td>
@@ -574,6 +588,45 @@ function setSorts(){
   $("sort").innerHTML = opts.map(([v,l]) => `<option value="${v}" ${v===st.sort?"selected":""}>${l}</option>`).join("");
 }
 
+/* ── 검색광고 추천 키워드 ── */
+const KCACHE = new Map();
+const KIND = {brand:"브랜드+품목", benefit:"품목+혜택", event:"시즌·행사", intent:"구매의도", longtail:"상품 롱테일", category:"카테고리", related:"연관 검색어"};
+async function loadKeywords(i){
+  if(KCACHE.has(i.id)) return;
+  if(MODE === "supabase"){
+    try{ KCACHE.set(i.id, await sb(`promotion_keywords?select=*&promotion_id=eq.${encodeURIComponent(i.id)}&order=rank.asc`)); }
+    catch(e){ KCACHE.set(i.id, []); }
+  }else KCACHE.set(i.id, demoKeywords(i));
+}
+function kwHtml(i){
+  const ks = KCACHE.get(i.id);
+  if(!ks) return `<div class="kw"><div class="kw-h"><b>검색광고 추천 키워드</b></div><div class="note">불러오는 중…</div></div>`;
+  if(!ks.length) return `<div class="kw"><div class="kw-h"><b>검색광고 추천 키워드</b></div><div class="note">아직 생성되지 않았습니다. 매일 새벽 수집 뒤 자동으로 만들어집니다.</div></div>`;
+  const vol = k => (k.pc == null && k.mobile == null) ? null : (k.pc||0) + (k.mobile||0);
+  const hasVol = ks.some(k => vol(k) != null);
+  return `<div class="kw"><div class="kw-h"><b>검색광고 추천 키워드</b><span class="sub">${ks.length}개</span><span class="sp"></span>
+      <button id="kwcopy" data-id="${esc(i.id)}">키워드 복사</button></div>
+    <ol>${ks.map((k,n) => `<li title="${esc(k.reason||"")}"><span class="r">${n+1}</span><span class="k">${esc(k.keyword)}</span><span class="t">${esc(k.kind_label || KIND[k.kind] || k.kind)}</span>
+      <span class="v">${vol(k)!=null ? `월 ${vol(k).toLocaleString()}회${k.comp?` · 경쟁 ${esc(k.comp)}`:""}` : ""}</span></li>`).join("")}</ol>
+    <div class="note">${hasVol ? "월 검색량은 네이버 검색광고 키워드 도구 기준(PC+모바일)." : "기획전 제목·혜택·담긴 상품(브랜드·품목)으로 만든 후보입니다. 네이버 검색광고 API 키를 등록하면 월 검색량·경쟁도로 다시 정렬됩니다."}
+      쇼핑몰·브랜드명이 들어간 키워드는 상표권자(해당 쇼핑몰·브랜드) 광고에만 쓰세요.</div></div>`;
+}
+function demoKeywords(i){
+  const STOP = new Set(["프로","세트","기획세트","포함","리필","대형","구이용","2개입","3종"]);
+  const heads = {}; (i.items||[]).forEach(p => { const w = p.name.split(" ").filter(x => /^[가-힣]{2,}$/.test(x) && !STOP.has(x)).pop(); if(w) heads[w] = (heads[w]||0)+1; });
+  const top = Object.entries(heads).sort((a,b) => b[1]-a[1]).map(x => x[0]).slice(0,3);
+  const out = [];
+  const add = (k, kind) => { if(!out.some(o => o.keyword === k)) out.push({keyword:k, kind}); };
+  const br = (i.items||[]).find(p => p.brand);
+  if(br && top[0]) add(`${br.brand} ${top[0]}`, "brand");
+  top.forEach(t => { if(i.max_discount) add(`${t} 할인`, "benefit"); add(`${t} 특가`, "benefit"); });
+  const season = (i.title.match(/겨울|연말|블랙프라이데이|크리스마스/)||[])[0];
+  if(season && top[0]) add(`${season} ${top[0]}`, "event");
+  if(top[0]) { add(`${top[0]} 추천`, "intent"); add(`${top[0]} 최저가`, "intent"); }
+  add(`${i.source_name} ${i.title.split(" ")[0]}`, "event");
+  return out.slice(0,10).map((k,n) => ({...k, rank:n+1, reason:"샘플"}));
+}
+
 /* ── 상세 패널 ── */
 let dsort = "position";
 async function openDrawer(id){
@@ -586,6 +639,7 @@ async function openDrawer(id){
     }catch(e){}
   }
   drawDrawer(); document.body.classList.add("dopen"); $("drawer").setAttribute("aria-hidden","false");
+  if(!KCACHE.has(i.id)){ await loadKeywords(i); if(st.open === i) drawDrawer(); }
 }
 function drawDrawer(){
   const i = st.open; if(!i) return;
@@ -604,6 +658,7 @@ function drawDrawer(){
       <a class="go" href="${esc(i.url)}" target="_blank" rel="noopener">${esc(i.source_name)}에서 기획전 보기 ↗</a>
     </div>
     <div class="db">
+      ${kwHtml(i)}
       <div class="bar"><div class="count">판매 상품 ${its.length}개</div><div class="sp"></div>
         <div class="seg">${[["position","노출순"],["price","낮은 가격"],["discount","할인율"],["vs","웹보다 싼 순"]].map(([v,l]) => `<button data-dsort="${v}" aria-pressed="${dsort===v}">${l}</button>`).join("")}</div></div>
       ${its.length ? productsView(its, true) : `<div class="empty">이 기획전에서 수집된 상품이 없습니다.<br>이벤트형 페이지이거나 상품 목록을 읽지 못했습니다.</div>`}
@@ -618,6 +673,14 @@ document.addEventListener("click", e => {
   const ds = b.dataset;
   if(ds.open){ openDrawer(ds.open); return; }
   if(b.id === "trydemo"){ useDemo(); return; }
+  if(b.id === "kwcopy"){
+    const ks = KCACHE.get(b.dataset.id) || [];
+    const txt = ks.map(k => k.keyword).join("\n");
+    (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => { b.textContent = "복사됨 ✓"; },
+      () => { b.textContent = "복사 실패"; });
+    setTimeout(() => { b.textContent = "키워드 복사"; }, 1800);
+    return;
+  }
   if(b.id === "dclose"){ closeDrawer(); return; }
   if(ds.dsort){ dsort = ds.dsort; drawDrawer(); return; }
   if(ds.pmode){ st.pmode = ds.pmode; try{ localStorage.setItem("ph_prefs", JSON.stringify({pmode:st.pmode})); }catch(_){}; drawDrawer(); render(); return; }

@@ -38,3 +38,16 @@ def test_no_match():
 def test_same_mall():
     assert same_mall("gsshop", "GS SHOP", "GS SHOP") and same_mall("11st", "11번가", "11번가")
     assert not same_mall("11st", "11번가", "쿠팡")
+
+
+def test_parse_enuri_html_and_evaluate():
+    from promohub.pricecheck import parse_enuri_html
+    html = """<ul class="goods-list">
+      <li class="prodItem"><a href="/detail.jsp?modelno=111"><img src="//img.enuri.info/1.jpg" alt="라운드랩 독도 토너 500ml"></a>
+        <a href="/detail.jsp?modelno=111" class="tit">라운드랩 독도 토너 500ml 1+1</a><span class="price">최저가 <em>20,500</em>원</span><span>판매처 32</span></li>
+      <li class="prodItem"><a href="/detail.jsp?modelno=222" class="tit">라운드랩 독도 토너 200ml</a><span class="price">9,900원</span></li>
+    </ul>"""
+    items = parse_enuri_html(html, "https://www.enuri.com/search.jsp?keyword=x")
+    assert {(i["title"], i["lprice"]) for i in items} == {("라운드랩 독도 토너 500ml 1+1", "20500"), ("라운드랩 독도 토너 200ml", "9900")}
+    r = evaluate(T, items)
+    assert r.market_lowest == 20500 and r.market_mall == "에누리 최저가"       # 200ml는 용량 달라 제외

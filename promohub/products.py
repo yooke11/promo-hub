@@ -30,7 +30,7 @@ _NAME_NOISE = re.compile(r"(쿠폰\s*적용가|할인\s*전\s*금액|판매가|�
 
 
 _ID_PARAMS = re.compile(r"^(goodscode|itemno|goodsno|goods_no|prdid|itemid|slitmcd|pdno|productno|product_no|item_id|prd_no|"
-                        r"prdno|goods_code|goodscode|partnumber|pcode|productid|id|no)$", re.I)
+                        r"prdno|goods_code|goodscode|partnumber|pcode|productid|modelno|model_no|id|no)$", re.I)
 
 
 def product_key(url: str) -> str:
@@ -39,6 +39,9 @@ def product_key(url: str) -> str:
     u = urlparse(url)
     host = re.sub(r"^(m|www|mw|mobile)\.", "", u.netloc.lower())
     ids = sorted((k.lower(), v) for k, v in parse_qsl(u.query) if _ID_PARAMS.match(k))
+    if not ids and u.query:   # 모르는 상품번호 파라미터(modelno 등): 추적 파라미터만 빼고 전부 사용
+        from .normalize import TRACKING_PARAMS
+        ids = sorted((k.lower(), v) for k, v in parse_qsl(u.query) if not TRACKING_PARAMS.match(k))
     return f"{host}{u.path.rstrip('/').lower()}?{'&'.join(f'{k}={v}' for k, v in ids)}"
 
 
