@@ -235,10 +235,17 @@ class SearchAd:
         out = []
         for i in range(0, len(hints), 5):     # 한 번에 힌트 5개까지
             part = [_norm(h) for h in hints[i:i + 5] if _norm(h)]
-            r = httpx.get(self.BASE + uri, params={"hintKeywords": ",".join(part), "showDetail": "1"},
-                          headers=self._headers("GET", uri), timeout=20)
-            if r.status_code != 200:
-                raise RuntimeError(f"검색광고 API {r.status_code}: {r.text[:200]}")
+            r = None
+            for base in (self.BASE, "https://api.naver.com"):   # 공식 주소 → 구 주소 순으로 시도
+                try:
+                    r = httpx.get(base + uri, params={"hintKeywords": ",".join(part), "showDetail": "1"},
+                                  headers=self._headers("GET", uri), timeout=20)
+                except httpx.HTTPError:
+                    continue
+                if r.status_code != 404:
+                    break
+            if r is None or r.status_code != 200:
+                raise RuntimeError(f"검색광고 API {getattr(r, 'status_code', '접속 실패')}: {getattr(r, 'text', '')[:200]}")
             out += r.json().get("keywordList", [])
             time.sleep(0.3)
         return out
@@ -278,6 +285,9 @@ def enrich(cands: list[Keyword], rows: list[dict], top_types: list[str], limit: 
     return sorted(cands, key=final, reverse=True)[:limit]
 
 
+LAST_AD_ERROR: list[str] = []
+
+
 def recommend(promo: dict, items: list[dict], channel: str, ad: SearchAd | None = None, limit: int = 10) -> list[Keyword]:
     cands = generate(promo, items, channel, limit)
     if ad and cands:
@@ -285,8 +295,9 @@ def recommend(promo: dict, items: list[dict], channel: str, ad: SearchAd | None 
         try:
             rows = ad.stats([k.keyword for k in cands[:15]])
             return enrich(cands, rows, types, limit)
-        except Exception:
-            pass
+        except Exception as e:
+            if len(LAST_AD_ERROR) < 3:
+                LAST_AD_ERROR.append(str(e)[:200])
     return cands[:limit]
 
 
@@ -317,4 +328,5 @@ def run(limit: int = 500) -> dict:
         r = httpx.post(f"{base}/rpc/ingest_keywords", content=_json.dumps(body, ensure_ascii=False).encode(), headers=h, timeout=30)
         if r.status_code == 200:
             stats["saved"] += 1
+    stats["searchad_errors"] = LAST_AD_ERROR
     return stats
