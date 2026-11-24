@@ -142,6 +142,7 @@ sources:
   name: 올리브영
   channel_type: vertical
   rank: 9
+  enabled: false   # 2026-11-24 GitHub 해외 IP 403(접속 정보 확인 중) 차단 — 당분간 제외
   domains:
   - oliveyoung.co.kr
   mobile: true
