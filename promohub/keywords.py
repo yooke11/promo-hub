@@ -28,7 +28,7 @@ KIND_LABEL = {"brand": "브랜드+품목", "benefit": "품목+혜택", "event": 
 _STOPWORDS = set("""기획 기획전 이벤트 특가 단독 증정 무료 무료배송 배송 당일 신상 세트 할인 쿠폰 혜택 최대 선착순 한정 모음
 선택 옵션 택1 1개 2개 3개 외 공식 정품 국내 해외 new best 추천 인기 오늘 단하루 타임딜 특집 페어 위크 대전 리뷰
 메인 배너 메인배너 이미지 컬렉션 베스트 모음 쇼케이스 브랜드 발표 당첨자 당첨 안내 참여 혜택가 구성 포함 증정품
-스페셜 특별한 바로가기 조회 상담 예약 멤버십 포인트 고객 데이 알아보기 만나는 promotion online only special event sale shop""".split())
+스페셜 특별한 바로가기 전체보기 더보기 조회 상담 예약 멤버십 포인트 고객 데이 알아보기 만나는 promotion online only special event sale shop""".split())
 _CAT_WORD = re.compile(r"(의류|잡화|가전|식품|화장품|용품|선물세트|가구|침구|패션|뷰티|신발|주방|생활|리빙|캠핑|골프|아웃도어|유아|키즈|반려)$")
 _SEASON = re.compile(r"(겨울|여름|봄|가을|연말|크리스마스|설날|설|추석|명절|블랙프라이데이|블프|새해|신학기|어버이날|가정의\s*달|발렌타인|화이트데이|빼빼로|수능|휴가|캠핑)")
 _EVENT_HINT = re.compile(r"(데이|페스타|페스티벌|위크|세일|대축제|대전|페어|빅스마일|십일절|블랙프라이데이|블프|무진장|올영)")
@@ -282,7 +282,12 @@ def enrich(cands: list[Keyword], rows: list[dict], top_types: list[str], limit: 
         comp_pen = {"높음": 0.85, "중간": 0.95}.get(k.comp, 1.0)
         return k.score * (0.6 + 0.4 * min(math.log10(k.volume) / 5, 1)) * comp_pen
 
-    return sorted(cands, key=final, reverse=True)[:limit]
+    ranked = sorted(cands, key=final, reverse=True)
+    # 검색량이 확인됐는데 월 20회 미만이면 광고 효용이 거의 없어 뺀다(최소 3개는 남김)
+    kept = [k for k in ranked if k.volume is None or k.volume >= 20]
+    if len(kept) < 3:
+        kept = ranked[:3]
+    return kept[:limit]
 
 
 LAST_AD_ERROR: list[str] = []

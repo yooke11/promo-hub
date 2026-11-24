@@ -39,3 +39,11 @@ def test_enrich_with_volume():
     assert any(k.keyword == "여성롱패딩" and k.kind == "related" for k in out)    # 연관 키워드 보강
     rows_ = to_rows("p1", out)
     assert rows_[0]["rank"] == 1 and rows_[0]["kind_label"]
+
+
+def test_enrich_drops_dead_keywords():
+    cands = generate(PROMO, ITEMS, "G마켓")
+    rows = [{"relKeyword": k.keyword.replace(" ", ""), "monthlyPcQcCnt": "< 10", "monthlyMobileQcCnt": "< 10", "compIdx": "높음"} for k in cands[:5]]
+    rows.append({"relKeyword": "겨울패딩", "monthlyPcQcCnt": 9000, "monthlyMobileQcCnt": 52000, "compIdx": "높음"})
+    out = enrich(cands, rows, ["패딩"], 10)
+    assert all(k.volume is None or k.volume >= 20 for k in out)
