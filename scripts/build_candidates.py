@@ -26,7 +26,6 @@ C = {
         ("farfetch", "파페치", "farfetch.com", "https://www.farfetch.com/kr/"),
         ("ssense", "센스", "ssense.com", "https://www.ssense.com/ko-kr"),
         ("mytheresa", "마이테레사", "mytheresa.com", "https://www.mytheresa.com/kr/ko/women"),
-        ("rakuten", "라쿠텐", "rakuten.co.jp", "https://www.rakuten.co.jp/"),
     ],
     "department": [
         ("lottedfs", "롯데면세점", "lottedfs.com", "https://kor.lottedfs.com/"),
@@ -95,7 +94,8 @@ def main():
     out, rank = [], 100
     for ctype, rows in C.items():
         for i, (sid, name, dom, url) in enumerate(rows):
-            assert sid not in have, sid
+            if sid in have:
+                continue   # 이미 운영 채널로 옮겨진 후보
             rank += 1
             out.append({"id": sid, "name": name, "channel_type": ctype, "rank": rank, "type_order": i + 1,
                         "domains": [dom], "mobile": False, "entry_urls": [url]})

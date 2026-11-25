@@ -23,20 +23,10 @@ sources:
   mobile: false
   entry_urls:
   - https://store.kakao.com/
-- id: enuri
-  name: 에누리
-  channel_type: openmarket
-  rank: 102
-  type_order: 2
-  domains:
-  - enuri.com
-  mobile: false
-  entry_urls:
-  - https://www.enuri.com/
 - id: interpark
   name: 인터파크쇼핑
   channel_type: openmarket
-  rank: 103
+  rank: 102
   type_order: 3
   domains:
   - interpark.com
@@ -46,27 +36,17 @@ sources:
 - id: halfclub
   name: 하프클럽
   channel_type: openmarket
-  rank: 104
+  rank: 103
   type_order: 4
   domains:
   - halfclub.com
   mobile: false
   entry_urls:
   - https://www.halfclub.com/
-- id: amazon
-  name: 아마존
-  channel_type: crossborder
-  rank: 105
-  type_order: 1
-  domains:
-  - amazon.com
-  mobile: false
-  entry_urls:
-  - https://www.amazon.com/
 - id: ebay
   name: 이베이
   channel_type: crossborder
-  rank: 106
+  rank: 104
   type_order: 2
   domains:
   - ebay.com
@@ -76,7 +56,7 @@ sources:
 - id: qoo10
   name: 큐텐
   channel_type: crossborder
-  rank: 107
+  rank: 105
   type_order: 3
   domains:
   - qoo10.com
@@ -86,7 +66,7 @@ sources:
 - id: yesstyle
   name: 예스스타일
   channel_type: crossborder
-  rank: 108
+  rank: 106
   type_order: 4
   domains:
   - yesstyle.com
@@ -96,7 +76,7 @@ sources:
 - id: asos
   name: 아소스
   channel_type: crossborder
-  rank: 109
+  rank: 107
   type_order: 5
   domains:
   - asos.com
@@ -106,7 +86,7 @@ sources:
 - id: farfetch
   name: 파페치
   channel_type: crossborder
-  rank: 110
+  rank: 108
   type_order: 6
   domains:
   - farfetch.com
@@ -116,7 +96,7 @@ sources:
 - id: ssense
   name: 센스
   channel_type: crossborder
-  rank: 111
+  rank: 109
   type_order: 7
   domains:
   - ssense.com
@@ -126,47 +106,27 @@ sources:
 - id: mytheresa
   name: 마이테레사
   channel_type: crossborder
-  rank: 112
+  rank: 110
   type_order: 8
   domains:
   - mytheresa.com
   mobile: false
   entry_urls:
   - https://www.mytheresa.com/kr/ko/women
-- id: rakuten
-  name: 라쿠텐
-  channel_type: crossborder
-  rank: 113
-  type_order: 9
-  domains:
-  - rakuten.co.jp
-  mobile: false
-  entry_urls:
-  - https://www.rakuten.co.jp/
 - id: lottedfs
   name: 롯데면세점
   channel_type: department
-  rank: 114
+  rank: 111
   type_order: 1
   domains:
   - lottedfs.com
   mobile: false
   entry_urls:
   - https://kor.lottedfs.com/
-- id: shilladfs
-  name: 신라면세점
-  channel_type: department
-  rank: 115
-  type_order: 2
-  domains:
-  - shilladfs.com
-  mobile: false
-  entry_urls:
-  - https://www.shilladfs.com/estore/kr/ko
 - id: ssgdfs
   name: 신세계면세점
   channel_type: department
-  rank: 116
+  rank: 112
   type_order: 3
   domains:
   - ssgdfs.com
@@ -176,7 +136,7 @@ sources:
 - id: hddfs
   name: 현대백화점면세점
   channel_type: department
-  rank: 117
+  rank: 113
   type_order: 4
   domains:
   - hddfs.com
@@ -186,7 +146,7 @@ sources:
 - id: akmall
   name: AK몰
   channel_type: department
-  rank: 118
+  rank: 114
   type_order: 5
   domains:
   - akmall.com
@@ -196,7 +156,7 @@ sources:
 - id: galleria
   name: 갤러리아몰
   channel_type: department
-  rank: 119
+  rank: 115
   type_order: 6
   domains:
   - galleria.co.kr
@@ -206,7 +166,7 @@ sources:
 - id: elandmall
   name: 이랜드몰
   channel_type: department
-  rank: 120
+  rank: 116
   type_order: 7
   domains:
   - elandmall.co.kr
@@ -216,7 +176,7 @@ sources:
 - id: emart
   name: 이마트몰
   channel_type: department
-  rank: 121
+  rank: 117
   type_order: 8
   domains:
   - emart.ssg.com
@@ -226,47 +186,27 @@ sources:
 - id: lottemart
   name: 롯데마트몰
   channel_type: department
-  rank: 122
+  rank: 118
   type_order: 9
   domains:
   - lottemartmall.com
   mobile: false
   entry_urls:
   - https://www.lotteon.com/p/display/main/lottemart
-- id: shoppingnt
-  name: 쇼핑엔티
-  channel_type: homeshopping
-  rank: 123
-  type_order: 1
-  domains:
-  - shoppingntmall.com
-  mobile: false
-  entry_urls:
-  - https://www.shoppingntmall.com/
 - id: wshop
   name: W쇼핑
   channel_type: homeshopping
-  rank: 124
+  rank: 119
   type_order: 2
   domains:
   - wshop.co.kr
   mobile: false
   entry_urls:
   - https://www.wshop.co.kr/
-- id: fashionplus
-  name: 패션플러스
-  channel_type: fashion
-  rank: 125
-  type_order: 1
-  domains:
-  - fashionplus.co.kr
-  mobile: false
-  entry_urls:
-  - https://www.fashionplus.co.kr/
 - id: sivillage
   name: SI빌리지
   channel_type: fashion
-  rank: 126
+  rank: 120
   type_order: 2
   domains:
   - sivillage.com
@@ -276,27 +216,17 @@ sources:
 - id: thehandsome
   name: 더한섬닷컴
   channel_type: fashion
-  rank: 127
+  rank: 121
   type_order: 3
   domains:
   - thehandsome.com
   mobile: false
   entry_urls:
   - https://www.thehandsome.com/ko
-- id: hiver
-  name: 하이버
-  channel_type: fashion
-  rank: 128
-  type_order: 4
-  domains:
-  - hiver.co.kr
-  mobile: false
-  entry_urls:
-  - https://www.hiver.co.kr/
 - id: spao
   name: 스파오
   channel_type: fashion
-  rank: 129
+  rank: 122
   type_order: 5
   domains:
   - spao.com
@@ -306,7 +236,7 @@ sources:
 - id: topten
   name: 탑텐몰
   channel_type: fashion
-  rank: 130
+  rank: 123
   type_order: 6
   domains:
   - topten10mall.com
@@ -316,7 +246,7 @@ sources:
 - id: zara
   name: 자라
   channel_type: fashion
-  rank: 131
+  rank: 124
   type_order: 7
   domains:
   - zara.com
@@ -326,7 +256,7 @@ sources:
 - id: hm
   name: H&M
   channel_type: fashion
-  rank: 132
+  rank: 125
   type_order: 8
   domains:
   - hm.com
@@ -336,27 +266,17 @@ sources:
 - id: nbkorea
   name: 뉴발란스
   channel_type: fashion
-  rank: 133
+  rank: 126
   type_order: 9
   domains:
   - nbkorea.com
   mobile: false
   entry_urls:
   - https://www.nbkorea.com/
-- id: northface
-  name: 노스페이스
-  channel_type: fashion
-  rank: 134
-  type_order: 10
-  domains:
-  - thenorthfacekorea.co.kr
-  mobile: false
-  entry_urls:
-  - https://www.thenorthfacekorea.co.kr/
 - id: fila
   name: 휠라
   channel_type: fashion
-  rank: 135
+  rank: 127
   type_order: 11
   domains:
   - fila.co.kr
@@ -366,27 +286,17 @@ sources:
 - id: musinsastandard
   name: 무신사 스탠다드
   channel_type: fashion
-  rank: 136
+  rank: 128
   type_order: 12
   domains:
   - musinsastandard.com
   mobile: false
   entry_urls:
   - https://www.musinsastandard.com/
-- id: kyobobook
-  name: 교보문고
-  channel_type: vertical
-  rank: 137
-  type_order: 1
-  domains:
-  - kyobobook.co.kr
-  mobile: false
-  entry_urls:
-  - https://www.kyobobook.co.kr/
 - id: aladin
   name: 알라딘
   channel_type: vertical
-  rank: 138
+  rank: 129
   type_order: 2
   domains:
   - aladin.co.kr
@@ -396,47 +306,27 @@ sources:
 - id: idus
   name: 아이디어스
   channel_type: vertical
-  rank: 139
+  rank: 130
   type_order: 3
   domains:
   - idus.com
   mobile: false
   entry_urls:
   - https://www.idus.com/
-- id: cjthemarket
-  name: CJ더마켓
-  channel_type: vertical
-  rank: 140
-  type_order: 4
-  domains:
-  - cjthemarket.com
-  mobile: false
-  entry_urls:
-  - https://www.cjthemarket.com/
 - id: jeongyookgak
   name: 정육각
   channel_type: vertical
-  rank: 141
+  rank: 131
   type_order: 5
   domains:
   - jeongyookgak.com
   mobile: false
   entry_urls:
   - https://www.jeongyookgak.com/
-- id: rankingdak
-  name: 랭킹닭컴
-  channel_type: vertical
-  rank: 142
-  type_order: 6
-  domains:
-  - rankingdak.com
-  mobile: false
-  entry_urls:
-  - https://www.rankingdak.com/
 - id: petfriends
   name: 펫프렌즈
   channel_type: vertical
-  rank: 143
+  rank: 132
   type_order: 7
   domains:
   - pet-friends.co.kr
@@ -446,7 +336,7 @@ sources:
 - id: aboutpet
   name: 어바웃펫
   channel_type: vertical
-  rank: 144
+  rank: 133
   type_order: 8
   domains:
   - aboutpet.co.kr
@@ -456,27 +346,17 @@ sources:
 - id: mujikorea
   name: 무인양품
   channel_type: vertical
-  rank: 145
+  rank: 134
   type_order: 9
   domains:
   - mujikorea.net
   mobile: false
   entry_urls:
   - https://www.mujikorea.net/
-- id: hanssem
-  name: 한샘몰
-  channel_type: vertical
-  rank: 146
-  type_order: 10
-  domains:
-  - hanssem.com
-  mobile: false
-  entry_urls:
-  - https://mall.hanssem.com/
 - id: hellonature
   name: 헬로네이처
   channel_type: vertical
-  rank: 147
+  rank: 135
   type_order: 11
   domains:
   - hellonature.co.kr
@@ -486,7 +366,7 @@ sources:
 - id: ypbooks
   name: 영풍문고
   channel_type: vertical
-  rank: 148
+  rank: 136
   type_order: 12
   domains:
   - ypbooks.co.kr
@@ -496,7 +376,7 @@ sources:
 - id: apple
   name: 애플
   channel_type: brand
-  rank: 149
+  rank: 137
   type_order: 1
   domains:
   - apple.com
@@ -506,27 +386,17 @@ sources:
 - id: amoremall
   name: 아모레몰
   channel_type: brand
-  rank: 150
+  rank: 138
   type_order: 2
   domains:
   - amoremall.com
   mobile: false
   entry_urls:
   - https://www.amoremall.com/kr/ko/display/main
-- id: dyson
-  name: 다이슨
-  channel_type: brand
-  rank: 151
-  type_order: 3
-  domains:
-  - dyson.co.kr
-  mobile: false
-  entry_urls:
-  - https://www.dyson.co.kr/
 - id: etland
   name: 전자랜드
   channel_type: brand
-  rank: 152
+  rank: 139
   type_order: 4
   domains:
   - etland.co.kr
@@ -536,47 +406,27 @@ sources:
 - id: kgcshop
   name: 정관장몰
   channel_type: brand
-  rank: 153
+  rank: 140
   type_order: 5
   domains:
   - kgcshop.co.kr
   mobile: false
   entry_urls:
   - https://www.kgcshop.co.kr/
-- id: dongwonmall
-  name: 동원몰
-  channel_type: brand
-  rank: 154
-  type_order: 6
-  domains:
-  - dongwonmall.com
-  mobile: false
-  entry_urls:
-  - https://www.dongwonmall.com/
 - id: pulmuone
   name: 풀무원샵
   channel_type: brand
-  rank: 155
+  rank: 141
   type_order: 7
   domains:
   - pulmuoneshop.co.kr
   mobile: false
   entry_urls:
   - https://shop.pulmuone.co.kr/
-- id: otokimall
-  name: 오뚜기몰
-  channel_type: brand
-  rank: 156
-  type_order: 8
-  domains:
-  - otokimall.com
-  mobile: false
-  entry_urls:
-  - https://www.otokimall.com/
 - id: iloom
   name: 일룸
   channel_type: brand
-  rank: 157
+  rank: 142
   type_order: 9
   domains:
   - iloom.com
@@ -586,7 +436,7 @@ sources:
 - id: coway
   name: 코웨이
   channel_type: brand
-  rank: 158
+  rank: 143
   type_order: 10
   domains:
   - coway.com
@@ -596,30 +446,10 @@ sources:
 - id: cuckoo
   name: 쿠쿠몰
   channel_type: brand
-  rank: 159
+  rank: 144
   type_order: 11
   domains:
   - cuckoo.co.kr
   mobile: false
   entry_urls:
   - https://www.cuckoo.co.kr/
-- id: innisfree
-  name: 이니스프리
-  channel_type: brand
-  rank: 160
-  type_order: 12
-  domains:
-  - innisfree.com
-  mobile: false
-  entry_urls:
-  - https://www.innisfree.com/kr/ko/
-- id: nongshimmall
-  name: 농심몰
-  channel_type: brand
-  rank: 161
-  type_order: 13
-  domains:
-  - nongshimmall.com
-  mobile: false
-  entry_urls:
-  - https://www.nongshimmall.com/

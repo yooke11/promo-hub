@@ -403,6 +403,8 @@ sources:
   - /kr/(w|launch|events?|promo)
   product_patterns:
   - /kr/t/
+  exclude_patterns:
+  - '/kr/w/'
 - id: 29cm
   name: 29CM
   channel_type: fashion
@@ -443,6 +445,9 @@ sources:
   - /kr/ko/(offers|campaigns|ideas|new|this-is-ikea/.*event)
   product_patterns:
   - /kr/ko/p/
+  exclude_patterns:
+  - '/ideas/'
+  - 'newsroom'
 - id: ssfshop
   enabled: false   # 2026-11-24 운영자 결정: 정상 수집 채널만 운영 (A. robots.txt가 일반 수집기 금지)
   name: SSF샵
@@ -748,15 +753,6 @@ sources:
   mobile: false
   entry_urls:
   - https://www.amazon.com/
-- id: rakuten   # 2026-11-25 유형별 상위 선정(시험 수집 기획전 31건)
-  name: 라쿠텐
-  channel_type: crossborder
-  rank: 113
-  domains:
-  - rakuten.co.jp
-  mobile: false
-  entry_urls:
-  - https://www.rakuten.co.jp/
 - id: kyobobook   # 2026-11-25 유형별 상위 선정(시험 수집 기획전 34건)
   product_link: {key: saleCmdtid, url: "https://product.kyobobook.co.kr/detail/{id}"}
   product_patterns:

@@ -83,3 +83,17 @@ def test_noise_titles():
         assert is_meaningful_title(t), t
     assert is_mall_name("교보문고", "교보문고") and is_mall_name("롯데하이마트", "하이마트")
     assert not is_mall_name("교보문고 『트렌드+』 GRAND OPEN", "교보문고")
+
+
+def test_fix_url_and_junk_titles():
+    from promohub.normalize import fix_url, is_meaningful_title
+    assert fix_url("https://gateway.10x10.co.kr/event/eventmain.asp?eventid=133724") == "https://www.10x10.co.kr/event/eventmain.asp?eventid=133724"
+    assert fix_url("https://capi.brandi.co.kr/v1/web/37044") is None
+    assert fix_url("https://www.costco.co.kr/events") is None
+    assert fix_url("https://www.samsung.com/sec/eventList/benefitzone/") is None
+    assert fix_url("https://www.kshop.co.kr/display/specialplan/detail?spdpId=1") is not None
+    for t in ["1123_popup_top_search1.gif", "2026-11-01", "9650 메인배너 이미지", "APP 다운", "이벤트/쿠폰",
+              "Pg 이벤트 상세", "이벤트 외부 링크", "기획전 모두보기", "매장 상담 예약", "IKEA 코리아 뉴스룸"]:
+        assert not is_meaningful_title(t), t
+    for t in ["슈아뜰리에에 어드벤트캘린더", "출석체크", "신라블프 ~90% SALE", "11월의 굿즈"]:
+        assert is_meaningful_title(t), t

@@ -31,6 +31,26 @@ def canonical_url(url: str) -> str:
     return urlunparse(("https", host, path, "", urlencode(query), ""))
 
 
+# 사이트가 JSON 에 API 서버 주소로 내려주는 기획전 링크 → 사람이 여는 주소로 바꾼다(그대로 두면 404)
+HOST_REWRITE = {"gateway.10x10.co.kr": "www.10x10.co.kr"}
+_API_HOST = re.compile(r"^(capi|api|gateway|apis?-?gw|openapi)\.", re.I)
+# 목록·안내 페이지(개별 기획전이 아님)
+_LIST_URL = re.compile(r"/(events?|event/main|eventlist(/[a-z]+)?|eventhall|benefits?|leaflet|newsroom|news)/?(\?.*)?$|"
+                       r"specialgrouplist|getboardlist|/exhibitioncollection|indexexhibitioncollection", re.I)
+
+
+def fix_url(url: str) -> Optional[str]:
+    """열리는 주소로 고치고, API 서버·목록 페이지면 None."""
+    p = urlparse((url or "").strip())
+    host = p.netloc.lower()
+    if host in HOST_REWRITE:
+        p = p._replace(scheme="https", netloc=HOST_REWRITE[host])
+        host = p.netloc
+    if not host or _API_HOST.match(host) or _LIST_URL.search(p.path + ("?" + p.query if p.query else "")):
+        return None
+    return urlunparse(p)
+
+
 def promo_id(source_id: str, url: str) -> str:
     return hashlib.sha1(f"{source_id}|{canonical_url(url)}".encode()).hexdigest()[:16]
 
@@ -214,7 +234,9 @@ def status_of(start: Optional[date], end: Optional[date], today: Optional[date] 
 _NOISE_TITLE = re.compile(r"^(더보기|바로가기|자세히|more|view|click|go|이동|배너|banner|이미지|image|전체\s*보기|"
                           r"기획전|이벤트|기획전\s*[·/&]\s*이벤트|이벤트관|events?|promotions?|special|sale|\s)*$", re.I)
 # 화면 조작 문구·차단 페이지·쇼핑몰 이름만 있는 제목(기획전이 아님)
-_UI_TITLE = re.compile(r"더보기|슬라이드\s*보기|상세\s*페이지로\s*이동|플러스\s*아이콘|새\s*창|attention required|access denied|"
+_UI_TITLE = re.compile(r"\.(gif|jpe?g|png|webp|svg)$|^\d{4}[-./]\d{1,2}[-./]\d{1,2}$|^\d+\s*(메인)?\s*배너|배너\s*이미지$|"
+                       r"^(app|앱)\s*다운|이벤트\s*/\s*쿠폰$|이벤트\s*상세$|외부\s*링크$|(모두|모아|전체)\s*보기$|"
+                       r"상담\s*예약$|뉴스룸|^이벤트\s*존$|^이벤트\s*홀|^매장\s*이벤트$|^진행\s*중인\s*(이벤트|기획전)|더보기|슬라이드\s*보기|상세\s*페이지로\s*이동|플러스\s*아이콘|새\s*창|attention required|access denied|"
                        r"보안\s*확인|just a moment|^(로그인|회원가입|장바구니|고객센터)$|"
                        r"^.{0,20}(공식\s*(온라인\s*)?몰|인터넷\s*면세점|온라인\s*쇼핑몰)$", re.I)
 
@@ -249,6 +271,9 @@ def _normalize(raw: RawPromotion, ref: Optional[date] = None) -> Optional[Promot
     title = clean_title(raw.title)
     if not is_meaningful_title(title):
         return None
+    url = fix_url(raw.url)
+    if not url or getattr(raw, "dead", False):
+        return None
     blob = " ".join([title, raw.description or "", raw.period_text or ""])
     start = parse_date_value(raw.start_hint)
     end = parse_date_value(raw.end_hint)
@@ -256,9 +281,9 @@ def _normalize(raw: RawPromotion, ref: Optional[date] = None) -> Optional[Promot
         ps, pe = parse_period(raw.period_text or blob, ref)
         start, end = start or ps, end or pe
     return Promotion(
-        id=promo_id(raw.source_id, raw.url),
+        id=promo_id(raw.source_id, url),
         source_id=raw.source_id,
-        url=raw.url,
+        url=url,
         title=title,
         kind=classify_kind(blob),
         category=classify_category(blob),

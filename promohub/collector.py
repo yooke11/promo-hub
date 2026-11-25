@@ -127,7 +127,11 @@ async def collect_source(browser: Browser, source: Source, diag: dict | None = N
             detail_json: list[tuple[str, bytes]] = []
             bucket["cur"] = detail_json
             try:
-                await page.goto(r.url, wait_until="domcontentloaded", timeout=30_000)
+                resp = await page.goto(r.url, wait_until="domcontentloaded", timeout=30_000)
+                if resp is not None and resp.status in (404, 410):
+                    r.dead = True        # 열리지 않는 기획전 링크는 싣지 않는다
+                    log.info("[%s] 링크 없음(%d) 제외: %s", source.id, resp.status, r.url)
+                    continue
                 try:
                     await page.wait_for_load_state("networkidle", timeout=8_000)
                 except Exception:
