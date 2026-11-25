@@ -207,3 +207,10 @@ def test_to_int_range_takes_first():
     assert _to_int("6000~6000") == 6000
     assert _to_int("₩15,990") == 15990
     assert _to_int(15990) == 15990
+
+
+def test_discount_amount_not_price():
+    from promohub.products import parse_price_text
+    assert parse_price_text("14,990원 5,000원 할인 9,990원")[:2] == (9990, 14990)
+    assert parse_price_text("14,990원 할인 -5,000원")[0] == 14990
+    assert parse_price_text("할인가 9,990원 14,990원")[:2] == (9990, 14990)

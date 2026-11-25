@@ -29,6 +29,7 @@ class Source:
     product_pats: list[re.Pattern] = field(default_factory=list)
     product_limit: int = 40
     product_link: dict | None = None   # {key: 상품번호 필드/데이터 속성, url: "...{id}..."} — 상품 주소가 없는 JSON·카드용
+    pct_needs_original: bool = False   # 정가 없이 할인율만 잡히면 버림(코스트코: 리뷰·추천 비율이 할인율로 잡힘)
 
     def on_domain(self, url: str) -> bool:
         if not self.domains:
@@ -87,6 +88,7 @@ def load_config(path: Path | str = DEFAULT_CONFIG) -> Config:
             product_pats=compile_product_patterns(s.get("product_patterns")),
             product_limit=s.get("product_limit", d.get("product_limit", 40)),
             product_link=s.get("product_link"),
+            pct_needs_original=s.get("pct_needs_original", False),
         ))
     out.sort(key=lambda x: x.rank)
     return Config(out)

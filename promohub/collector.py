@@ -188,6 +188,10 @@ async def run(config: Config, store: Store | None, only: list[str] | None = None
                     diag["raw"] = len(raws)
                     diag["shared_img_fixed"] = fix_shared_images([x for p in promos for x in p.products])
                     diag["unit_price_fixed"] = fix_unit_prices([x for p in promos for x in p.products])
+                    if src.pct_needs_original:
+                        for x in (x for p in promos for x in p.products):
+                            if not x.original_price:
+                                x.discount_rate = None
                     new = store.upsert_promotions(promos) if store else 0
                     if sink:
                         new = sink.send(build_payload(src, promos, started, diag=diag))
