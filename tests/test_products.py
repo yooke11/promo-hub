@@ -178,3 +178,10 @@ def test_fix_unit_prices():
     assert fix_unit_prices([a, b, c]) == 1
     assert (a.price, a.original_price, a.discount_rate) == (15990, None, None)
     assert b.price == 8010 and c.price == 15914
+
+
+def test_unit_price_any_unit():
+    from promohub.products import parse_price_text
+    assert parse_price_text("9,990원 1족당 1,998원")[0] == 9990
+    assert parse_price_text("23,990원 10m당 158원")[0] == 23990
+    assert parse_price_text("12,900원 (1롤당 430원)")[0] == 12900
