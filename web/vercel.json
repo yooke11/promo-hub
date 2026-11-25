@@ -27,15 +27,15 @@
   "rewrites": [
     {
       "source": "/food",
-      "destination": "/index.html"
+      "destination": "/"
     },
     {
       "source": "/fashion",
-      "destination": "/index.html"
+      "destination": "/"
     },
     {
       "source": "/digital",
-      "destination": "/index.html"
+      "destination": "/"
     }
   ]
 }
