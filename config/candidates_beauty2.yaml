@@ -1,0 +1,286 @@
+# 자동 생성: scripts/build_beauty_candidates2.py — 뷰티 2차 후보(올리브영 상위 + VT)
+defaults:
+  scroll_steps: 8
+  detail_limit: 30
+  product_limit: 40
+  delay_sec: 2.0
+  respect_robots: true
+common_include_patterns:
+- (event|events|exhibit|exhibition|exhibitions|plan|planshop|promotion|promotions|campaign|campaigns|special|festa|fair)s?[/?=.]
+- 기획전|이벤트
+common_exclude_patterns:
+- login|logout|member|cart|order|mypage|customer|cs/|notice|faq|policy|terms|app-download|join|signup
+- \.(jpg|jpeg|png|gif|webp|svg|css|js)(\?|$)
+sources:
+- id: vtcosmetics
+  name: VT코스메틱
+  channel_type: brand
+  rank: 340
+  vertical: beauty
+  domains:
+  - vtcosmetics.com
+  - vt-cosmetics.co.kr
+  mobile: false
+  entry_urls:
+  - https://www.vtcosmetics.com/
+  - https://www.vtcosmetics.com/board/event/list.html
+  - https://www.vtcosmetics.com/product/project.html
+  include_patterns:
+  - project\.html
+  - /board/(event|gallery)[^/]*/
+  - /article/[^/]+/\d+/\d+
+  - /exhibit
+  - /promotion
+  - /product/list\.html\?cate_no=
+  - goods_list\.php\?cateCd=
+  - board/(list|view)\.php\?.*bdId=(promotion|event)
+  - htmid=[^&]*event
+  exclude_patterns: &id001
+  - /product/detail\.html
+  - product_no=
+  - /product/[^?]+/\d+/category/
+  - goods_view\.php
+- id: torriden
+  name: 토리든
+  channel_type: brand
+  rank: 341
+  vertical: beauty
+  domains:
+  - torriden.com
+  mobile: false
+  entry_urls:
+  - https://torriden.com/board/list.php?bdId=promotion&period=current
+  - https://torriden.com/goods/goods_list.php?cateCd=011
+  include_patterns:
+  - project\.html
+  - /board/(event|gallery)[^/]*/
+  - /article/[^/]+/\d+/\d+
+  - /exhibit
+  - /promotion
+  - /product/list\.html\?cate_no=
+  - goods_list\.php\?cateCd=
+  - board/(list|view)\.php\?.*bdId=(promotion|event)
+  - htmid=[^&]*event
+  exclude_patterns: *id001
+- id: dalba
+  name: 달바
+  channel_type: brand
+  rank: 342
+  vertical: beauty
+  domains:
+  - dalba.co.kr
+  mobile: false
+  entry_urls:
+  - https://www.dalba.co.kr/main/html.php?htmid=story/event.html
+  - https://www.dalba.co.kr/
+  include_patterns:
+  - project\.html
+  - /board/(event|gallery)[^/]*/
+  - /article/[^/]+/\d+/\d+
+  - /exhibit
+  - /promotion
+  - /product/list\.html\?cate_no=
+  - goods_list\.php\?cateCd=
+  - board/(list|view)\.php\?.*bdId=(promotion|event)
+  - htmid=[^&]*event
+  exclude_patterns: *id001
+- id: roundlab
+  name: 라운드랩
+  channel_type: brand
+  rank: 343
+  vertical: beauty
+  domains:
+  - roundlab.co.kr
+  mobile: false
+  entry_urls:
+  - https://roundlab.co.kr/board/gallery/list.html?board_no=12&category_no=1
+  - https://roundlab.co.kr/product/list.html?cate_no=79
+  include_patterns:
+  - project\.html
+  - /board/(event|gallery)[^/]*/
+  - /article/[^/]+/\d+/\d+
+  - /exhibit
+  - /promotion
+  - /product/list\.html\?cate_no=
+  - goods_list\.php\?cateCd=
+  - board/(list|view)\.php\?.*bdId=(promotion|event)
+  - htmid=[^&]*event
+  exclude_patterns: *id001
+- id: medicube
+  name: 메디큐브
+  channel_type: brand
+  rank: 344
+  vertical: beauty
+  domains:
+  - themedicube.co.kr
+  mobile: false
+  entry_urls:
+  - https://themedicube.co.kr/
+  - https://themedicube.co.kr/board/event/list.html
+  include_patterns:
+  - project\.html
+  - /board/(event|gallery)[^/]*/
+  - /article/[^/]+/\d+/\d+
+  - /exhibit
+  - /promotion
+  - /product/list\.html\?cate_no=
+  - goods_list\.php\?cateCd=
+  - board/(list|view)\.php\?.*bdId=(promotion|event)
+  - htmid=[^&]*event
+  exclude_patterns: *id001
+- id: mediheal
+  name: 메디힐
+  channel_type: brand
+  rank: 345
+  vertical: beauty
+  domains:
+  - medihealshop.com
+  - mediheal.com
+  mobile: false
+  entry_urls:
+  - https://www.medihealshop.com/
+  - https://mediheal.com/
+  include_patterns:
+  - project\.html
+  - /board/(event|gallery)[^/]*/
+  - /article/[^/]+/\d+/\d+
+  - /exhibit
+  - /promotion
+  - /product/list\.html\?cate_no=
+  - goods_list\.php\?cateCd=
+  - board/(list|view)\.php\?.*bdId=(promotion|event)
+  - htmid=[^&]*event
+  exclude_patterns: *id001
+- id: anua
+  name: 아누아
+  channel_type: brand
+  rank: 346
+  vertical: beauty
+  domains:
+  - anua.kr
+  - anua.co.kr
+  mobile: false
+  entry_urls:
+  - https://anua.kr/
+  - https://www.anua.co.kr/
+  include_patterns:
+  - project\.html
+  - /board/(event|gallery)[^/]*/
+  - /article/[^/]+/\d+/\d+
+  - /exhibit
+  - /promotion
+  - /product/list\.html\?cate_no=
+  - goods_list\.php\?cateCd=
+  - board/(list|view)\.php\?.*bdId=(promotion|event)
+  - htmid=[^&]*event
+  exclude_patterns: *id001
+- id: skin1004
+  name: 스킨1004
+  channel_type: brand
+  rank: 347
+  vertical: beauty
+  domains:
+  - skin1004.com
+  - skin1004.co.kr
+  mobile: false
+  entry_urls:
+  - https://skin1004.com/
+  - https://www.skin1004.co.kr/
+  include_patterns:
+  - project\.html
+  - /board/(event|gallery)[^/]*/
+  - /article/[^/]+/\d+/\d+
+  - /exhibit
+  - /promotion
+  - /product/list\.html\?cate_no=
+  - goods_list\.php\?cateCd=
+  - board/(list|view)\.php\?.*bdId=(promotion|event)
+  - htmid=[^&]*event
+  exclude_patterns: *id001
+- id: numbuzin
+  name: 넘버즈인
+  channel_type: brand
+  rank: 348
+  vertical: beauty
+  domains:
+  - numbuzin.com
+  mobile: false
+  entry_urls:
+  - https://numbuzin.com/
+  - https://numbuzin.com/board/event/list.html
+  include_patterns:
+  - project\.html
+  - /board/(event|gallery)[^/]*/
+  - /article/[^/]+/\d+/\d+
+  - /exhibit
+  - /promotion
+  - /product/list\.html\?cate_no=
+  - goods_list\.php\?cateCd=
+  - board/(list|view)\.php\?.*bdId=(promotion|event)
+  - htmid=[^&]*event
+  exclude_patterns: *id001
+- id: drg
+  name: 닥터지
+  channel_type: brand
+  rank: 349
+  vertical: beauty
+  domains:
+  - drg.co.kr
+  mobile: false
+  entry_urls:
+  - https://www.drg.co.kr/
+  include_patterns:
+  - project\.html
+  - /board/(event|gallery)[^/]*/
+  - /article/[^/]+/\d+/\d+
+  - /exhibit
+  - /promotion
+  - /product/list\.html\?cate_no=
+  - goods_list\.php\?cateCd=
+  - board/(list|view)\.php\?.*bdId=(promotion|event)
+  - htmid=[^&]*event
+  exclude_patterns: *id001
+- id: snature
+  name: 에스네이처
+  channel_type: brand
+  rank: 350
+  vertical: beauty
+  domains:
+  - snature.co.kr
+  mobile: false
+  entry_urls:
+  - https://snature.co.kr/
+  include_patterns:
+  - project\.html
+  - /board/(event|gallery)[^/]*/
+  - /article/[^/]+/\d+/\d+
+  - /exhibit
+  - /promotion
+  - /product/list\.html\?cate_no=
+  - goods_list\.php\?cateCd=
+  - board/(list|view)\.php\?.*bdId=(promotion|event)
+  - htmid=[^&]*event
+  exclude_patterns: *id001
+- id: abib
+  name: 아비브
+  channel_type: brand
+  rank: 351
+  vertical: beauty
+  domains:
+  - abib.co.kr
+  - abib.com
+  mobile: false
+  entry_urls:
+  - https://abib.com/
+  - https://abib.co.kr/board/event/list.html
+  include_patterns:
+  - project\.html
+  - /board/(event|gallery)[^/]*/
+  - /article/[^/]+/\d+/\d+
+  - /exhibit
+  - /promotion
+  - /product/list\.html\?cate_no=
+  - goods_list\.php\?cateCd=
+  - board/(list|view)\.php\?.*bdId=(promotion|event)
+  - htmid=[^&]*event
+  exclude_patterns: *id001
