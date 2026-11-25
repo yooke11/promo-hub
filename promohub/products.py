@@ -224,13 +224,42 @@ def _img(tag: Tag, base: str) -> str:
 _QTY_NAME = re.compile(r"\d+(\.\d+)?\s*(ml|mℓ|㎖|ℓ|l|g|kg|㎏|매|입|개입|족|회분|정|캡슐|롤|팩|포|구)\b|\d+\s*(ml|g|l)?\s*[x×]\s*\d+", re.I)
 
 
+_NUM_UNIT = re.compile(r"(?<![A-Za-z0-9.])(\d+(?:\.\d+)?)\s*(ml|mℓ|㎖|ℓ|l|g|kg|㎏|매|입|개입|개|족|회분|정|캡슐|롤|팩|포|구|m)?(?![a-z0-9])(?:\s*[x×*]\s*(\d+))?", re.I)
+
+
+def _unit_divisors(name: str) -> set[float]:
+    """이름의 용량·수량으로 나올 수 있는 단위 가격 나눗수(5족→5, 900ml x 2→18(100ml당)·180(10ml당), 1L→10)."""
+    out: set[float] = set()
+    for m in _NUM_UNIT.finditer(name or ""):
+        n, unit, mult = float(m.group(1)), (m.group(2) or "").lower(), int(m.group(3) or 1)
+        if not unit and not m.group(3):
+            continue
+        tot = n * mult
+        if unit in ("l", "ℓ", "kg", "㎏"):
+            tot *= 1000
+        if unit in ("ml", "mℓ", "㎖", "g", "l", "ℓ", "kg", "㎏"):
+            out.update({tot / 100, tot / 10, tot / 1000})
+        elif unit == "m":
+            out.update({tot, tot / 10, tot / 100, float(mult)})
+        else:
+            out.update({tot, float(mult), n})
+    return {d for d in out if d >= 2}
+
+
 def fix_unit_prices(products: list["Product"], threshold: int = 85) -> int:
-    """할인율이 지나치게 큰(85%+) 용량·수량 상품은 단위 가격(100ml당 824원 등)을 판매가로 잘못 읽은 경우다.
-    (코스트코 2026-11-25: 15,990원 상품이 '100mℓ당 824원' 때문에 95% 할인 824원으로 표시됨)
+    """단위 가격(100ml당 824원, 1족당 1,998원)을 판매가로 잘못 읽은 상품을 바로잡는다.
+    (코스트코 2026-11-25: 15,990원 핸드워시가 '100mℓ당 824원' 때문에 95% 할인 824원으로, 양말 5족 9,990원이 1,998원으로 표시됨)
+    - 정가 ÷ 판매가가 이름의 용량·수량(5족, 485ml x 4 → 100ml 단위 19.4)과 맞으면 단위 가격
+    - 또는 할인율 85% 이상인 용량·수량 상품
     → 큰 금액을 판매가로 두고 할인 표시는 지운다. 바꾼 개수를 돌려준다."""
     n = 0
     for p in products:
-        if p.original_price and p.discount_rate and p.discount_rate >= threshold and _QTY_NAME.search(p.name or ""):
+        if not (p.original_price and p.price and p.original_price > p.price):
+            continue
+        ratio = p.original_price / p.price
+        # 비율 3.4배(할인 71%) 이상일 때만 — 2·3배는 반값·1+1 같은 실제 할인과 겹친다
+        hit = ratio >= 3.4 and any(abs(ratio - d) <= d * 0.03 for d in _unit_divisors(p.name))
+        if hit or (p.discount_rate and p.discount_rate >= threshold and _QTY_NAME.search(p.name or "")):
             p.price, p.original_price, p.discount_rate = p.original_price, None, None
             n += 1
     return n

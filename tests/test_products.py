@@ -185,3 +185,17 @@ def test_unit_price_any_unit():
     assert parse_price_text("9,990원 1족당 1,998원")[0] == 9990
     assert parse_price_text("23,990원 10m당 158원")[0] == 23990
     assert parse_price_text("12,900원 (1롤당 430원)")[0] == 12900
+
+
+def test_fix_unit_prices_by_ratio():
+    from promohub.products import Product, fix_unit_prices
+    cases = [("싹스탑 발가락 양말 5족 Sockstop", 1998, 9990), ("갭 남성 메리노 울양말 6족", 2582, 15490),
+             ("알페신 카페인 C1 샴푸 900ml x 2", 3328, 59900), ("피지오겔 DMT PRO B5 크림 180ml x 2", 14139, 50900),
+             ("OLITALIA 유기농 엑스트라버진 올리브유 1L", 1899, 18990)]
+    ps = [Product(name=n, url=f"https://x/{i}", price=a, original_price=b, discount_rate=round((1 - a / b) * 100)) for i, (n, a, b) in enumerate(cases)]
+    assert fix_unit_prices(ps) == len(cases)
+    assert [p.price for p in ps] == [b for _, _, b in cases]
+    ok = [Product(name="비비고 만두 168g 6개", url="https://x/a", price=15914, original_price=41880, discount_rate=62),
+          Product(name="헨켈 퍼실 디스크 캡슐세제 16.5g*26입", url="https://x/b", price=13160, original_price=32900, discount_rate=60),
+          Product(name="여성 투아르망 패딩코트", url="https://x/c", price=17520, original_price=119000, discount_rate=85)]
+    assert fix_unit_prices(ok) == 0
