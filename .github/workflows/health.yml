@@ -1,0 +1,58 @@
+name: health
+
+# 30분마다 + 수집 워크플로가 끝날 때마다 사이트·DB·수집 상태를 점검한다.
+# 문제가 생기면 'health' 라벨 이슈를 열고(저장소 주인에게 GitHub 알림), 정상으로 돌아오면 자동으로 닫는다.
+# Claude 대응 작업(3시간마다)이 열린 이슈를 보고 원인을 고친다.
+on:
+  schedule:
+    - cron: "7,37 * * * *"
+  workflow_run:
+    workflows: [collect]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: health
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12", cache: pip }
+      - run: pip install httpx pyyaml
+      - name: 상태 점검
+        id: hc
+        run: |
+          set +e
+          python scripts/healthcheck.py --json health.json | tee health.txt
+          echo "code=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+      - name: 이슈 열기·갱신·닫기
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CODE: ${{ steps.hc.outputs.code }}
+        run: |
+          gh label create health --color d73a4a --description "자동 상태 점검 장애" 2>/dev/null || true
+          OPEN=$(gh issue list --label health --state open --json number -q '.[0].number')
+          BODY="$(printf '자동 상태 점검 결과 (%s)\n\n```\n%s\n```\n\n<details><summary>JSON</summary>\n\n```json\n%s\n```\n</details>' "$(TZ=Asia/Seoul date '+%Y-%m-%d %H:%M KST')" "$(cat health.txt)" "$(cat health.json)")"
+          if [ "$CODE" != "0" ]; then
+            FAILS=$(python -c "import json;print(', '.join(c['name'] for c in json.load(open('health.json'))['checks'] if not c['ok']))")
+            if [ -z "$OPEN" ]; then
+              gh issue create --label health --title "[장애] $FAILS" --body "$BODY"
+            else
+              gh issue edit "$OPEN" --title "[장애] $FAILS"
+              gh issue comment "$OPEN" --body "$BODY"
+            fi
+          elif [ -n "$OPEN" ]; then
+            gh issue comment "$OPEN" --body "정상화 확인 — 모든 점검 통과. 자동으로 닫습니다.
+
+          $BODY"
+            gh issue close "$OPEN"
+          fi
