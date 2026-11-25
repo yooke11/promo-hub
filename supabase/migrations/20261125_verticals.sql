@@ -124,3 +124,10 @@ select v, s from (values ('food','choroc'),('food','harimmall'),('food','epost')
   ('fashion','mlbkorea'),('fashion','discovery'),
   ('digital','samsung'),('digital','lge'),('digital','himart'),('digital','dyson'),('digital','danawa')) x(v,s)
 where exists (select 1 from public.sources where id=s) on conflict do nothing;
+
+-- 2026-11-25 가전·디지털 분야 삭제, 뷰티(뷰티세일픽) 6곳 추가, 분야별 추천 기준 완화(쇼핑몰당 8·기준 10점)
+delete from public.source_verticals where vertical='digital';
+insert into public.source_verticals (vertical, source_id)
+select 'beauty', s from unnest(array['innisfree','isoi','cellfusionc','clubclio','skinfood','banilaco']) s
+where exists (select 1 from public.sources where id=s) on conflict do nothing;
+-- refresh_picks_core: refresh_picks_for(r.vertical, r.srcs, 8, 3, 60, 10)
