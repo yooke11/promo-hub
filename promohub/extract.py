@@ -27,8 +27,8 @@ def _img_url(img: Tag, base: str) -> str:
     for attr in ("src", "data-src", "data-original", "data-lazy-src", "data-srcset", "srcset"):
         v = img.get(attr)
         if v and not v.startswith("data:"):
-            v = v.split(",")[0].strip().split(" ")[0]
-            return urljoin(base, v)
+            from .products import _first_src
+            return urljoin(base, _first_src(v, attr))
     return ""
 
 
