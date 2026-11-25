@@ -74,10 +74,11 @@ def _to_int(v) -> Optional[int]:
     if isinstance(v, (int, float)):
         n = int(v)
     else:
-        s = re.sub(r"[^\d.]", "", str(v))
-        if not s:
+        # 첫 번째 숫자만 쓴다('6,000-6,000', '6000~6000' 같은 범위·여러 값을 이어 붙이면 60006000원이 된다)
+        m = re.search(r"\d[\d,]*(?:\.\d+)?", str(v))
+        if not m:
             return None
-        n = int(float(s))
+        n = int(float(m.group(0).replace(",", "")))
     return n if 100 <= n <= 100_000_000 else None
 
 

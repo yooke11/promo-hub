@@ -199,3 +199,11 @@ def test_fix_unit_prices_by_ratio():
           Product(name="헨켈 퍼실 디스크 캡슐세제 16.5g*26입", url="https://x/b", price=13160, original_price=32900, discount_rate=60),
           Product(name="여성 투아르망 패딩코트", url="https://x/c", price=17520, original_price=119000, discount_rate=85)]
     assert fix_unit_prices(ok) == 0
+
+
+def test_to_int_range_takes_first():
+    from promohub.products import _to_int
+    assert _to_int("6,000-6,000") == 6000
+    assert _to_int("6000~6000") == 6000
+    assert _to_int("₩15,990") == 15990
+    assert _to_int(15990) == 15990
