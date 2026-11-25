@@ -1,0 +1,346 @@
+# 자동 생성: scripts/build_beauty_candidates.py — 뷰티 브랜드 공식몰 후보(수집 금지 확인된 곳 제외)
+defaults:
+  scroll_steps: 8
+  detail_limit: 30
+  product_limit: 40
+  delay_sec: 2.0
+  respect_robots: true
+common_include_patterns:
+- (event|events|exhibit|exhibition|exhibitions|plan|planshop|promotion|promotions|campaign|campaigns|special|festa|fair)s?[/?=.]
+- 기획전|이벤트
+common_exclude_patterns:
+- login|logout|member|cart|order|mypage|customer|cs/|notice|faq|policy|terms|app-download|join|signup
+- \.(jpg|jpeg|png|gif|webp|svg|css|js)(\?|$)
+sources:
+- id: sulwhasoo
+  name: 설화수
+  channel_type: brand
+  rank: 300
+  vertical: beauty
+  domains:
+  - sulwhasoo.com
+  mobile: false
+  entry_urls:
+  - https://www.sulwhasoo.com/kr/ko/
+- id: hera
+  name: 헤라
+  channel_type: brand
+  rank: 301
+  vertical: beauty
+  domains:
+  - hera.com
+  mobile: false
+  entry_urls:
+  - https://www.hera.com/kr/ko/
+- id: laneige
+  name: 라네즈
+  channel_type: brand
+  rank: 302
+  vertical: beauty
+  domains:
+  - laneige.com
+  mobile: false
+  entry_urls:
+  - https://www.laneige.com/kr/ko/
+- id: iope
+  name: 아이오페
+  channel_type: brand
+  rank: 303
+  vertical: beauty
+  domains:
+  - iope.com
+  mobile: false
+  entry_urls:
+  - https://www.iope.com/kr/ko/
+- id: etude
+  name: 에뛰드
+  channel_type: brand
+  rank: 304
+  vertical: beauty
+  domains:
+  - etude.com
+  mobile: false
+  entry_urls:
+  - https://www.etude.com/kr/ko/
+- id: aestura
+  name: 에스트라
+  channel_type: brand
+  rank: 305
+  vertical: beauty
+  domains:
+  - aestura.com
+  mobile: false
+  entry_urls:
+  - https://www.aestura.com/kr/ko/
+- id: clubclio
+  name: 클리오
+  channel_type: brand
+  rank: 306
+  vertical: beauty
+  domains:
+  - clubclio.co.kr
+  mobile: false
+  entry_urls:
+  - https://clubclio.co.kr/
+  include_patterns: &id001
+  - project\.html
+  - /board/(event|gallery)[^/]*/
+  - /exhibit
+  - /promotion
+- id: romand
+  name: 롬앤
+  channel_type: brand
+  rank: 307
+  vertical: beauty
+  domains:
+  - romand.co.kr
+  mobile: false
+  entry_urls:
+  - https://romand.co.kr/
+  - https://romand.co.kr/board/event/list.html
+  include_patterns: *id001
+- id: torriden
+  name: 토리든
+  channel_type: brand
+  rank: 308
+  vertical: beauty
+  domains:
+  - torriden.com
+  mobile: false
+  entry_urls:
+  - https://torriden.com/
+  - https://torriden.com/board/event/list.html
+  include_patterns: *id001
+- id: medicube
+  name: 메디큐브
+  channel_type: brand
+  rank: 309
+  vertical: beauty
+  domains:
+  - medicube.co.kr
+  mobile: false
+  entry_urls:
+  - https://medicube.co.kr/
+  - https://medicube.co.kr/board/event/list.html
+  include_patterns: *id001
+- id: tonystreet
+  name: 토니모리
+  channel_type: brand
+  rank: 310
+  vertical: beauty
+  domains:
+  - tonystreet.com
+  mobile: false
+  entry_urls:
+  - https://www.tonystreet.com/
+  - https://www.tonystreet.com/event/eventList.do
+- id: banilaco
+  name: 바닐라코
+  channel_type: brand
+  rank: 311
+  vertical: beauty
+  domains:
+  - banilaco.com
+  mobile: false
+  entry_urls:
+  - https://www.banilaco.com/
+  include_patterns: *id001
+- id: stylenanda
+  name: 3CE 스타일난다
+  channel_type: brand
+  rank: 312
+  vertical: beauty
+  domains:
+  - stylenanda.com
+  mobile: false
+  entry_urls:
+  - https://www.stylenanda.com/
+  include_patterns: *id001
+- id: jsmbeauty
+  name: 정샘물
+  channel_type: brand
+  rank: 313
+  vertical: beauty
+  domains:
+  - jsmbeauty.com
+  mobile: false
+  entry_urls:
+  - https://jsmbeauty.com/
+  include_patterns: *id001
+- id: cosrx
+  name: 코스알엑스
+  channel_type: brand
+  rank: 314
+  vertical: beauty
+  domains:
+  - cosrx.co.kr
+  mobile: false
+  entry_urls:
+  - https://www.cosrx.co.kr/
+  include_patterns: *id001
+- id: beplain
+  name: 비플레인
+  channel_type: brand
+  rank: 315
+  vertical: beauty
+  domains:
+  - beplain.co.kr
+  mobile: false
+  entry_urls:
+  - https://beplain.co.kr/
+  include_patterns: *id001
+- id: dalba
+  name: 달바
+  channel_type: brand
+  rank: 316
+  vertical: beauty
+  domains:
+  - dalba.co.kr
+  mobile: false
+  entry_urls:
+  - https://www.dalba.co.kr/
+  include_patterns: *id001
+- id: cellfusionc
+  name: 셀퓨전씨
+  channel_type: brand
+  rank: 317
+  vertical: beauty
+  domains:
+  - cellfusionc.co.kr
+  mobile: false
+  entry_urls:
+  - https://cellfusionc.co.kr/
+  include_patterns: *id001
+- id: abib
+  name: 아비브
+  channel_type: brand
+  rank: 318
+  vertical: beauty
+  domains:
+  - abib.co.kr
+  mobile: false
+  entry_urls:
+  - https://abib.co.kr/
+  include_patterns: *id001
+- id: numbuzin
+  name: 넘버즈인
+  channel_type: brand
+  rank: 319
+  vertical: beauty
+  domains:
+  - numbuzin.com
+  mobile: false
+  entry_urls:
+  - https://numbuzin.com/
+  include_patterns: *id001
+- id: fwee
+  name: 퓌
+  channel_type: brand
+  rank: 320
+  vertical: beauty
+  domains:
+  - fwee.kr
+  mobile: false
+  entry_urls:
+  - https://fwee.kr/
+  include_patterns: *id001
+- id: hince
+  name: 힌스
+  channel_type: brand
+  rank: 321
+  vertical: beauty
+  domains:
+  - hince.co.kr
+  mobile: false
+  entry_urls:
+  - https://hince.co.kr/
+  include_patterns: *id001
+- id: dasique
+  name: 데이지크
+  channel_type: brand
+  rank: 322
+  vertical: beauty
+  domains:
+  - dasique.co.kr
+  mobile: false
+  entry_urls:
+  - https://dasique.co.kr/
+  include_patterns: *id001
+- id: amuse
+  name: 어뮤즈
+  channel_type: brand
+  rank: 323
+  vertical: beauty
+  domains:
+  - amusemakeup.com
+  mobile: false
+  entry_urls:
+  - https://amusemakeup.com/
+  include_patterns: *id001
+- id: sidmool
+  name: 시드물
+  channel_type: brand
+  rank: 324
+  vertical: beauty
+  domains:
+  - sidmool.com
+  mobile: false
+  entry_urls:
+  - https://www.sidmool.com/
+  include_patterns: *id001
+- id: isoi
+  name: 아이소이
+  channel_type: brand
+  rank: 325
+  vertical: beauty
+  domains:
+  - isoi.co.kr
+  mobile: false
+  entry_urls:
+  - https://www.isoi.co.kr/
+  include_patterns: *id001
+- id: drg
+  name: 닥터지
+  channel_type: brand
+  rank: 326
+  vertical: beauty
+  domains:
+  - drg.co.kr
+  - gowoonsesang.com
+  mobile: false
+  entry_urls:
+  - https://www.drg.co.kr/
+  - https://www.gowoonsesang.com/
+  include_patterns: *id001
+- id: missha
+  name: 미샤
+  channel_type: brand
+  rank: 327
+  vertical: beauty
+  domains:
+  - missha.co.kr
+  mobile: false
+  entry_urls:
+  - https://www.missha.co.kr/
+- id: skinfood
+  name: 스킨푸드
+  channel_type: brand
+  rank: 328
+  vertical: beauty
+  domains:
+  - theskinfood.com
+  mobile: false
+  entry_urls:
+  - https://www.theskinfood.com/
+  include_patterns: *id001
+- id: aritaum
+  name: VT코스메틱
+  channel_type: brand
+  rank: 329
+  vertical: beauty
+  domains:
+  - vtcosmetics.com
+  mobile: false
+  entry_urls:
+  - https://www.vtcosmetics.com/
+  include_patterns: *id001
