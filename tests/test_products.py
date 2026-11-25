@@ -146,3 +146,10 @@ def test_fix_shared_placeholder_images():
     assert fix_shared_images(ps) == 6
     assert ps[1].image_url == "https://img/1.png" and ps[0].image_url == "" and ps[-1].image_url == "https://img/solo.png"
     assert "alt_images" not in ps[1].to_dict()
+
+
+def test_srcset_with_commas_in_url():
+    from promohub.products import _first_src
+    v = "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/abc/shoe.png 592w, https://static.nike.com/a/images/c_limit,w_1024/abc/shoe.png 1024w"
+    assert _first_src(v, "srcset") == "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/abc/shoe.png"
+    assert _first_src("https://a.com/x.jpg") == "https://a.com/x.jpg"

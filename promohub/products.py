@@ -173,6 +173,14 @@ _URL_IN = re.compile(r"""url\(\s*['"]?([^'")]+)""")
 _IMG_URL = re.compile(r"""(https?:)?//[^\s'"]+?\.(?:jpe?g|png|webp|gif|avif)(?:\?[^\s'"]*)?""", re.I)
 
 
+def _first_src(v: str, attr: str = "src") -> str:
+    """srcset 은 '주소 너비w, 주소 너비w' 꼴이고 주소 안에 쉼표가 들어갈 수 있다(나이키 c_limit,w_592) → 공백 앞까지가 주소."""
+    v = v.strip()
+    if "srcset" in attr or re.search(r"\s\d+(\.\d+)?[wx](,|$)", v):
+        return v.split()[0].rstrip(",")
+    return v
+
+
 def _img_candidates(tag: Tag, base: str) -> list[str]:
     out: list[str] = []
     def add(u):
@@ -183,7 +191,7 @@ def _img_candidates(tag: Tag, base: str) -> list[str]:
         for attr in ("data-src", "data-original", "data-lazy-src", "data-lazy", "src", "srcset", "data-srcset"):
             v = (img.get(attr) or "").strip()
             if v and not v.startswith("data:") and not _BAD_IMG.search(v):
-                add(v.split(",")[0].strip().split(" ")[0])
+                add(_first_src(v, attr))
     # 배경 이미지(style="background-image:url(...)") · 지연 로딩 속성(data-lazyload="{'_src': ...}")
     for el in [tag] + tag.find_all(True):
         for attr in ("style", "data-bg", "data-background", "data-lazyload", "data-bgset"):
@@ -313,7 +321,7 @@ def _alt_index(soup: BeautifulSoup, page_url: str) -> dict[str, tuple[str, str]]
         if len(k) < 3 or k in idx:
             continue
         v = (img.get("data-src") or img.get("data-original") or img.get("src") or "").strip()
-        src = urljoin(page_url, v.split(",")[0].split(" ")[0]) if v and not v.startswith("data:") and not _BAD_IMG.search(v) else ""
+        src = urljoin(page_url, _first_src(v)) if v and not v.startswith("data:") and not _BAD_IMG.search(v) else ""
         a = img.find_parent("a", href=True)
         href = a["href"].strip() if a else ""
         idx[k] = (src, urljoin(page_url, href) if href and not href.startswith(("#", "javascript")) else "")
