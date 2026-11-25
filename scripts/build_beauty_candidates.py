@@ -7,7 +7,9 @@ from pathlib import Path
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
-CAFE24 = [r"project\.html", r"/board/(event|gallery)[^/]*/", r"/exhibit", r"/promotion"]
+CAFE24 = [r"project\.html", r"/board/(event|gallery)[^/]*/", r"/article/[^/]+/\d+/\d+", r"/exhibit", r"/promotion"]
+# 카페24 상품 상세는 기획전이 아니다(정샘물·비플레인에서 상품이 기획전으로 잡혔던 문제)
+CAFE24_EX = [r"/product/detail\.html", r"product_no=", r"/product/[^?]+/\d+/category/"]
 
 # (id, 이름, 도메인, 진입 URL들, 카페24 여부)
 C = [
@@ -22,7 +24,7 @@ C = [
     ("torriden", "토리든", "torriden.com", ["https://torriden.com/", "https://torriden.com/board/event/list.html"], True),
     ("medicube", "메디큐브", "medicube.co.kr", ["https://medicube.co.kr/", "https://medicube.co.kr/board/event/list.html"], True),
     ("tonystreet", "토니모리", "tonystreet.com", ["https://www.tonystreet.com/", "https://www.tonystreet.com/event/eventList.do"], False),
-    ("banilaco", "바닐라코", "banilaco.com", ["https://www.banilaco.com/"], True),
+    ("banilaco", "바닐라코", "banila.com", ["https://banila.com/", "https://banila.com/board/gallery/list.html?board_no=8"], True),
     ("stylenanda", "3CE 스타일난다", "stylenanda.com", ["https://www.stylenanda.com/"], True),
     ("jsmbeauty", "정샘물", "jsmbeauty.com", ["https://jsmbeauty.com/"], True),
     ("cosrx", "코스알엑스", "cosrx.co.kr", ["https://www.cosrx.co.kr/"], True),
@@ -54,6 +56,7 @@ def main():
              "domains": [dom] + (["gowoonsesang.com"] if sid == "drg" else []), "mobile": False, "entry_urls": urls}
         if cafe24:
             d["include_patterns"] = CAFE24
+            d["exclude_patterns"] = CAFE24_EX
         out.append(d)
     doc = {"defaults": base["defaults"], "common_include_patterns": base["common_include_patterns"],
            "common_exclude_patterns": base["common_exclude_patterns"], "sources": out}

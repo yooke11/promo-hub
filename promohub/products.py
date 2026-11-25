@@ -18,7 +18,7 @@ from bs4 import BeautifulSoup, Tag
 from .normalize import canonical_url, clean_title
 
 GENERIC_PRODUCT_PATTERNS = [
-    r"/(vp/)?products?/[\w-]+", r"/goods/[\w-]+", r"/items?/[\w-]+", r"/prd/", r"/productions/\d+",
+    r"/(vp/)?products?/(?!project\.html|list\.html)[\w-]+", r"/goods/[\w-]+", r"/items?/[\w-]+", r"/prd/", r"/productions/\d+",
     r"/catalog/products/", r"/p/product/", r"/sec/[\w/-]+/buy", r"/item\?",
     r"goodscode=|itemno=|goodsno=|goods_no=|prdid=|itemid=|slitmcd=|pdno=|productno=|product_no=|item_id=|prd_no=|prdno=",
 ]

@@ -85,8 +85,13 @@ sources:
   include_patterns: &id001
   - project\.html
   - /board/(event|gallery)[^/]*/
+  - /article/[^/]+/\d+/\d+
   - /exhibit
   - /promotion
+  exclude_patterns: &id002
+  - /product/detail\.html
+  - product_no=
+  - /product/[^?]+/\d+/category/
 - id: romand
   name: 롬앤
   channel_type: brand
@@ -99,6 +104,7 @@ sources:
   - https://romand.co.kr/
   - https://romand.co.kr/board/event/list.html
   include_patterns: *id001
+  exclude_patterns: *id002
 - id: torriden
   name: 토리든
   channel_type: brand
@@ -111,6 +117,7 @@ sources:
   - https://torriden.com/
   - https://torriden.com/board/event/list.html
   include_patterns: *id001
+  exclude_patterns: *id002
 - id: medicube
   name: 메디큐브
   channel_type: brand
@@ -123,6 +130,7 @@ sources:
   - https://medicube.co.kr/
   - https://medicube.co.kr/board/event/list.html
   include_patterns: *id001
+  exclude_patterns: *id002
 - id: tonystreet
   name: 토니모리
   channel_type: brand
@@ -140,11 +148,13 @@ sources:
   rank: 311
   vertical: beauty
   domains:
-  - banilaco.com
+  - banila.com
   mobile: false
   entry_urls:
-  - https://www.banilaco.com/
+  - https://banila.com/
+  - https://banila.com/board/gallery/list.html?board_no=8
   include_patterns: *id001
+  exclude_patterns: *id002
 - id: stylenanda
   name: 3CE 스타일난다
   channel_type: brand
@@ -156,6 +166,7 @@ sources:
   entry_urls:
   - https://www.stylenanda.com/
   include_patterns: *id001
+  exclude_patterns: *id002
 - id: jsmbeauty
   name: 정샘물
   channel_type: brand
@@ -167,6 +178,7 @@ sources:
   entry_urls:
   - https://jsmbeauty.com/
   include_patterns: *id001
+  exclude_patterns: *id002
 - id: cosrx
   name: 코스알엑스
   channel_type: brand
@@ -178,6 +190,7 @@ sources:
   entry_urls:
   - https://www.cosrx.co.kr/
   include_patterns: *id001
+  exclude_patterns: *id002
 - id: beplain
   name: 비플레인
   channel_type: brand
@@ -189,6 +202,7 @@ sources:
   entry_urls:
   - https://beplain.co.kr/
   include_patterns: *id001
+  exclude_patterns: *id002
 - id: dalba
   name: 달바
   channel_type: brand
@@ -200,6 +214,7 @@ sources:
   entry_urls:
   - https://www.dalba.co.kr/
   include_patterns: *id001
+  exclude_patterns: *id002
 - id: cellfusionc
   name: 셀퓨전씨
   channel_type: brand
@@ -211,6 +226,7 @@ sources:
   entry_urls:
   - https://cellfusionc.co.kr/
   include_patterns: *id001
+  exclude_patterns: *id002
 - id: abib
   name: 아비브
   channel_type: brand
@@ -222,6 +238,7 @@ sources:
   entry_urls:
   - https://abib.co.kr/
   include_patterns: *id001
+  exclude_patterns: *id002
 - id: numbuzin
   name: 넘버즈인
   channel_type: brand
@@ -233,6 +250,7 @@ sources:
   entry_urls:
   - https://numbuzin.com/
   include_patterns: *id001
+  exclude_patterns: *id002
 - id: fwee
   name: 퓌
   channel_type: brand
@@ -244,6 +262,7 @@ sources:
   entry_urls:
   - https://fwee.kr/
   include_patterns: *id001
+  exclude_patterns: *id002
 - id: hince
   name: 힌스
   channel_type: brand
@@ -255,6 +274,7 @@ sources:
   entry_urls:
   - https://hince.co.kr/
   include_patterns: *id001
+  exclude_patterns: *id002
 - id: dasique
   name: 데이지크
   channel_type: brand
@@ -266,6 +286,7 @@ sources:
   entry_urls:
   - https://dasique.co.kr/
   include_patterns: *id001
+  exclude_patterns: *id002
 - id: amuse
   name: 어뮤즈
   channel_type: brand
@@ -277,6 +298,7 @@ sources:
   entry_urls:
   - https://amusemakeup.com/
   include_patterns: *id001
+  exclude_patterns: *id002
 - id: sidmool
   name: 시드물
   channel_type: brand
@@ -288,6 +310,7 @@ sources:
   entry_urls:
   - https://www.sidmool.com/
   include_patterns: *id001
+  exclude_patterns: *id002
 - id: isoi
   name: 아이소이
   channel_type: brand
@@ -299,6 +322,7 @@ sources:
   entry_urls:
   - https://www.isoi.co.kr/
   include_patterns: *id001
+  exclude_patterns: *id002
 - id: drg
   name: 닥터지
   channel_type: brand
@@ -312,6 +336,7 @@ sources:
   - https://www.drg.co.kr/
   - https://www.gowoonsesang.com/
   include_patterns: *id001
+  exclude_patterns: *id002
 - id: missha
   name: 미샤
   channel_type: brand
@@ -333,6 +358,7 @@ sources:
   entry_urls:
   - https://www.theskinfood.com/
   include_patterns: *id001
+  exclude_patterns: *id002
 - id: aritaum
   name: VT코스메틱
   channel_type: brand
@@ -344,3 +370,4 @@ sources:
   entry_urls:
   - https://www.vtcosmetics.com/
   include_patterns: *id001
+  exclude_patterns: *id002
