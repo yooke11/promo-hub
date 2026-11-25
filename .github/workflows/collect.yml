@@ -117,6 +117,29 @@ jobs:
       - name: 웹 최저가 비교(에누리 가격비교, 최대 400개·35분)
         run: python -m promohub.cli compare --limit 400 --budget 2100
 
+  picks:
+    # 추천 상품: 키워드(검색 수요)·가격비교(웹 최저가)가 끝난 뒤 DB 함수가 오늘의 추천을 고른다
+    needs: [keywords, compare]
+    if: always() && github.event.inputs.only == '' && github.event.inputs.config == ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: 오늘의 추천 상품 갱신
+        env:
+          SUPABASE_URL: https://wjfbcbiyzoymqqnoemvu.supabase.co
+          SUPABASE_ANON_KEY: sb_publishable_-DNHcg_lvpePh3aeXGRXGw_qDJAkXI5
+          PROMOHUB_INGEST_TOKEN: ${{ secrets.PROMOHUB_INGEST_TOKEN }}
+        run: |
+          python3 - <<'PY'
+          import json, os, urllib.request
+          req = urllib.request.Request(os.environ["SUPABASE_URL"] + "/rest/v1/rpc/refresh_picks",
+              data=json.dumps({"p_token": os.environ["PROMOHUB_INGEST_TOKEN"]}).encode(),
+              headers={"apikey": os.environ["SUPABASE_ANON_KEY"], "Content-Type": "application/json"}, method="POST")
+          n = json.load(urllib.request.urlopen(req, timeout=60))
+          print("추천 상품", n, "개")
+          if not n: raise SystemExit("추천 상품 0개 — 수집·가격비교 결과 확인 필요")
+          PY
+
   test:
     runs-on: ubuntu-latest
     steps:

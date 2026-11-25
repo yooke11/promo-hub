@@ -115,6 +115,11 @@ def main():
                 add("pipeline.compare", bool(pr) and not st.get("fatal"), None,
                     f"가격비교 {'있음' if pr else '없음'} matched={st.get('matched')} stopped={st.get('stopped')} fatal={st.get('fatal')}",
                     "compare 잡 로그·price_runs.stats.diag 확인(에누리 차단/구조 변경)")
+                r, _ = rest(c, "v_picks?select=pick_date&limit=1")
+                pk = r.json() if r.status_code == 200 else []
+                add("pipeline.picks", bool(pk) and pk[0]["pick_date"] == now.date().isoformat(), None,
+                    f"추천 상품 기준일 {pk[0]['pick_date'] if pk else '없음'}",
+                    "collect.yml 의 picks 잡 로그 확인 → rpc/refresh_picks 재실행(토큰 필요) 또는 private.refresh_picks_core() 실행")
             except Exception as e:
                 add("pipeline", False, None, e, "Supabase 조회 실패")
     ok = all(x["ok"] for x in checks)
