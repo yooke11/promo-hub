@@ -2,7 +2,10 @@ name: collect
 
 on:
   schedule:
-    - cron: "0 20 * * *"        # 매일 새벽 5시(한국 시간) = UTC 20:00
+    # 정각(0분) 예약은 GitHub 혼잡으로 건너뛰는 일이 있어(2026-11-25 05:00 실행 누락) 7분으로 옮기고,
+    # 06:47 에 한 번 더 예약해 두되 그날 예약 수집이 이미 돌았으면 건너뛴다(gate).
+    - cron: "7 20 * * *"        # 매일 05:07(한국 시간)
+    - cron: "47 21 * * *"       # 06:47 예비 실행(05:07 실행이 없을 때만)
   workflow_dispatch:
     inputs:
       only:
@@ -18,8 +21,33 @@ concurrency:
   group: collect
   cancel-in-progress: false
 
+permissions:
+  contents: read
+  actions: read
+
 jobs:
+  gate:
+    runs-on: ubuntu-latest
+    outputs:
+      run: ${{ steps.g.outputs.run }}
+    steps:
+      - id: g
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          RUN=true
+          if [ "${{ github.event.schedule }}" = "47 21 * * *" ]; then
+            # 최근 3시간 안에 시작된 다른 예약 수집이 있으면 예비 실행은 건너뜀
+            SINCE=$(date -u -d '3 hours ago' +%Y-%m-%dT%H:%M:%SZ)
+            N=$(gh api "repos/${{ github.repository }}/actions/workflows/collect.yml/runs?event=schedule&created=%3E$SINCE" \
+                  --jq "[.workflow_runs[] | select(.id != ${{ github.run_id }})] | length")
+            [ "$N" -gt 0 ] && RUN=false
+          fi
+          echo "run=$RUN" >> "$GITHUB_OUTPUT"; echo "run=$RUN"
+
   collect:
+    needs: gate
+    if: needs.gate.outputs.run == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 28           # 05:30 점검 전에 끝나도록 작업당 28분 제한
     strategy:
@@ -52,8 +80,8 @@ jobs:
           python -m promohub.cli collect --sink supabase --config "$CFG" ${ONLY:+--only "$ONLY"} --shard ${{ matrix.shard }}/16
 
   keywords:
-    needs: collect
-    if: always() && github.event.inputs.only == '' && github.event.inputs.config == ''
+    needs: [gate, collect]
+    if: always() && needs.gate.outputs.run == 'true' && github.event.inputs.only == '' && github.event.inputs.config == ''
     runs-on: ubuntu-latest
     timeout-minutes: 40
     env:
@@ -73,8 +101,8 @@ jobs:
         run: python -m promohub.cli keywords --limit 500
 
   compare:
-    needs: collect
-    if: always() && github.event.inputs.only == '' && github.event.inputs.config == ''
+    needs: [gate, collect]
+    if: always() && needs.gate.outputs.run == 'true' && github.event.inputs.only == '' && github.event.inputs.config == ''
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:

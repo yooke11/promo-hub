@@ -28,6 +28,7 @@ class Source:
     domains: list[str] = field(default_factory=list)
     product_pats: list[re.Pattern] = field(default_factory=list)
     product_limit: int = 40
+    product_link: dict | None = None   # {key: 상품번호 필드/데이터 속성, url: "...{id}..."} — 상품 주소가 없는 JSON·카드용
 
     def on_domain(self, url: str) -> bool:
         if not self.domains:
@@ -85,6 +86,7 @@ def load_config(path: Path | str = DEFAULT_CONFIG) -> Config:
             domains=s.get("domains") or [],
             product_pats=compile_product_patterns(s.get("product_patterns")),
             product_limit=s.get("product_limit", d.get("product_limit", 40)),
+            product_link=s.get("product_link"),
         ))
     out.sort(key=lambda x: x.rank)
     return Config(out)

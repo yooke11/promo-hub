@@ -68,3 +68,71 @@ def test_store_items(tmp_path):
     assert item["items"][0]["name"].startswith("설화수")
     assert st.query(q="라운드랩", include_ended=True)[0]["id"] == p.id    # 상품명으로 기획전 검색
     assert [i["price"] for i in st.search_items(sort="price")] == [21900, 142000]
+
+
+# ── 2026-11-25: 상품 이미지·주소 보강(CJ더마켓·교보문고·컬리·패션플러스형 페이지) ──
+from promohub.products import card_prices, drop_bare, fill_from_page, is_product_url, compile_product_patterns
+
+PATS = compile_product_patterns()
+
+
+def test_listing_urls_are_not_products():
+    for u in ["https://www.cjthemarket.com/the/product/category-product-list?ctgrId=0",
+              "https://m.oasis.co.kr/product/list?categoryId=124", "https://www.dyson.co.kr/products/vacuum-cleaners/robot",
+              "https://www.otokimall.com/front/product/search_result?keyword=x",
+              "https://www.yes24.com/product/goods/123408994?ReviewYn=Y"]:
+        assert not is_product_url(u, PATS), u
+    assert is_product_url("https://www.dongwonmall.com/product/detail.do?productId=001080733", PATS)
+    assert is_product_url("https://www.fashionplus.co.kr/goods/detail/433109260", PATS)
+
+
+def test_menu_links_and_data_cards():
+    html = """<html><body><div class="gnb"><a href="/product/detail.do?productId=000624895"><img src="//x/banner.jpg" alt="배너">
+      <p>고기 본연의 맛</p></a></div>
+      <div class="product__item" data-prdcd="40239615" data-prdnm="담꽃 팥칼국수 밀키트 1560g(4인분)">
+        <a href="javascript:;"><img class="product-thumb" src="//img.cjthemarket.com/p/1.jpg" alt="담꽃 팥칼국수"></a>
+        <p class="product__name">담꽃 팥칼국수 밀키트 1560g(4인분)</p>
+        <div class="product__price--info"><p class="discount__percent">15%</p><p class="discount__price">28,475원</p>
+          <p class="original__price">33,500원</p></div><div class="delivery">15,000원 이상 무료배송</div></div>
+      <li class="product-item" data-goods-id="433109260"><a href="/goods/detail/433109260"><figure>
+        <i class="image-product" style='background-image: url("https://img.fashionplus.co.kr/a.jpg?RS=500x670")'></i>
+        <p class="text-product">캐시미어 칼라넥 니트</p><del>399,000</del><p class="text-sale">46%</p><p class="text-price">215,400</p></figure></a></li>
+      </body></html>"""
+    link = {"key": "prdcd", "url": "https://www.cjthemarket.com/the/product/product-main?prdCd={id}"}
+    got = {p.name: p for p in products_from_html(html, "https://www.cjthemarket.com/pc/plan/planView?plnId=1", PATS, link)}
+    assert "고기 본연의 맛" not in got                                   # 메뉴(gnb) 안 링크 제외
+    cj = got["담꽃 팥칼국수 밀키트 1560g(4인분)"]
+    assert (cj.price, cj.original_price, cj.discount_rate) == (28475, 33500, 15)   # '15,000원 이상' 무시
+    assert cj.url.endswith("prdCd=40239615") and cj.image_url == "https://img.cjthemarket.com/p/1.jpg"
+    fp = got["캐시미어 칼라넥 니트"]
+    assert fp.image_url.startswith("https://img.fashionplus.co.kr/a.jpg") and fp.price == 215400
+
+
+def test_json_template_and_alt_fill():
+    body = '{"data":[{"no":1002581485,"name":"[프리베일] 후드 재킷","sales_price":99000,"discounted_price":80750,' \
+           '"list_image_url":"https://product-image.kurly.com/a.jpg"},' \
+           '{"saleCmdtid":"S000220351148","name":"연금술사","price":16800.0,"discountPrice":15120.0,"imgUrl":null},' \
+           '{"itemName":"마미포코","price":5577,"image64Url":"http://t.r.jp/a.jpg?_ex=64x64","image128Url":"http://t.r.jp/a.jpg?_ex=128x128","link":"http://item.r.jp/1/"}]}'
+    k = products_from_json(body, "https://api.kurly.com/x", {"key": "no", "url": "https://www.kurly.com/goods/{id}"})[0]
+    assert (k.url, k.price, k.original_price, k.image_url) == ("https://www.kurly.com/goods/1002581485", 80750, 99000,
+                                                               "https://product-image.kurly.com/a.jpg")
+    items = products_from_json(body, "https://event.kyobobook.co.kr/api", {"key": "saleCmdtid", "url": "https://product.kyobobook.co.kr/detail/{id}"})
+    kb = items[1]
+    assert kb.url == "https://product.kyobobook.co.kr/detail/S000220351148" and not kb.image_url
+    assert items[2].image_url.endswith("128x128")                       # 큰 썸네일 우선
+    page = '<a href="https://product.kyobobook.co.kr/detail/S000220351148"><img alt="연금술사" src="https://contents.kyobobook.co.kr/pdt/9791170614029.jpg"></a>'
+    fill_from_page([kb], page, "https://event.kyobobook.co.kr/detail/1", PATS)
+    assert kb.image_url.endswith("9791170614029.jpg")
+
+
+def test_price_text_ignores_points_and_rates():
+    assert parse_price_text("10 % 14,400 원 16,000 원 포인트적립 720원") == (14400, 16000, 10)
+    assert parse_price_text("36,000원 95% 만족 내일 도착확률 98%")[2] is None
+
+
+def test_drop_bare():
+    from promohub.products import Product
+    rich = [Product(name=f"a{i}", url=f"https://x/{i}", image_url="i") for i in range(4)]
+    assert len(drop_bare(rich + [Product(name="NIKE TEMPO", price=1000)])) == 4
+    only = [Product(name="b", price=1000)] * 3
+    assert drop_bare(only) == only

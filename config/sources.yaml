@@ -222,6 +222,7 @@ sources:
   product_patterns:
   - pdNo=|/pd/
 - id: kurly
+  product_link: {key: "no", url: "https://www.kurly.com/goods/{id}"}
   name: 컬리
   channel_type: vertical
   rank: 14
@@ -605,6 +606,7 @@ sources:
   product_patterns:
   - /[\w-]+/[A-Z]{2}\d{4}\.html
 - id: nsmall
+  product_link: {key: goodsCd, image: "https://product-image.prod-nsmall.com/new/{id}_0.jpg?s=332x332&t=contain&f=webp&q=80"}
   name: NS홈쇼핑
   channel_type: homeshopping
   rank: 42
@@ -699,6 +701,7 @@ sources:
   product_patterns:
   - /product/detail/
 - id: 10x10
+  product_link: {key: itemId, url: "https://www.10x10.co.kr/shopping/category_prd.asp?itemid={id}"}
   name: 텐바이텐
   channel_type: vertical
   rank: 49
@@ -755,6 +758,9 @@ sources:
   entry_urls:
   - https://www.rakuten.co.jp/
 - id: kyobobook   # 2026-11-25 유형별 상위 선정(시험 수집 기획전 34건)
+  product_link: {key: saleCmdtid, url: "https://product.kyobobook.co.kr/detail/{id}"}
+  product_patterns:
+  - product\.kyobobook\.co\.kr/detail/
   name: 교보문고
   channel_type: vertical
   rank: 137
@@ -764,6 +770,7 @@ sources:
   entry_urls:
   - https://www.kyobobook.co.kr/
 - id: cjthemarket   # 2026-11-25 유형별 상위 선정(시험 수집 기획전 15건)
+  product_link: {key: prdcd, url: "https://www.cjthemarket.com/the/product/product-main?prdCd={id}"}
   name: CJ더마켓
   channel_type: vertical
   rank: 140
@@ -838,6 +845,7 @@ sources:
   entry_urls:
   - https://www.dyson.co.kr/
 - id: dongwonmall   # 2026-11-25 유형별 상위 선정(시험 수집 기획전 59건)
+  product_link: {key: productid, url: "https://www.dongwonmall.com/product/detail.do?productId={id}"}
   name: 동원몰
   channel_type: brand
   rank: 154

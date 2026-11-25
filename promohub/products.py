@@ -25,7 +25,7 @@ GENERIC_PRODUCT_PATTERNS = [
 _PRICE_RE = re.compile(r"(?<![\d.])(\d{1,3}(?:,\d{3})+|\d{3,9})\s*(?:원|₩)|(?:₩|￦)\s*(\d{1,3}(?:,\d{3})+|\d{3,9})")
 _BARE_PRICE_RE = re.compile(r"(?<![\d.%])(\d{1,3}(?:,\d{3})+)(?![\d%])")
 _PCT_RE = re.compile(r"(?<!\d)(\d{1,2})\s*%")
-_NOT_NAME = re.compile(r"^(\d[\d,]*\s*(원|%)?|무료배송|쿠폰|할인|특가|품절|sold\s*out|new|best|리뷰.*|평점.*|\(?\d+\)?|[★☆\d.]+|장바구니|찜|좋아요|구매.*|.*원\s*~?)$", re.I)
+_NOT_NAME = re.compile(r"^(별\s*\d.*|.*개\s*중\s*[\d.]+\s*개.*|\d[\d,]*\s*(원|%)?|무료배송|쿠폰|할인|특가|품절|sold\s*out|new|best|리뷰.*|평점.*|\(?\d+\)?|[★☆\d.]+|장바구니|찜|좋아요|구매.*|.*원\s*~?)$", re.I)
 _NAME_NOISE = re.compile(r"(쿠폰\s*적용가|할인\s*전\s*금액|판매가|정상가|할인율|최대\s*혜택가|혜택가|무료배송|평점[\d.]*|후기\s*\(?[\d,]*\)?건?|리뷰\s*[\d,]+)")
 
 
@@ -93,8 +93,15 @@ def finalize_prices(prices: list[int], pct: Optional[int]) -> tuple[Optional[int
     return price, original, pct
 
 
+# 가격이 아닌 금액: 적립·포인트·배송비·'n원 이상'·쿠폰 금액·n원 할인
+_NOT_PRICE_AMT = re.compile(r"(포인트\s*)?적립\s*(금)?\s*[\d,]+\s*원|[\d,]+\s*원\s*(적립|이상|부터\s*무료|할인\s*쿠폰|쿠폰|캐시백|상당)|"
+                            r"(배송비|택배비|쿠폰|캐시백|최대)\s*[\d,]+\s*원|[\d,]+\s*원\s*(off|OFF)", re.I)
+_NOT_PCT = re.compile(r"[\d.]+\s*%\s*(만족|적립|도착|확률|캐시백|페이백|추천|구매)|(만족도?|적립률?|도착\s*확률|확률)\s*[\d.]+\s*%")
+
+
 def parse_price_text(text: str) -> tuple[Optional[int], Optional[int], Optional[int]]:
     t = re.sub(r"\s+", " ", text or "")
+    t = _NOT_PCT.sub(" ", _NOT_PRICE_AMT.sub(" ", t))
     nums = [_to_int(a or b) for a, b in _PRICE_RE.findall(t)]
     if not nums:
         nums = [_to_int(x) for x in _BARE_PRICE_RE.findall(t)]
@@ -102,12 +109,42 @@ def parse_price_text(text: str) -> tuple[Optional[int], Optional[int], Optional[
     return finalize_prices([n for n in nums if n], max(pcts) if pcts else None)
 
 
+_GENERIC = set(GENERIC_PRODUCT_PATTERNS)
+# 상품 상세가 아닌 목록·카테고리·검색·이벤트 주소(일반 패턴 /product/... 에 걸려도 상품 아님)
+NOT_PRODUCT_URL = re.compile(r"(categor|[-_/]list(\b|[-_.?/])|search|brandstore|/brand/|[/-]best\b|best[-_]?product|ranking|"
+                             r"review|/cart|login|/event/|/plan/|/exhibition/|/promotion|javascript:|^#)", re.I)
+
+
 def compile_product_patterns(extra: list[str] | None = None) -> list[re.Pattern]:
     return [re.compile(p, re.I) for p in (extra or []) + GENERIC_PRODUCT_PATTERNS]
 
 
 def is_product_url(url: str, pats: list[re.Pattern]) -> bool:
-    return any(p.search(url) for p in pats)
+    """채널 전용 패턴에 맞으면 상품. 일반 패턴은 목록·카테고리 주소가 아니고 상품번호(숫자 3자리+)가 있을 때만."""
+    for p in pats:
+        if p.search(url):
+            if NOT_PRODUCT_URL.search(url):
+                return False
+            if p.pattern in _GENERIC and not re.search(r"\d{3,}", url):
+                continue
+            return True
+    return False
+
+
+# 머리말·메뉴·바닥글 안의 링크는 기획전 상품이 아님(카테고리 메뉴의 배너·바로가기)
+_CHROME_CLS = re.compile(r"(^|[-_])(gnb|lnb|snb|nav|navi|navigation|header|footer|menu|depth\d?|allmenu|sitemap|quick)([-_]|$)", re.I)
+
+
+def _in_chrome(tag: Tag) -> bool:
+    for anc in tag.parents:
+        if not isinstance(anc, Tag) or anc.name in ("body", "html", "[document]"):
+            continue
+        if anc.name in ("header", "nav", "footer"):
+            return True
+        tokens = (anc.get("class") or []) + [anc.get("id") or ""]
+        if any(_CHROME_CLS.search(x) for x in tokens if x):
+            return True
+    return False
 
 
 def _card_for(a: Tag, pats, base: str) -> Tag:
@@ -128,12 +165,27 @@ def _card_for(a: Tag, pats, base: str) -> Tag:
     return node
 
 
+_BAD_IMG = re.compile(r"icon|badge|logo|blank|sprite|star|loading|noimg|no_img|spacer|transparent|\{\{", re.I)
+_URL_IN = re.compile(r"""url\(\s*['"]?([^'")]+)""")
+_IMG_URL = re.compile(r"""(https?:)?//[^\s'"]+?\.(?:jpe?g|png|webp|gif|avif)(?:\?[^\s'"]*)?""", re.I)
+
+
 def _img(tag: Tag, base: str) -> str:
-    for img in tag.find_all("img"):
-        for attr in ("src", "data-src", "data-original", "data-lazy-src", "srcset", "data-srcset"):
-            v = img.get(attr)
-            if v and not v.startswith("data:") and not re.search(r"icon|badge|logo|blank|sprite|star", v, re.I):
+    for img in tag.find_all(["img", "source"]):
+        for attr in ("data-src", "data-original", "data-lazy-src", "data-lazy", "src", "srcset", "data-srcset"):
+            v = (img.get(attr) or "").strip()
+            if v and not v.startswith("data:") and not _BAD_IMG.search(v):
                 return urljoin(base, v.split(",")[0].strip().split(" ")[0])
+    # 배경 이미지(style="background-image:url(...)") · 지연 로딩 속성(data-lazyload="{'_src': ...}")
+    for el in [tag] + tag.find_all(True):
+        for attr in ("style", "data-bg", "data-background", "data-lazyload", "data-bgset"):
+            v = el.get(attr)
+            if not v:
+                continue
+            m = _URL_IN.search(v) or _IMG_URL.search(v)
+            u = (m.group(1) if m and m.re is _URL_IN else m.group(0)) if m else ""
+            if u and not u.startswith("data:") and not _BAD_IMG.search(u):
+                return urljoin(base, u)
     return ""
 
 
@@ -155,23 +207,126 @@ def _name(card: Tag) -> str:
     return ""
 
 
+_PRICE_CLS = re.compile(r"price|prc|cost|amount|sale|discount|dc[-_]|percent|rate", re.I)
+_PRICE_NOT = re.compile(r"delivery|shipping|dlv|point|reward|review|rating|score|count|qty|satisf|arrival|star|coupon[-_]?(info|txt)", re.I)
+
+
+def card_prices(card: Tag) -> tuple[Optional[int], Optional[int], Optional[int]]:
+    """가격·할인율 요소(class 에 price/sale/discount …)의 글자만 읽는다. '15,000원 이상 무료배송' 같은 안내 숫자를 피하려고.
+    가격 요소가 없으면 카드 전체 글자."""
+    parts = []
+    for el in card.find_all(True):
+        cls = " ".join(el.get("class") or [])
+        if el.name in ("del", "s", "strike") or (cls and _PRICE_CLS.search(cls) and not _PRICE_NOT.search(cls)):
+            if not any(el in p.descendants for p in parts if isinstance(p, Tag)):
+                parts.append(el)
+    # 정가(<del>)만 가격 요소로 잡히고 판매가는 일반 글자인 카드도 있으므로, 판매가 요소가 있을 때만 좁혀 읽는다
+    if any(p.name not in ("del", "s", "strike") and parse_price_text(p.get_text(" ", strip=True))[0] for p in parts):
+        got = parse_price_text(" ".join(p.get_text(" ", strip=True) for p in parts))
+        if got[0]:
+            return got
+    return parse_price_text(card.get_text(" ", strip=True))
+
+
 def _brand(card: Tag) -> str:
     el = card.select_one("[class*=brand]")
     return clean_title(el.get_text(" ", strip=True))[:40] if el else ""
 
 
-def products_from_html(html: str, page_url: str, pats: list[re.Pattern]) -> list[Product]:
+_ID_ATTR = re.compile(r"^data-(prd|prod|product|goods|item|sku)[-_]?(cd|code|no|num|id|seq)$", re.I)
+
+
+def product_link(link: dict | None, values: dict, field: str = "url") -> str:
+    """채널 설정 product_link: {key: 상품번호 필드명, url: '...{id}...', image: '...{id}...'} 로 상품 주소(또는 이미지)를 만든다."""
+    if not link or not link.get(field):
+        return ""
+    keys = [k.lower() for k in ([link["key"]] if isinstance(link.get("key"), str) else link.get("key") or [])]
+    for k, v in values.items():
+        nk = k.lower().removeprefix("data-").replace("-", "").replace("_", "")
+        if (not keys or nk in [x.replace("_", "") for x in keys]) and v not in (None, "") and re.fullmatch(r"[\w.-]{2,40}", str(v)):
+            return link[field].replace("{id}", str(v))
+    return ""
+
+
+def _data_cards(soup: BeautifulSoup, page_url: str, link: dict | None) -> list[Product]:
+    """링크가 javascript: 인 상품 카드: data-prdcd / data-goods-cd 같은 상품번호 속성 + 이미지 + 가격."""
+    out: dict[str, Product] = {}
+    for el in soup.find_all(lambda x: isinstance(x, Tag) and any(_ID_ATTR.match(a) for a in x.attrs)):
+        if el.name in ("button", "input", "a", "span", "i") or _in_chrome(el):
+            continue
+        attrs = {a: v for a, v in el.attrs.items() if _ID_ATTR.match(a)}
+        pid = next(iter(attrs.values()))
+        if not pid or pid in out:
+            continue
+        text = el.get_text(" ", strip=True)
+        if len(text) > 500:
+            continue
+        price, orig, pct = card_prices(el)
+        name = clean_title(el.get("data-prdnm") or el.get("data-name") or el.get("data-goods-nm") or "") or _name(el)
+        img = _img(el, page_url) or product_link(link, attrs, "image")
+        if not name or not (price or img):
+            continue
+        url = product_link(link, {**attrs, **{a: v for a, v in el.attrs.items() if isinstance(v, str)}})
+        if not url:
+            a = el.find("a", href=True)
+            href = a["href"].strip() if a else ""
+            url = urljoin(page_url, href) if href and not href.startswith(("#", "javascript")) else ""
+        out[pid] = Product(name=name[:100], url=url, image_url=img, price=price, original_price=orig,
+                           discount_rate=pct, brand=_brand(el))
+    return list(out.values())
+
+
+def _alt_index(soup: BeautifulSoup, page_url: str) -> dict[str, tuple[str, str]]:
+    """이미지 alt(=상품명) → (이미지, 감싼 링크). JSON 으로만 잡힌 상품의 이미지·주소를 채울 때 쓴다."""
+    idx: dict[str, tuple[str, str]] = {}
+    for img in soup.find_all("img", alt=True):
+        k = _nk_name(img["alt"])
+        if len(k) < 3 or k in idx:
+            continue
+        v = (img.get("data-src") or img.get("data-original") or img.get("src") or "").strip()
+        src = urljoin(page_url, v.split(",")[0].split(" ")[0]) if v and not v.startswith("data:") and not _BAD_IMG.search(v) else ""
+        a = img.find_parent("a", href=True)
+        href = a["href"].strip() if a else ""
+        idx[k] = (src, urljoin(page_url, href) if href and not href.startswith(("#", "javascript")) else "")
+    return idx
+
+
+def _nk_name(s: str) -> str:
+    return re.sub(r"[\s\W_]+", "", (s or "").lower())
+
+
+def fill_from_page(products: list[Product], html: str, page_url: str, pats: list[re.Pattern]) -> None:
+    """이미지·주소 없는 상품(JSON 경로)을 같은 페이지의 <img alt="상품명"> 으로 채운다."""
+    if not any(not p.image_url or not p.url for p in products):
+        return
+    idx = _alt_index(BeautifulSoup(html, "html.parser"), page_url)
+    for p in products:
+        hit = idx.get(_nk_name(p.name))
+        if not hit:
+            continue
+        p.image_url = p.image_url or hit[0]
+        if not p.url and hit[1] and is_product_url(hit[1], pats):
+            p.url = hit[1]
+
+
+def drop_bare(products: list[Product]) -> list[Product]:
+    """대부분 상품에 이미지·주소가 있는데 둘 다 없는 상품은 다른 응답에서 겹쳐 잡힌 것(예: 영문 상품명)이라 뺀다."""
+    rich = [p for p in products if p.image_url or p.url]
+    return rich if len(rich) >= max(3, len(products) // 2) else products
+
+
+def products_from_html(html: str, page_url: str, pats: list[re.Pattern], link: dict | None = None) -> list[Product]:
     soup = BeautifulSoup(html, "html.parser")
-    for t in soup(["script", "style", "noscript"]):
+    for t in soup(["script", "style", "noscript", "template"]):
         t.decompose()
     out: dict[str, Product] = {}
     for a in soup.find_all("a", href=True):
         url = urljoin(page_url, a["href"].strip())
-        if not is_product_url(url, pats):
+        if not is_product_url(url, pats) or _in_chrome(a):
             continue
         key = product_key(url)
         card = _card_for(a, pats, page_url)
-        price, orig, pct = parse_price_text(card.get_text(" ", strip=True))
+        price, orig, pct = card_prices(card)
         name = _name(card)
         if not name:
             continue
@@ -184,18 +339,22 @@ def products_from_html(html: str, page_url: str, pats: list[re.Pattern]) -> list
             out[key] = p
         else:
             prev.image_url = prev.image_url or p.image_url
-    return list(out.values())
+    seen = {_nk_name(p.name) for p in out.values()}
+    extra = [p for p in _data_cards(soup, page_url, link) if _nk_name(p.name) not in seen]
+    return list(out.values()) + extra
 
 
 # ── JSON ─────────────────────────────────────────
 NAME_KEYS = re.compile(r"^((goods|item|product|prd|prod|deal|sku)_?(name|nm|title|ttl)|name|title|display_?name)$", re.I)
-PRICE_KEYS = re.compile(r"^(final_?price|sale_?price|sell_?price|selling_?price|discount(ed)?_?price|dc_?price|benefit_?price|"
+PRICE_KEYS = re.compile(r"^(final_?price|sales?_?price|sell_?price|origin_?price|selling_?price|discount(ed)?_?price|dc_?price|benefit_?price|"
                         r"coupon_?price|best_?price|price|cur_?price|current_?price|disp_?price|lowest_?price|prc|sale_?prc|sl_?prc|"
                         r"normal_?price|original_?price|org_?price|consumer_?price|list_?price|retail_?price|market_?price|cust_?price|nor_?prc)$", re.I)
 ORIG_KEYS = re.compile(r"^(normal|original|org|consumer|list|retail|market|cust|before|origin|nor)_?(price|prc)$", re.I)
 RATE_KEYS = re.compile(r"^(discount|dc|sale|benefit)_?(rate|ratio|percent|pct)$", re.I)
-PURL_KEYS = re.compile(r"^((link|landing|item|goods|product|detail|click|move|pc|mobile|mo)_?(url|link|uri))$|^(url|link|href)$", re.I)
-PIMG_KEYS = re.compile(r"(image|img|thumbnail|thumb)(_?(url|path|src))?$", re.I)
+PURL_KEYS = re.compile(r"^((link|landing|item|goods|product|detail|click|move|pc|mobile|mo|redirect|share|web)_?(url|link|uri))$|^(url|link|href)$", re.I)
+# 이미지 필드: imageUrl, basicImage, list_image_url, image128Url, prdImgUrl, thumbnailUrl, productThumbnailUrlList[0].thumbnailUrl …
+PIMG_KEYS = re.compile(r"(image|img|thumbnail|thumb)\w*?(url|path|src|list)?$", re.I)
+_PIMG_SKIP = re.compile(r"(count|cnt|yn|type|code|cd|width|height|size|alt|badge|icon|logo|sticker|flag)$", re.I)
 BRAND_KEYS = re.compile(r"^(brand|brand_?(name|nm))$", re.I)
 
 
@@ -225,7 +384,34 @@ def _walk(o, depth=0):
             yield from _walk(v, depth + 1)
 
 
-def products_from_json(payload, page_url: str) -> list[Product]:
+def _img_like(v) -> str:
+    if isinstance(v, dict):
+        v = next((x for k, x in v.items() if isinstance(x, str) and re.search(r"url|src|path", k, re.I)), "")
+    if isinstance(v, list):
+        v = next((_img_like(x) for x in v if _img_like(x)), "")
+    if not isinstance(v, str):
+        return ""
+    v = v.strip()
+    if not v or v.startswith("data:") or _BAD_IMG.search(v):
+        return ""
+    return v if re.search(r"\.(jpe?g|png|webp|gif|avif)(\?|$)|/images?/|image\.|img\.|/thumb", v, re.I) else ""
+
+
+def _json_img(d: dict) -> str:
+    """이미지 후보 필드 중 가장 큰 것(64x64 같은 작은 썸네일보다 128·원본 우선)."""
+    cands = []
+    for k, v in d.items():
+        nk = _nk(k)
+        if PIMG_KEYS.search(nk) and not _PIMG_SKIP.search(nk):
+            u = _img_like(v)
+            if u:
+                m = re.search(r"(\d{2,4})", nk) or re.search(r"(\d{2,4})x\d{2,4}", u)
+                size = int(m.group(1)) if m else 500
+                cands.append((size, u))
+    return max(cands)[1] if cands else ""
+
+
+def products_from_json(payload, page_url: str, link_tpl: dict | None = None) -> list[Product]:
     if isinstance(payload, (bytes, str)):
         try:
             payload = json.loads(payload)
@@ -253,12 +439,17 @@ def products_from_json(payload, page_url: str) -> list[Product]:
         if orig and orig > (price or 0):
             original = orig
         _, link = _get(d, PURL_KEYS)
-        _, img = _get(d, PIMG_KEYS)
+        img = _json_img(d)
         _, brand = _get(d, BRAND_KEYS)
+        url = urljoin(page_url, link) if isinstance(link, str) and not link.startswith(("javascript", "#")) else ""
+        if link_tpl:
+            vals = {k: v for k, v in d.items() if isinstance(v, (str, int)) and not isinstance(v, bool)}
+            url = url or product_link(link_tpl, vals)
+            img = img or product_link(link_tpl, vals, "image")
         out.append(Product(
             name=clean_title(re.sub(r"<[^>]+>", " ", name))[:100],
-            url=urljoin(page_url, link) if isinstance(link, str) and not link.startswith(("javascript", "#")) else "",
-            image_url=urljoin(page_url, img) if isinstance(img, str) and not img.startswith("data:") else "",
+            url=url,
+            image_url=urljoin(page_url, img) if img else "",
             price=price, original_price=original, discount_rate=pct,
             brand=clean_title(brand)[:40] if isinstance(brand, str) else "",
         ))
@@ -315,5 +506,8 @@ def merge_products(lists: list[list[Product]], limit: int = 60) -> list[Product]
                     setattr(q, f, getattr(p, f))
     # 가격 있는 상품 우선, 페이지 노출 순서 유지
     items = [by[k] for k in order]
+    for p in items:
+        if p.original_price and p.price and p.original_price <= p.price:
+            p.original_price = None
     items.sort(key=lambda p: p.price is None)
     return items[:limit]

@@ -72,3 +72,14 @@ def test_status():
     assert status_of(date(2026, 12, 1), None, REF) == "upcoming"
     assert status_of(None, date(2026, 11, 1), REF) == "ended"
     assert status_of(None, None, REF) == "unknown"
+
+
+def test_noise_titles():
+    from promohub.normalize import is_meaningful_title, is_mall_name
+    for t in ["더보기 더보기 플러스 아이콘", "Attention Required!", "CJ더마켓 : CJ제일제당 공식몰", "신라인터넷면세점",
+              "왼쪽 슬라이드 보기 오른쪽 슬라이드 보기", "상세페이지로 이동", "기획전·이벤트", "전체보기", "EVENT", "Promotion"]:
+        assert not is_meaningful_title(t), t
+    for t in ["11월 책그리고꽃 : 황금빛 꽃다발", "99마켓", "키링콜렉션", "출석체크하고 쿠폰&포인트 GET!"]:
+        assert is_meaningful_title(t), t
+    assert is_mall_name("교보문고", "교보문고") and is_mall_name("롯데하이마트", "하이마트")
+    assert not is_mall_name("교보문고 『트렌드+』 GRAND OPEN", "교보문고")

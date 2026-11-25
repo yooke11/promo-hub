@@ -12,8 +12,8 @@ from playwright.async_api import Browser, BrowserContext, Response, async_playwr
 from .config import Config, Source
 from .extract import apply_detail, extract_detail_meta, extract_from_html, extract_from_json, merge, needs_detail
 from .models import RawPromotion
-from .normalize import normalize
-from .products import merge_products, products_from_html, products_from_json, products_from_jsonld
+from .normalize import is_mall_name, normalize
+from .products import drop_bare, fill_from_page, merge_products, products_from_html, products_from_json, products_from_jsonld
 from .store import Store
 
 log = logging.getLogger("promohub")
@@ -135,9 +135,12 @@ async def collect_source(browser: Browser, source: Source, diag: dict | None = N
                 await _auto_scroll(page, 3)          # 지연 로딩 상품 목록
                 html = await page.content()
                 apply_detail(r, extract_detail_meta(html, page.url))
-                lists = [products_from_jsonld(html, page.url), products_from_html(html, page.url, source.product_pats)]
-                lists += [products_from_json(body, u) for u, body in detail_json]
+                lists = [products_from_jsonld(html, page.url),
+                         products_from_html(html, page.url, source.product_pats, source.product_link)]
+                lists += [products_from_json(body, u, source.product_link) for u, body in detail_json]
                 r.products = merge_products(lists, source.product_limit)
+                fill_from_page(r.products, html, page.url, source.product_pats)   # JSON 상품의 이미지·주소를 페이지 <img alt> 로 보충
+                r.products = drop_bare(r.products)
                 log.info("[%s] 상품 %d개 ← %s", source.id, len(r.products), r.title[:30])
                 if len(diag["details"]) < 12:
                     diag["details"].append({"url": page.url[:160], "ld": len(lists[0]), "dom": len(lists[1]),
@@ -154,7 +157,7 @@ async def collect_source(browser: Browser, source: Source, diag: dict | None = N
 
 
 async def run(config: Config, store: Store | None, only: list[str] | None = None, headless: bool = True,
-              sink=None, shard: tuple[int, int] | None = None) -> dict:
+              sink=None, shard: tuple[int, int] | None = None, config_name: str = "sources.yaml") -> dict:
     """store: 로컬 SQLite(없으면 생략), sink: RemoteSink(Supabase). shard=(i, n)이면 순위순 채널 중 i번째 묶음만."""
     from datetime import datetime, timezone
     from .remote import build_payload
@@ -172,10 +175,11 @@ async def run(config: Config, store: Store | None, only: list[str] | None = None
                 if store:
                     store.upsert_source(src.id, src.name, src.channel_type, src.rank)
                     run_id = store.start_run(src.id)
-                diag: dict = {}
+                # 어떤 설정으로 돈 수집인지 기록 → 웹은 운영 설정(sources.yaml) 수집 채널만 보여 준다(후보 시험 수집 제외)
+                diag: dict = {"config": config_name}
                 try:
                     raws = await collect_source(browser, src, diag)
-                    promos = [p for p in (normalize(r) for r in raws) if p]
+                    promos = [p for p in (normalize(r) for r in raws) if p and not is_mall_name(p.title, src.name)]
                     diag["raw"] = len(raws)
                     new = store.upsert_promotions(promos) if store else 0
                     if sink:

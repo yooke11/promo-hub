@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import argparse
+from pathlib import Path
 import asyncio
 import json
 import logging
@@ -54,7 +55,8 @@ def main(argv=None):
         store = Store(db) if mode in ("local", "both") else None
         sink = RemoteSink() if mode in ("supabase", "both") else None
         shard = tuple(int(x) for x in args.shard.split("/")) if args.shard else None
-        summary = asyncio.run(run(load_config(args.config), store, only, headless=not args.headed, sink=sink, shard=shard))
+        summary = asyncio.run(run(load_config(args.config), store, only, headless=not args.headed, sink=sink, shard=shard,
+                                  config_name=Path(args.config).name))
         print(json.dumps(summary, ensure_ascii=False, indent=2))
         if summary and all("error" in v for v in summary.values()):
             sys.exit(1)

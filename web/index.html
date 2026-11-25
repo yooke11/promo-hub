@@ -475,20 +475,23 @@ function card(i){
     </div></button>`;
 }
 
+/* 상품 링크: 상품 주소 → 없으면 그 상품이 담긴 기획전 주소(상세 패널에서는 p.promo 가 없으므로 열린 기획전).
+   "#" 로 두면 새 탭에 프로모션 허브가 한 번 더 열리므로 절대 쓰지 않는다. */
+const plink = p => p.url || (p.promo||{}).url || (st.open||{}).url || "about:blank";
 function productsView(list, inDrawer=false){
   if(!list.length) return `<div class="empty">조건에 맞는 상품이 없습니다.</div>`;
   const lim = inDrawer ? list : list.slice(0, 400);
   if(st.pmode === "text"){
     return `<table class="pt"><thead><tr>${inDrawer?"":`<th>쇼핑몰</th>`}<th>상품</th><th class="r">할인</th><th class="r">판매가</th><th class="r hide-m">정가</th><th class="r">웹 최저가</th><th class="r">차이</th></tr></thead><tbody>
       ${lim.map(p => { const v = vsPct(p); return `<tr>${inDrawer?"":`<td style="white-space:nowrap"><span class="chip-ch"><span class="dot" style="background:${srcColor(p.promo.source_id)}"></span>${esc(p.promo.source_name)}</span></td>`}
-        <td><a href="${esc(p.url || (p.promo||{}).url || "#")}" target="_blank" rel="noopener">${p.brand?`<span class="sub">${esc(p.brand)}</span> `:""}${esc(p.name)}</a>${inDrawer?"":`<div class="sub">${esc(p.promo.title.slice(0,30))}</div>`}</td>
+        <td><a href="${esc(plink(p))}" target="_blank" rel="noopener">${p.brand?`<span class="sub">${esc(p.brand)}</span> `:""}${esc(p.name)}</a>${inDrawer?"":`<div class="sub">${esc(p.promo.title.slice(0,30))}</div>`}</td>
         <td class="r d num">${p.discount_rate ? p.discount_rate+"%" : ""}</td><td class="r num"><b>${won(p.price)||"-"}</b></td>
         <td class="r num hide-m sub"><s>${won(p.original_price)}</s></td>
         <td class="r num">${p.market_lowest ? `${won(p.market_lowest)}<div class="sub">${esc(p.market_mall||"")}</div>` : `<span class="sub">-</span>`}</td>
         <td class="r num ${v==null?"":v<=0?"neg":"pos"}">${v==null?"":(v>0?"+":"")+v+"%"}</td></tr>`; }).join("")}</tbody></table>
       ${lim.length < list.length ? `<div class="tl-note">상위 ${lim.length}개만 표시했습니다. 필터로 좁혀 보세요.</div>` : ""}`;
   }
-  return `<div class="pgrid">${lim.map(p => `<a class="pcard" href="${esc(p.url || (p.promo||{}).url || "#")}" target="_blank" rel="noopener">
+  return `<div class="pgrid">${lim.map(p => `<a class="pcard" href="${esc(plink(p))}" target="_blank" rel="noopener">
       <span style="position:relative;display:block">${inDrawer?"":`<span class="chtag" style="background:${srcColor(p.promo.source_id)}">${esc(p.promo.source_name)}</span>`}${pimg(p)}</span>
       <div class="pb">${p.brand?`<span class="br">${esc(p.brand)}</span>`:""}<span class="nm">${esc(p.name)}</span>${priceHtml(p)}${vsLine(p)}
       ${inDrawer?"":`<span class="from">${esc(p.promo.title)}</span>`}</div></a>`).join("")}</div>

@@ -4,7 +4,7 @@ import asyncio, json, sys, os, re, hashlib
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from promohub.config import load_config
 from promohub.collector import RobotsCache, _new_context, _auto_scroll
-from promohub.products import products_from_html, products_from_json, products_from_jsonld, merge_products
+from promohub.products import drop_bare, fill_from_page, products_from_html, products_from_json, products_from_jsonld, merge_products
 from playwright.async_api import async_playwright
 OUT = "probe_out"
 os.makedirs(OUT, exist_ok=True)
@@ -34,9 +34,10 @@ async def one(sid, url, n):
         open(f"{OUT}/{tag}.html","w").write(html)
         with open(f"{OUT}/{tag}.json","w") as f:
             for u, body in js: f.write(json.dumps({"url":u,"body":body.decode("utf-8","replace")[:200000]}, ensure_ascii=False)+"\n")
-        ld = products_from_jsonld(html, page.url); dom = products_from_html(html, page.url, src.product_pats)
-        jl = [products_from_json(bd, u) for u, bd in js]
+        ld = products_from_jsonld(html, page.url); dom = products_from_html(html, page.url, src.product_pats, src.product_link)
+        jl = [products_from_json(bd, u, src.product_link) for u, bd in js]
         m = merge_products([ld, dom] + jl, src.product_limit)
+        fill_from_page(m, html, page.url, src.product_pats); m = drop_bare(m)
         print(tag, "final", page.url, "ld", len(ld), "dom", len(dom), "json", sum(map(len, jl)), "kept", len(m), "json_resp", len(js))
         for p in m[:8]: print("  ", p.name[:40], "|", p.price, p.original_price, "|", (p.url or "")[:70], "|", (p.image_url or "")[:60])
         await b.close()

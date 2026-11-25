@@ -211,7 +211,12 @@ def status_of(start: Optional[date], end: Optional[date], today: Optional[date] 
 
 
 # ── 조립 ────────────────────────────────────────────
-_NOISE_TITLE = re.compile(r"^(더보기|바로가기|자세히|more|view|click|go|이동|배너|banner|이미지|image|\s)*$", re.I)
+_NOISE_TITLE = re.compile(r"^(더보기|바로가기|자세히|more|view|click|go|이동|배너|banner|이미지|image|전체\s*보기|"
+                          r"기획전|이벤트|기획전\s*[·/&]\s*이벤트|이벤트관|events?|promotions?|special|sale|\s)*$", re.I)
+# 화면 조작 문구·차단 페이지·쇼핑몰 이름만 있는 제목(기획전이 아님)
+_UI_TITLE = re.compile(r"더보기|슬라이드\s*보기|상세\s*페이지로\s*이동|플러스\s*아이콘|새\s*창|attention required|access denied|"
+                       r"보안\s*확인|just a moment|^(로그인|회원가입|장바구니|고객센터)$|"
+                       r"^.{0,20}(공식\s*(온라인\s*)?몰|인터넷\s*면세점|온라인\s*쇼핑몰)$", re.I)
 
 
 def clean_title(t: str) -> str:
@@ -220,7 +225,13 @@ def clean_title(t: str) -> str:
 
 
 def is_meaningful_title(t: str) -> bool:
-    return bool(t) and len(t) >= 4 and not _NOISE_TITLE.match(t)
+    return bool(t) and len(t) >= 4 and not _NOISE_TITLE.match(t) and not _UI_TITLE.search(t)
+
+
+def is_mall_name(title: str, source_name: str) -> bool:
+    """제목이 쇼핑몰 이름뿐인 경우(예: '교보문고', '롯데하이마트')."""
+    a, b = re.sub(r"[\s\W_]+", "", title or "").lower(), re.sub(r"[\s\W_]+", "", source_name or "").lower()
+    return bool(a and b) and (a == b or ((a in b or b in a) and len(a) <= len(b) + 3))
 
 
 def normalize(raw: RawPromotion, ref: Optional[date] = None) -> Optional[Promotion]:
