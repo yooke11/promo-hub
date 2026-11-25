@@ -1032,3 +1032,168 @@ sources:
   - /product/detail\.html
   - product_no=
   - /product/[^?]+/\d+/category/
+- id: medicube   # 2026-11-25 뷰티 2차 시험 수집 통과
+  name: 메디큐브
+  channel_type: brand
+  rank: 340
+  domains:
+  - themedicube.co.kr
+  mobile: false
+  entry_urls:
+  - https://themedicube.co.kr/product/list.html?cate_no=1230
+  - https://themedicube.co.kr/board/event/list.html?board_no=8
+  include_patterns:
+  - project\.html
+  - /board/(event|gallery)[^/]*/
+  - /article/[^/]+/\d+/\d+
+  - /exhibit
+  - /promotion
+  - goods_list\.php\?cateCd=
+  - board/(list|view)\.php\?.*bdId=(promotion|event)
+  - htmid=[^&]*event
+  - cate_no=1230\b
+  - /event/[\w-]+\.html
+  exclude_patterns:
+  - /product/detail\.html
+  - product_no=
+  - /product/[^?]+/\d+/category/
+  - goods_view\.php
+  - period=end
+  - write\.html
+  - event_result
+- id: mediheal   # 2026-11-25 뷰티 2차 시험 수집 통과
+  name: 메디힐
+  channel_type: brand
+  rank: 341
+  domains:
+  - medihealshop.com
+  mobile: false
+  entry_urls:
+  - https://www.medihealshop.com/
+  - https://www.medihealshop.com/board/event/list.html?board_no=3001&category_no=1
+  include_patterns:
+  - project\.html
+  - /board/(event|gallery)[^/]*/
+  - /article/[^/]+/\d+/\d+
+  - /exhibit
+  - /promotion
+  - goods_list\.php\?cateCd=
+  - board/(list|view)\.php\?.*bdId=(promotion|event)
+  - htmid=[^&]*event
+  exclude_patterns:
+  - /product/detail\.html
+  - product_no=
+  - /product/[^?]+/\d+/category/
+  - goods_view\.php
+  - period=end
+  - write\.html
+  - event_result
+- id: numbuzin   # 2026-11-25 뷰티 2차 시험 수집 통과
+  name: 넘버즈인
+  channel_type: brand
+  rank: 342
+  domains:
+  - numbuzin.com
+  mobile: false
+  entry_urls:
+  - https://numbuzin.com/product/list.html?cate_no=101
+  - https://numbuzin.com/board/event/list.html?board_no=5
+  include_patterns:
+  - project\.html
+  - /board/(event|gallery)[^/]*/
+  - /article/[^/]+/\d+/\d+
+  - /exhibit
+  - /promotion
+  - goods_list\.php\?cateCd=
+  - board/(list|view)\.php\?.*bdId=(promotion|event)
+  - htmid=[^&]*event
+  - cate_no=101\b
+  exclude_patterns:
+  - /product/detail\.html
+  - product_no=
+  - /product/[^?]+/\d+/category/
+  - goods_view\.php
+  - period=end
+  - write\.html
+  - event_result
+- id: torriden   # 2026-11-25 뷰티 2차 시험 수집 통과
+  name: 토리든
+  channel_type: brand
+  rank: 343
+  domains:
+  - torriden.com
+  mobile: false
+  entry_urls:
+  - https://torriden.com/goods/goods_list.php?cateCd=011
+  - https://torriden.com/board/list.php?bdId=promotion&period=current
+  include_patterns:
+  - project\.html
+  - /board/(event|gallery)[^/]*/
+  - /article/[^/]+/\d+/\d+
+  - /exhibit
+  - /promotion
+  - goods_list\.php\?cateCd=
+  - board/(list|view)\.php\?.*bdId=(promotion|event)
+  - htmid=[^&]*event
+  exclude_patterns:
+  - /product/detail\.html
+  - product_no=
+  - /product/[^?]+/\d+/category/
+  - goods_view\.php
+  - period=end
+  - write\.html
+  - event_result
+- id: abib   # 2026-11-25 뷰티 2차 시험 수집 통과
+  name: 아비브
+  channel_type: brand
+  rank: 344
+  domains:
+  - abib.com
+  - abib.co.kr
+  mobile: false
+  entry_urls:
+  - https://abib.com/promotion/list.html?tab=campaign
+  include_patterns:
+  - project\.html
+  - /board/(event|gallery)[^/]*/
+  - /article/[^/]+/\d+/\d+
+  - /exhibit
+  - /promotion
+  - goods_list\.php\?cateCd=
+  - board/(list|view)\.php\?.*bdId=(promotion|event)
+  - htmid=[^&]*event
+  exclude_patterns:
+  - /product/detail\.html
+  - product_no=
+  - /product/[^?]+/\d+/category/
+  - goods_view\.php
+  - period=end
+  - write\.html
+  - event_result
+- id: anua   # 2026-11-25 뷰티 2차 시험 수집 통과
+  name: 아누아
+  channel_type: brand
+  rank: 345
+  domains:
+  - anua.kr
+  mobile: false
+  entry_urls:
+  - https://anua.kr/
+  - https://anua.kr/board/event/list.html
+  include_patterns:
+  - project\.html
+  - /board/(event|gallery)[^/]*/
+  - /article/[^/]+/\d+/\d+
+  - /exhibit
+  - /promotion
+  - goods_list\.php\?cateCd=
+  - board/(list|view)\.php\?.*bdId=(promotion|event)
+  - htmid=[^&]*event
+  exclude_patterns:
+  - /product/detail\.html
+  - product_no=
+  - /product/[^?]+/\d+/category/
+  - goods_view\.php
+  - period=end
+  - write\.html
+  - event_result
