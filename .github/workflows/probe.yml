@@ -1,0 +1,30 @@
+name: probe
+
+# 진단용: 지정한 기획전 상세 페이지를 수집기와 같은 브라우저 설정으로 열어 HTML·JSON 응답·스크린샷을 아티팩트로 남김(DB 적재 없음).
+on:
+  workflow_dispatch:
+    inputs:
+      targets:
+        description: "공백 구분 '채널id=URL' 목록"
+        required: true
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12", cache: pip }
+      - run: pip install -r requirements.txt
+      - run: python -m playwright install --with-deps chromium
+      - name: 진단
+        env:
+          TARGETS: ${{ github.event.inputs.targets }}
+        run: mkdir -p probe_out && python scripts/probe.py $TARGETS | tee probe_out/summary.txt || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: probe
+          path: probe_out/
+          retention-days: 3
