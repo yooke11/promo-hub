@@ -243,11 +243,17 @@
   .pk .rs{display:flex;flex-wrap:wrap;gap:4px;margin-top:2px}
   .pk .rs i{font-style:normal;font-size:10.5px;color:var(--ink-2);background:var(--chip);border-radius:5px;padding:1px 6px}
   .pk .rank{position:absolute;top:8px;right:8px;z-index:2;background:rgba(0,0,0,.7);color:#fff;font-size:11px;font-weight:600;border-radius:6px;padding:2px 7px}
+  .vnav{display:flex;gap:4px;flex:none}
+  .vnav a{text-decoration:none;color:var(--ink-2);font-size:14px;font-weight:500;padding:7px 12px;border-radius:999px;white-space:nowrap}
+  .vnav a:hover{background:var(--chip)}
+  .vnav a.on{background:var(--ink);color:#fff}
+  @media (max-width:900px){ .vnav{order:3;width:100%;overflow-x:auto} .top-in{flex-wrap:wrap} }
 </style>
 </head>
 <body>
 <header class="top"><div class="top-in">
   <a class="logo" href="/" title="메인으로"><i></i>프로모션 허브</a>
+  <nav class="vnav" id="vnav"></nav>
   <label class="search">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
     <input id="q" type="search" placeholder="기획전·상품·브랜드 검색 (예: 패딩, 설화수, 블프)">
@@ -293,6 +299,18 @@ const BENEFITS = ["할인","쿠폰","적립","카드혜택","경품·추첨","�
 const SORTS = {cards:[["ending","마감 임박순"],["new","최근 발견순"],["discount","할인율 높은순"],["rank","채널 순위순"]],
                products:[["discount","할인율 높은순"],["vs_market","웹 최저가보다 싼 순"],["price","낮은 가격순"],["price_desc","높은 가격순"],["ending","기획전 마감순"]]};
 const DAY = 864e5, today = new Date(); today.setHours(0,0,0,0);
+/* 분야별 페이지: /food /fashion /digital (채널 묶음은 DB source_verticals) */
+const VERTS = {
+  "": {label:"전체", title:"오늘의 추천 상품", doc:"프로모션 허브"},
+  food: {label:"식품·장보기", title:"오늘의 식품·장보기 특가", doc:"식품·장보기 특가 모아보기",
+         desc:"마트·식품 브랜드몰·신선식품몰 기획전에서 오늘 장보기 좋은 상품만 골랐어요."},
+  fashion: {label:"패션", title:"오늘의 패션 세일", doc:"패션 세일 모아보기",
+         desc:"브랜드 공식몰·편집숍·아울렛 기획전에서 지금 사기 좋은 옷과 신발을 골랐어요."},
+  digital: {label:"가전·디지털", title:"오늘의 가전·디지털 특가", doc:"가전·디지털 특가 모아보기",
+         desc:"삼성·LG·다이슨·하이마트·다나와 기획전에서 할인 폭이 크고 많이 찾는 제품을 골랐어요."}
+};
+const VKEY = (() => { const m = location.pathname.match(/^\/(food|fashion|digital)\/?$/); return m ? m[1] : (new URLSearchParams(location.search).get("v") || ""); })();
+const VCUR = VERTS[VKEY] ? VKEY : "";
 const $ = id => document.getElementById(id);
 
 let DATA = [], SOURCES = [], DEMO = false;
@@ -334,6 +352,10 @@ async function load(){
         sb("v_sources?select=*&order=rank.asc")]);
       let p, s;
       try { [p, s] = await get(); } catch(e1) { await new Promise(r => setTimeout(r, 1500)); [p, s] = await get(); }  // 일시 오류면 한 번 더
+      if(VCUR){
+        const sv = new Set((await sb(`source_verticals?select=source_id&vertical=eq.${VCUR}`)).map(r => r.source_id));
+        p = p.filter(x => sv.has(x.source_id)); s = s.filter(x => sv.has(x.id));
+      }
       DATA = p; SOURCES = s;
     }else{
       const [p, s] = await Promise.all([fetch("/api/promotions?limit=3000&items_per=60"), fetch("/api/sources")]);
@@ -355,6 +377,8 @@ function useDemo(err){
   $("demo").hidden = false; $("meta").textContent = "샘플 모드"; boot();
 }
 function boot(){
+  $("vnav").innerHTML = Object.entries(VERTS).map(([k, v]) => `<a href="/${k}" class="${k === VCUR ? "on" : ""}">${v.label}</a>`).join("");
+  document.title = VERTS[VCUR].doc + (VCUR ? " · 프로모션 허브" : "");
   SOURCES.sort((a,b) => (a.rank??999)-(b.rank??999)); SOURCES.forEach((s,i) => srcIdx.set(s.id, i));
   DATA.forEach(i => { i.items = i.items || []; i.benefits = i.benefits || []; });
   setSorts(); renderSide(); render();
@@ -564,7 +588,7 @@ function demoPicks(){
 function picksData(){
   if(MODE !== "supabase") return PICKCACHE || (PICKCACHE = demoPicks());
   if(PICKCACHE) return PICKCACHE;
-  sb("v_picks?select=*&order=rank.asc").then(r => { PICKCACHE = r; render(); }).catch(e => { console.warn(e); PICKCACHE = []; render(); });
+  sb(`v_picks?select=*&vertical=eq.${VCUR || "all"}&order=rank.asc`).then(r => { PICKCACHE = r; render(); }).catch(e => { console.warn(e); PICKCACHE = []; render(); });
   return null;
 }
 function pickCard(p){
@@ -581,7 +605,7 @@ function picksView(){
   const list = all.filter(p => (!st.ctypes.size || st.ctypes.has(p.channel_type)) && (!st.sources.size || st.sources.has(p.source_id))
                          && (!st.q || (p.name + " " + (p.brand||"") + " " + p.source_name).toLowerCase().includes(st.q.toLowerCase())));
   const day = all[0] && all[0].pick_date ? fmt(d(all[0].pick_date)) : fmt(today);
-  const hero = `<div class="pk-hero v"><h2>오늘의 추천 상품</h2>
+  const hero = `<div class="pk-hero v"><h2>${VERTS[VCUR].title}</h2>${VERTS[VCUR].desc ? `<p style="margin-bottom:8px">${VERTS[VCUR].desc}</p>` : ""}
     <p>${day} 기준, 모든 쇼핑몰 기획전 상품 중에서 <b>잘 팔릴 만한 상품 ${all.length}개</b>를 골랐어요. 쇼핑몰마다 4개, 기획전마다 2개까지만 담아 한쪽으로 쏠리지 않게 했어요.</p>
     <div class="how"><span>할인율</span><span>웹 최저가 비교</span><span>여러 쇼핑몰 중 최저가</span><span>검색 수요</span><span>마감 임박</span><span>가격대</span></div></div>`;
   $("railinfo").innerHTML = hero;
@@ -664,7 +688,7 @@ function render(){
     $("view").innerHTML = `<div class="empty"><b>첫 수집을 기다리는 중입니다</b>${SOURCES.length}개 채널이 등록돼 있고, 자동 수집이 돌면 기획전·상품이 여기에 채워집니다.<br>
       <button class="go" id="trydemo">샘플 데이터로 화면 미리보기</button></div>`;
   }else if(st.view === "picks"){
-    $("count").innerHTML = `오늘의 추천 상품`;
+    $("count").innerHTML = esc(VERTS[VCUR].title);
     $("view").innerHTML = picksView();
   }else if(st.view === "compare"){
     $("count").innerHTML = `가격 비교`;

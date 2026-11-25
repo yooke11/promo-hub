@@ -873,7 +873,7 @@ sources:
   entry_urls:
   - https://www.innisfree.com/kr/ko/
 - id: nongshimmall   # 2026-11-25 유형별 상위 선정(시험 수집 기획전 3건)
-  enabled: false   # 2026-11-25 시험 수집 품질 미달
+  # 2026-11-25 분야별 페이지(food) 재시험 통과(기획전 3·상품 120) → 다시 켬
   name: 농심몰
   channel_type: brand
   rank: 161
@@ -891,3 +891,48 @@ sources:
   mobile: false
   entry_urls:
   - https://www.shilladfs.com/estore/kr/ko
+- id: choroc   # 2026-11-25 분야별 페이지(food) 시험 수집 통과
+  name: 초록마을
+  channel_type: vertical
+  rank: 212
+  domains:
+  - choroc.com
+  mobile: false
+  entry_urls:
+  - https://www.choroc.com/
+- id: harimmall   # 2026-11-25 분야별 페이지(food) 시험 수집 통과
+  name: 하림몰
+  channel_type: brand
+  rank: 205
+  domains:
+  - harimmall.com
+  mobile: false
+  entry_urls:
+  - https://www.harimmall.com/
+- id: epost   # 2026-11-25 분야별 페이지(food) 시험 수집 통과
+  name: 우체국쇼핑
+  channel_type: openmarket
+  rank: 214
+  domains:
+  - mall.epost.go.kr
+  mobile: false
+  entry_urls:
+  - https://mall.epost.go.kr/
+- id: mlbkorea   # 2026-11-25 분야별 페이지(fashion) 시험 수집 통과
+  name: MLB
+  channel_type: fashion
+  rank: 238
+  domains:
+  - mlb-korea.com
+  mobile: false
+  entry_urls:
+  - https://www.mlb-korea.com/
+- id: discovery   # 2026-11-25 분야별 페이지(fashion) 시험 수집 통과
+  name: 디스커버리
+  channel_type: fashion
+  rank: 237
+  domains:
+  - discovery-expedition.com
+  mobile: false
+  entry_urls:
+  - https://www.discovery-expedition.com/
