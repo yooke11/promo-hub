@@ -89,7 +89,14 @@ def finalize_prices(prices: list[int], pct: Optional[int]) -> tuple[Optional[int
     original = prices[-1] if len(prices) > 1 and prices[-1] > price else None
     if original and original > price * 20:   # 엉뚱한 숫자(누적판매량 등) 방지
         original = None
-    if not pct and original:
+    stated = pct
+    if stated and original and len(prices) > 2:
+        # 적힌 할인율과 맞지 않는 최저 금액(단위 가격·쿠폰가 등)은 버리고, 할인율에 맞는 금액을 판매가로 쓴다
+        expect = original * (1 - stated / 100)
+        near = [p for p in prices if p < original and abs(p - expect) <= expect * 0.15]
+        if near:
+            price = min(near, key=lambda p: abs(p - expect))
+    if not stated and original:
         pct = round((1 - price / original) * 100)
     if pct is not None and not (0 < pct < 100):
         pct = None
@@ -100,8 +107,8 @@ def finalize_prices(prices: list[int], pct: Optional[int]) -> tuple[Optional[int
 _NOT_PRICE_AMT = re.compile(r"(포인트\s*)?적립\s*(금)?\s*[\d,]+\s*원|[\d,]+\s*원\s*(적립|이상|부터\s*무료|할인\s*쿠폰|쿠폰|캐시백|상당)|"
                             r"(배송비|택배비|쿠폰|캐시백|최대)\s*[\d,]+\s*원|[\d,]+\s*원\s*(off|OFF)|"
                             # 단위 가격(100g당 411원, 1개당 569원, (10ml당 120원)) — 판매가로 오인하면 최저가로 잡힌다
-                            r"[\d.,]+\s*(g|kg|ml|l|개|입|매|장|구|포|봉|팩|정|캡슐|회분?)\s*당\s*[:\s]*[\d,]+\s*원|"
-                            r"(단위\s*가격|단가|개당|1개당)\s*[:\s]*[\d,]+\s*원", re.I)
+                            r"[\d.,]+\s*(g|kg|mg|ml|mℓ|㎖|ℓ|l|㎏|㎎|㎗|dl|cc|m|개|입|매|장|구|포|봉|팩|정|알|캡슐|회분?|롤|EA)\s*당\s*[:\s]*[\d,]+\s*원|"
+                            r"(단위\s*가격|단가|개당|1개당|\b100\s*(g|ml|mℓ|㎖)\s*당?)\s*[:\s]*[\d,]+\s*원", re.I)
 _NOT_PCT = re.compile(r"[\d.]+\s*%\s*(만족|적립|도착|확률|캐시백|페이백|추천|구매)|(만족도?|적립률?|도착\s*확률|확률)\s*[\d.]+\s*%")
 
 
@@ -211,6 +218,22 @@ def _img_candidates(tag: Tag, base: str) -> list[str]:
 def _img(tag: Tag, base: str) -> str:
     c = _img_candidates(tag, base)
     return c[0] if c else ""
+
+
+# 용량·수량이 이름에 있는 상품(485ml x 4, 1L, 10족, 5회분 x 3) — 단위 가격이 판매가로 잡히기 쉽다
+_QTY_NAME = re.compile(r"\d+(\.\d+)?\s*(ml|mℓ|㎖|ℓ|l|g|kg|㎏|매|입|개입|족|회분|정|캡슐|롤|팩|포|구)\b|\d+\s*(ml|g|l)?\s*[x×]\s*\d+", re.I)
+
+
+def fix_unit_prices(products: list["Product"], threshold: int = 85) -> int:
+    """할인율이 지나치게 큰(85%+) 용량·수량 상품은 단위 가격(100ml당 824원 등)을 판매가로 잘못 읽은 경우다.
+    (코스트코 2026-11-25: 15,990원 상품이 '100mℓ당 824원' 때문에 95% 할인 824원으로 표시됨)
+    → 큰 금액을 판매가로 두고 할인 표시는 지운다. 바꾼 개수를 돌려준다."""
+    n = 0
+    for p in products:
+        if p.original_price and p.discount_rate and p.discount_rate >= threshold and _QTY_NAME.search(p.name or ""):
+            p.price, p.original_price, p.discount_rate = p.original_price, None, None
+            n += 1
+    return n
 
 
 def fix_shared_images(products: list["Product"], min_names: int = 4) -> int:

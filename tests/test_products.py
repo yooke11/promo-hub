@@ -160,3 +160,21 @@ def test_unit_price_is_not_sale_price():
     assert parse_price_text("CJ 햇반 흑미밥 210G*8 9,890원 (100g당 411원) 60%")[0] == 9890
     assert parse_price_text("햇반 210g x 18개 10,240원 1개당 569원")[0] == 10240
     assert parse_price_text("정가 24,000원 판매가 19,900원 단위가격 : 1,105원")[0] == 19900
+
+
+def test_unit_price_not_sale_price():
+    # 코스트코: '100mℓ당 824원'은 단위 가격 — 판매가는 15,990원
+    from promohub.products import parse_price_text
+    assert parse_price_text("15,990원 100mℓ당 824원 배송비 포함")[0] == 15990
+    assert parse_price_text("15,990원 100㎖당 824원")[0] == 15990
+    assert parse_price_text("49,800원 22,410원 55% 100g당 1,120원")[:3] == (22410, 49800, 55)
+
+
+def test_fix_unit_prices():
+    from promohub.products import Product, fix_unit_prices
+    a = Product(name="윈터 인 베니스 핸드 워시 세트 485ml x 4", url="https://x/p/1", price=824, original_price=15990, discount_rate=95)
+    b = Product(name="여성 톤온톤 데님 팬츠 (MGFAA4556)", url="https://x/p/2", price=8010, original_price=109000, discount_rate=93)
+    c = Product(name="비비고 만두 168g 6개", url="https://x/p/3", price=15914, original_price=41880, discount_rate=62)
+    assert fix_unit_prices([a, b, c]) == 1
+    assert (a.price, a.original_price, a.discount_rate) == (15990, None, None)
+    assert b.price == 8010 and c.price == 15914

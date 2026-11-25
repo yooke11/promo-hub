@@ -13,7 +13,7 @@ from .config import Config, Source
 from .extract import apply_detail, extract_detail_meta, extract_from_html, extract_from_json, merge, needs_detail
 from .models import RawPromotion
 from .normalize import is_mall_name, normalize
-from .products import fix_shared_images
+from .products import fix_shared_images, fix_unit_prices
 from .products import drop_bare, fill_from_page, merge_products, products_from_html, products_from_json, products_from_jsonld
 from .store import Store
 
@@ -187,6 +187,7 @@ async def run(config: Config, store: Store | None, only: list[str] | None = None
                     promos = [p for p in (normalize(r) for r in raws) if p and not is_mall_name(p.title, src.name)]
                     diag["raw"] = len(raws)
                     diag["shared_img_fixed"] = fix_shared_images([x for p in promos for x in p.products])
+                    diag["unit_price_fixed"] = fix_unit_prices([x for p in promos for x in p.products])
                     new = store.upsert_promotions(promos) if store else 0
                     if sink:
                         new = sink.send(build_payload(src, promos, started, diag=diag))
