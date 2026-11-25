@@ -1,0 +1,434 @@
+# 자동 생성: scripts/build_vertical_candidates.py — 분야별 페이지(식품·뷰티·패션) 추가 후보. 시험 수집 후 통과한 곳만 sources.yaml 로 옮긴다.
+defaults:
+  scroll_steps: 8
+  detail_limit: 30
+  product_limit: 40
+  delay_sec: 2.0
+  respect_robots: true
+common_include_patterns:
+- (event|events|exhibit|exhibition|exhibitions|plan|planshop|promotion|promotions|campaign|campaigns|special|festa|fair)s?[/?=.]
+- 기획전|이벤트
+common_exclude_patterns:
+- login|logout|member|cart|order|mypage|customer|cs/|notice|faq|policy|terms|app-download|join|signup
+- \.(jpg|jpeg|png|gif|webp|svg|css|js)(\?|$)
+sources:
+- id: rankingdak
+  name: 랭킹닭컴
+  channel_type: vertical
+  rank: 200
+  vertical: food
+  domains:
+  - rankingdak.com
+  mobile: false
+  entry_urls:
+  - https://www.rankingdak.com/
+- id: nongshimmall
+  name: 농심몰
+  channel_type: brand
+  rank: 201
+  vertical: food
+  domains:
+  - nongshimmall.com
+  mobile: false
+  entry_urls:
+  - https://www.nongshimmall.com/
+- id: kgcshop
+  name: 정관장몰
+  channel_type: brand
+  rank: 202
+  vertical: food
+  domains:
+  - kgcshop.co.kr
+  mobile: false
+  entry_urls:
+  - https://www.kgcshop.co.kr/
+- id: jungoneshop
+  name: 정원이샵(대상)
+  channel_type: brand
+  rank: 203
+  vertical: food
+  domains:
+  - jungoneshop.com
+  mobile: false
+  entry_urls:
+  - https://www.jungoneshop.com/
+- id: maeildirect
+  name: 매일다이렉트
+  channel_type: brand
+  rank: 204
+  vertical: food
+  domains:
+  - maeildirect.com
+  mobile: false
+  entry_urls:
+  - https://www.maeildirect.com/
+- id: harimmall
+  name: 하림몰
+  channel_type: brand
+  rank: 205
+  vertical: food
+  domains:
+  - harimmall.com
+  mobile: false
+  entry_urls:
+  - https://www.harimmall.com/
+- id: ourhomemall
+  name: 아워홈몰
+  channel_type: brand
+  rank: 206
+  vertical: food
+  domains:
+  - ourhomemall.co.kr
+  mobile: false
+  entry_urls:
+  - https://www.ourhomemall.co.kr/
+- id: samyangshop
+  name: 삼양식품몰
+  channel_type: brand
+  rank: 207
+  vertical: food
+  domains:
+  - samyangshop.com
+  mobile: false
+  entry_urls:
+  - https://www.samyangshop.com/
+- id: cookatmarket
+  name: 쿠캣마켓
+  channel_type: vertical
+  rank: 208
+  vertical: food
+  domains:
+  - cookatmarket.com
+  mobile: false
+  entry_urls:
+  - https://www.cookatmarket.com/
+- id: thebanchan
+  name: 더반찬
+  channel_type: vertical
+  rank: 209
+  vertical: food
+  domains:
+  - thebanchan.co.kr
+  mobile: false
+  entry_urls:
+  - https://www.thebanchan.co.kr/
+- id: fresheasy
+  name: 프레시지
+  channel_type: vertical
+  rank: 210
+  vertical: food
+  domains:
+  - fresheasy.co.kr
+  mobile: false
+  entry_urls:
+  - https://www.fresheasy.co.kr/
+- id: meatbox
+  name: 미트박스
+  channel_type: vertical
+  rank: 211
+  vertical: food
+  domains:
+  - meatbox.co.kr
+  mobile: false
+  entry_urls:
+  - https://www.meatbox.co.kr/
+- id: choroc
+  name: 초록마을
+  channel_type: vertical
+  rank: 212
+  vertical: food
+  domains:
+  - choroc.com
+  mobile: false
+  entry_urls:
+  - https://www.choroc.com/
+- id: nonghyupmall
+  name: 농협몰
+  channel_type: openmarket
+  rank: 213
+  vertical: food
+  domains:
+  - nonghyupmall.com
+  mobile: false
+  entry_urls:
+  - https://www.nonghyupmall.com/
+- id: epost
+  name: 우체국쇼핑
+  channel_type: openmarket
+  rank: 214
+  vertical: food
+  domains:
+  - mall.epost.go.kr
+  mobile: false
+  entry_urls:
+  - https://mall.epost.go.kr/
+- id: amoremall
+  name: 아모레몰
+  channel_type: brand
+  rank: 215
+  vertical: beauty
+  domains:
+  - amoremall.com
+  mobile: false
+  entry_urls:
+  - https://www.amoremall.com/kr/ko/display/event
+- id: etude
+  name: 에뛰드
+  channel_type: brand
+  rank: 216
+  vertical: beauty
+  domains:
+  - etude.com
+  mobile: false
+  entry_urls:
+  - https://www.etude.com/kr/ko/display/event
+- id: tonystreet
+  name: 토니모리
+  channel_type: brand
+  rank: 217
+  vertical: beauty
+  domains:
+  - tonystreet.com
+  mobile: false
+  entry_urls:
+  - https://www.tonystreet.com/
+- id: missha
+  name: 미샤
+  channel_type: brand
+  rank: 218
+  vertical: beauty
+  domains:
+  - beautynet.co.kr
+  mobile: false
+  entry_urls:
+  - https://missha.beautynet.co.kr/
+- id: clubclio
+  name: 클리오
+  channel_type: brand
+  rank: 219
+  vertical: beauty
+  domains:
+  - clubclio.co.kr
+  mobile: false
+  entry_urls:
+  - https://clubclio.co.kr/
+- id: romand
+  name: 롬앤
+  channel_type: brand
+  rank: 220
+  vertical: beauty
+  domains:
+  - romand.co.kr
+  mobile: false
+  entry_urls:
+  - https://romand.co.kr/
+- id: roundlab
+  name: 라운드랩
+  channel_type: brand
+  rank: 221
+  vertical: beauty
+  domains:
+  - roundlab.co.kr
+  mobile: false
+  entry_urls:
+  - https://roundlab.co.kr/
+- id: manyo
+  name: 마녀공장
+  channel_type: brand
+  rank: 222
+  vertical: beauty
+  domains:
+  - manyo.co.kr
+  mobile: false
+  entry_urls:
+  - https://manyo.co.kr/
+- id: torriden
+  name: 토리든
+  channel_type: brand
+  rank: 223
+  vertical: beauty
+  domains:
+  - torriden.com
+  mobile: false
+  entry_urls:
+  - https://torriden.com/
+- id: medicube
+  name: 메디큐브
+  channel_type: brand
+  rank: 224
+  vertical: beauty
+  domains:
+  - medicube.co.kr
+  mobile: false
+  entry_urls:
+  - https://medicube.co.kr/
+- id: chicor
+  name: 시코르
+  channel_type: vertical
+  rank: 225
+  vertical: beauty
+  domains:
+  - chicor.com
+  mobile: false
+  entry_urls:
+  - https://www.chicor.com/
+- id: drg
+  name: 닥터지
+  channel_type: brand
+  rank: 226
+  vertical: beauty
+  domains:
+  - drg.co.kr
+  mobile: false
+  entry_urls:
+  - https://www.drg.co.kr/
+- id: halfclub
+  name: 하프클럽
+  channel_type: fashion
+  rank: 227
+  vertical: fashion
+  domains:
+  - halfclub.com
+  mobile: false
+  entry_urls:
+  - https://www.halfclub.com/
+- id: sivillage
+  name: SI빌리지
+  channel_type: fashion
+  rank: 228
+  vertical: fashion
+  domains:
+  - sivillage.com
+  mobile: false
+  entry_urls:
+  - https://www.sivillage.com/
+- id: thehandsome
+  name: 더한섬닷컴
+  channel_type: fashion
+  rank: 229
+  vertical: fashion
+  domains:
+  - thehandsome.com
+  mobile: false
+  entry_urls:
+  - https://www.thehandsome.com/ko
+- id: topten
+  name: 탑텐몰
+  channel_type: fashion
+  rank: 230
+  vertical: fashion
+  domains:
+  - topten10mall.com
+  mobile: false
+  entry_urls:
+  - https://topten10mall.com/kr/front/main
+- id: spao
+  name: 스파오
+  channel_type: fashion
+  rank: 231
+  vertical: fashion
+  domains:
+  - spao.com
+  mobile: false
+  entry_urls:
+  - https://spao.com/
+- id: nbkorea
+  name: 뉴발란스
+  channel_type: fashion
+  rank: 232
+  vertical: fashion
+  domains:
+  - nbkorea.com
+  mobile: false
+  entry_urls:
+  - https://www.nbkorea.com/
+- id: giordano
+  name: 지오다노
+  channel_type: fashion
+  rank: 233
+  vertical: fashion
+  domains:
+  - giordano.co.kr
+  mobile: false
+  entry_urls:
+  - https://www.giordano.co.kr/
+- id: xexymix
+  name: 젝시믹스
+  channel_type: fashion
+  rank: 234
+  vertical: fashion
+  domains:
+  - xexymix.com
+  mobile: false
+  entry_urls:
+  - https://www.xexymix.com/
+- id: andar
+  name: 안다르
+  channel_type: fashion
+  rank: 235
+  vertical: fashion
+  domains:
+  - andar.co.kr
+  mobile: false
+  entry_urls:
+  - https://andar.co.kr/
+- id: crocs
+  name: 크록스
+  channel_type: fashion
+  rank: 236
+  vertical: fashion
+  domains:
+  - crocs.co.kr
+  mobile: false
+  entry_urls:
+  - https://www.crocs.co.kr/
+- id: discovery
+  name: 디스커버리
+  channel_type: fashion
+  rank: 237
+  vertical: fashion
+  domains:
+  - discovery-expedition.com
+  mobile: false
+  entry_urls:
+  - https://www.discovery-expedition.com/
+- id: mlbkorea
+  name: MLB
+  channel_type: fashion
+  rank: 238
+  vertical: fashion
+  domains:
+  - mlb-korea.com
+  mobile: false
+  entry_urls:
+  - https://www.mlb-korea.com/
+- id: underarmour
+  name: 언더아머
+  channel_type: fashion
+  rank: 239
+  vertical: fashion
+  domains:
+  - underarmour.co.kr
+  mobile: false
+  entry_urls:
+  - https://www.underarmour.co.kr/
+- id: k2
+  name: K2
+  channel_type: fashion
+  rank: 240
+  vertical: fashion
+  domains:
+  - k2.co.kr
+  mobile: false
+  entry_urls:
+  - https://www.k2.co.kr/
+- id: aland
+  name: 에이랜드
+  channel_type: fashion
+  rank: 241
+  vertical: fashion
+  domains:
+  - a-land.co.kr
+  mobile: false
+  entry_urls:
+  - https://www.a-land.co.kr/
