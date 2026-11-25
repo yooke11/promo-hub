@@ -290,9 +290,11 @@ async function load(){
   try{
     if(CFG && CFG.supabaseUrl){
       MODE = "supabase";
-      const [p, s] = await Promise.all([
+      const get = () => Promise.all([
         sbAll("v_promotions?select=*&status=neq.ended&order=end_date.asc.nullslast"),
         sb("v_sources?select=*&order=rank.asc")]);
+      let p, s;
+      try { [p, s] = await get(); } catch(e1) { await new Promise(r => setTimeout(r, 1500)); [p, s] = await get(); }  // 일시 오류면 한 번 더
       DATA = p; SOURCES = s;
     }else{
       const [p, s] = await Promise.all([fetch("/api/promotions?limit=3000&items_per=60"), fetch("/api/sources")]);
@@ -304,12 +306,13 @@ async function load(){
     $("meta").textContent = last ? `마지막 수집 ${new Date(last).toLocaleString("ko-KR",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"})}` : "수집 대기 중";
   }catch(e){
     console.warn("데이터 로드 실패 → 샘플", e);
-    useDemo(); return;
+    useDemo(MODE === "supabase" ? String(e && e.message || e).slice(0, 160) : ""); return;
   }
   boot();
 }
-function useDemo(){
+function useDemo(err){
   MODE = "demo"; DEMO = true; ({items:DATA, sources:SOURCES} = demoData());
+  if(err) $("demo").firstElementChild.innerHTML = `실제 수집 데이터를 불러오지 못해 <b>샘플 데이터</b>를 보여 주고 있습니다. 잠시 후 새로고침해 주세요. <small style="opacity:.7">(${esc(err)})</small>`;
   $("demo").hidden = false; $("meta").textContent = "샘플 모드"; boot();
 }
 function boot(){
