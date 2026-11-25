@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>경쟁 기획전 데일리 리포트 · 프로모션 허브</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<script src="config.js"></script>
+<style>
+  :root{--bg:#f6f5f2;--panel:#fff;--ink:#18181b;--ink-2:#52525b;--ink-3:#8a8a93;--line:#e7e5e0;--chip:#f1f0ec;
+        --brand:#ff4d2e;--cj:#e2231a;--good:#11845b;--bad:#d0287a;--r:14px}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"Pretendard Variable",Pretendard,system-ui,sans-serif;
+       -webkit-font-smoothing:antialiased;letter-spacing:-.005em;font-size:14px;line-height:1.5}
+  a{color:inherit}
+  .wrap{max-width:1180px;margin:0 auto;padding:28px 24px 80px}
+  .top{display:flex;align-items:center;gap:10px;margin-bottom:22px}
+  .top a.logo{font-weight:700;text-decoration:none;display:flex;gap:8px;align-items:center}
+  .top a.logo i{width:10px;height:10px;border-radius:3px;background:var(--brand);transform:rotate(45deg);display:inline-block}
+  .top .sp{flex:1}.top .meta{color:var(--ink-3);font-size:12.5px}
+  .hero{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:22px 24px;margin-bottom:16px;
+        border-top:4px solid var(--cj)}
+  .hero .k{font-size:12.5px;color:var(--cj);font-weight:600}
+  .hero h1{margin:4px 0 6px;font-size:24px;font-weight:700;letter-spacing:-.02em}
+  .hero p{margin:0;color:var(--ink-2);font-size:13.5px}
+  .rivals{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+  .rivals span{font-size:12px;border-radius:999px;padding:3px 10px;background:var(--chip);color:var(--ink-2)}
+  .rivals span.me{background:#fde8e7;color:var(--cj);font-weight:600}
+  .kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:16px}
+  .kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+  .kpi b{display:block;font-size:24px;font-weight:700;font-variant-numeric:tabular-nums}
+  .kpi span{font-size:12.5px;color:var(--ink-3)}
+  .kpi small{display:block;font-size:12px;color:var(--ink-2);margin-top:2px}
+  section{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:20px 22px;margin-bottom:16px}
+  section h2{margin:0 0 4px;font-size:17px;font-weight:650}
+  section .sub{margin:0 0 14px;color:var(--ink-3);font-size:12.5px}
+  .ins{margin:0;padding:0;list-style:none;display:grid;gap:8px}
+  .ins li{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:10px;background:#faf9f6}
+  .ins li i{font-style:normal;flex:none;font-size:11px;font-weight:600;border-radius:6px;padding:2px 7px;margin-top:1px}
+  .ins li .ch i{padding:0;margin:0;border-radius:50%;width:8px;height:8px;font-size:0;flex:none}
+  .t-threat{background:#fde8e7;color:var(--cj)}.t-chance{background:#e3f4ec;color:var(--good)}.t-watch{background:#eef2ff;color:#3f51b5}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;font-weight:600;color:var(--ink-3);font-size:12px;padding:8px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+  td{padding:9px 8px;border-bottom:1px solid #f0eee9;vertical-align:top}
+  td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .ch{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;font-size:12.5px}
+  .ch i{width:8px;height:8px;border-radius:50%;display:inline-block}
+  .dr{color:var(--brand);font-weight:600}
+  .tag{display:inline-block;font-size:11px;border-radius:5px;padding:1px 6px;background:var(--chip);color:var(--ink-2);margin-left:4px}
+  .tag.cj{background:#fde8e7;color:var(--cj)}
+  .cat{border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px}
+  .cat-h{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+  .cat-h b{font-size:15px;font-weight:650}
+  .cat-h span{font-size:12.5px;color:var(--ink-2)}
+  .vs{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .vs h4{margin:0 0 6px;font-size:12px;color:var(--ink-3);font-weight:600}
+  .it{display:flex;gap:10px;align-items:center;padding:6px 0;border-top:1px dashed #eeece7;text-decoration:none}
+  .it:first-of-type{border-top:0}
+  .it img,.it .ph{width:44px;height:44px;border-radius:8px;object-fit:cover;background:var(--chip);flex:none}
+  .it .nm{font-size:12.5px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .it .pr{font-size:12.5px;white-space:nowrap;margin-top:1px}
+  .it .pr b{font-weight:600}
+  .none{color:var(--ink-3);font-size:12.5px;padding:6px 0}
+  .kw{display:flex;flex-wrap:wrap;gap:6px}
+  .kw span{font-size:12.5px;background:var(--chip);border-radius:8px;padding:4px 9px}
+  .kw span em{font-style:normal;color:var(--ink-3);font-size:11.5px;margin-left:4px}
+  .foot{color:var(--ink-3);font-size:12px;line-height:1.6;margin-top:6px}
+  .empty{padding:40px;text-align:center;color:var(--ink-3)}
+  @media (max-width:800px){.kpis{grid-template-columns:repeat(2,1fr)}.vs{grid-template-columns:1fr}.wrap{padding:18px 14px 60px}
+    .hide-m{display:none}}
+  @media print{body{background:#fff}.top .meta{display:none}section,.hero,.kpi{break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><a class="logo" href="/"><i></i>프로모션 허브</a><div class="sp"></div><div class="meta" id="meta"></div></div>
+  <div id="app"><div class="empty">리포트를 만드는 중…</div></div>
+</div>
+<script>
+{
+/* ── 광고주별 설정: ?c=cjthemarket ── 경쟁사·핵심 카테고리·자사 브랜드 */
+const CLIENTS = {
+  cjthemarket: {
+    name: "CJ더마켓", self: "cjthemarket",
+    rivals: ["dongwonmall", "otokimall", "kurly", "oasis", "homeplus", "costco"],
+    selfBrands: /비비고|햇반|고메|백설|스팸|맛밤|맛콩|더건강한|비비드키친|CJ|씨제이|프레시안|햇반컵반|다시다|해찬들|쁘띠첼|컵반/i,
+    cats: [
+      ["만두", /만두|교자|딤섬/],
+      ["김치", /김치|깍두기|겉절이/],
+      ["즉석밥·컵밥", /햇반|즉석밥|컵밥|컵반|쎈쿡|오뚜기밥|백미밥|흑미밥|곤약밥/],
+      ["국·탕·찌개", /곰탕|육개장|미역국|갈비탕|설렁탕|국밥|찌개|해장국|삼계탕|추어탕|도가니탕|순두부|사골/],
+      ["냉동밥·볶음밥", /볶음밥|냉동밥|주먹밥|비빔밥/],
+      ["생선구이·수산", /생선구이|고등어|삼치|임연수|갈치|연어|굴비/],
+      ["김", /조미김|도시락김|김자반|파래김|재래김|곱창김|전장김|식탁김/],
+      ["햄·통조림", /스팸|리챔|런천|통조림|참치|햄 |햄$|소시지/],
+      ["닭가슴살", /닭가슴살/],
+      ["냉동 간편식", /돈까스|돈가스|떡볶이|피자|핫도그|너겟|치킨|탕수육|어묵/],
+      ["유산균·건강", /유산균|프로바이오틱|홍삼|비타민|오메가/],
+      ["선물세트", /선물세트|선물 세트/]
+    ]
+  }
+};
+const CFG = window.PROMOHUB_CONFIG || {};
+const PALETTE = ["#1f6feb","#11845b","#8a3ffc","#d99a00","#d0287a","#0e8f9c","#5b6b00","#b5521b"];
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const won = n => n == null ? "" : Number(n).toLocaleString("ko-KR") + "원";
+const today = new Date(); today.setHours(0,0,0,0);
+const fmtD = s => { if(!s) return ""; const d = new Date(s); return `${d.getMonth()+1}.${d.getDate()}`; };
+
+async function sb(path, range){
+  const h = {apikey: CFG.anonKey}; if(range) h.Range = range;
+  const r = await fetch(`${CFG.supabaseUrl}/rest/v1/${path}`, {headers:h});
+  if(!r.ok) throw new Error(`${r.status} ${await r.text()}`);
+  return r.json();
+}
+async function sbAll(path){ let out = []; for(let f=0; f<20000; f+=1000){ const p = await sb(path, `${f}-${f+999}`); out = out.concat(p); if(p.length < 1000) break; } return out; }
+const inList = ids => `(${ids.map(encodeURIComponent).join(",")})`;
+
+async function main(){
+  const key = new URLSearchParams(location.search).get("c") || "cjthemarket";
+  const C = CLIENTS[key];
+  if(!C){ $("app").innerHTML = `<div class="empty">등록되지 않은 광고주입니다.</div>`; return; }
+  document.title = `${C.name} 경쟁 기획전 데일리 리포트`;
+  const ids = [C.self, ...C.rivals];
+  const [sources, promos, items] = await Promise.all([
+    sb(`v_sources?select=id,name,last_crawled&id=in.${inList(ids)}`),
+    sbAll(`v_promotions?select=id,source_id,source_name,title,url,start_date,end_date,d_day,status,is_new,max_discount,benefits,item_count,first_seen&status=neq.ended&source_id=in.${inList(ids)}`),
+    sbAll(`v_items?select=promotion_id,item_key,name,brand,url,image_url,price,original_price,discount_rate,promotion_title,source_id,source_name,end_date&source_id=in.${inList(ids)}`)
+  ]);
+  const color = new Map(C.rivals.map((id,i) => [id, PALETTE[i % PALETTE.length]])); color.set(C.self, "#e2231a");
+  const nameOf = new Map(sources.map(s => [s.id, s.name]));
+  const isSelf = id => id === C.self;
+  const ch = id => `<span class="ch"><i style="background:${color.get(id)}"></i>${esc(nameOf.get(id) || id)}</span>`;
+  const last = sources.map(s => s.last_crawled).filter(Boolean).sort().pop();
+  $("meta").textContent = last ? `데이터 기준 ${new Date(last).toLocaleString("ko-KR",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"})}` : "";
+
+  const rp = promos.filter(p => !isSelf(p.source_id)), mp = promos.filter(p => isSelf(p.source_id));
+  const ok = i => i.price >= 1000;   // 1,000원 미만은 단위 가격(100g당 등)을 판매가로 잘못 읽은 경우가 대부분
+  const ri = items.filter(i => !isSelf(i.source_id) && ok(i)), mi = items.filter(i => isSelf(i.source_id) && ok(i));
+  const avg = a => a.length ? Math.round(a.reduce((s,x) => s+x, 0) / a.length) : null;
+  const drOf = arr => arr.map(i => i.discount_rate).filter(d => d > 0 && d <= 90);
+  const rDr = drOf(ri), mDr = drOf(mi);
+  const ending = rp.filter(p => p.d_day != null && p.d_day >= 0 && p.d_day <= 3);
+  const fresh = rp.filter(p => p.is_new);
+
+  /* 카테고리 맞대결: 경쟁사·자사 상품을 카테고리 단어로 묶는다 */
+  const catRows = C.cats.map(([label, re]) => {
+    const r = ri.filter(i => re.test(i.name)), m = mi.filter(i => re.test(i.name));
+    const rCj = r.filter(i => C.selfBrands.test((i.brand||"") + " " + i.name));   // 경쟁 채널에서 파는 CJ 제품
+    const rOther = r.filter(i => !rCj.includes(i));
+    const minBy = a => a.slice().sort((x,y) => x.price - y.price);
+    return {label, r, m, rCj, rOther, rTop: minBy(rOther).slice(0,4), mTop: minBy(m).slice(0,4),
+            rMax: Math.max(0, ...drOf(rOther)), mMax: Math.max(0, ...drOf(m))};
+  }).filter(c => c.r.length || c.m.length);
+
+  /* 오늘 볼 것: 규칙 기반 요약 */
+  const ins = [];
+  catRows.filter(c => c.rOther.length && c.rMax >= 30 && c.rMax > c.mMax + 10).slice(0,3).forEach(c => {
+    const top = c.rOther.filter(i => i.discount_rate === c.rMax)[0];
+    ins.push(["threat", `<b>${esc(c.label)}</b> — 경쟁사 최대 ${c.rMax}% 할인(${ch(top.source_id)} ${esc(top.name.slice(0,30))} ${won(top.price)}), 자사 최대 ${c.mMax ? c.mMax+"%" : "할인 상품 없음"}`]);
+  });
+  /* 다른 채널에 나온 CJ 제품: 자사몰에 같은 상품이 있으면 가격을 맞대 본다(상품명 핵심 글자 비교) */
+  const core = n => String(n).replace(/\[[^\]]*\]|\([^)]*\)/g, "").replace(/[^가-힣a-z0-9]/gi, "").toLowerCase();
+  const sameSelf = i => { const k = core(i.name).slice(0, 10); return k.length >= 5 ? mi.find(m => core(m.name).includes(k)) : null; };
+  const cjElse = catRows.flatMap(c => c.rCj).map(i => ({i, m: sameSelf(i)}))
+    .sort((a,b) => ((b.m ? b.m.price - b.i.price : -1e9) - (a.m ? a.m.price - a.i.price : -1e9)));
+  cjElse.slice(0,3).forEach(({i, m}) => {
+    const gap = m ? m.price - i.price : null;
+    ins.push([gap > 0 ? "threat" : "watch", `<b>CJ 제품이 다른 채널 기획전에</b> — ${ch(i.source_id)} '${esc(i.promotion_title||"")}'에서 ${esc(i.name.slice(0,34))} ${won(i.price)}${i.discount_rate?` (${i.discount_rate}%)`:""}` +
+      (m ? (gap > 0 ? `, 자사몰(${won(m.price)})보다 <b>${won(gap)} 쌈</b>` : gap < 0 ? `, 자사몰(${won(m.price)})이 ${won(-gap)} 더 쌈` : `, 자사몰과 같은 가격`) : `. 자사몰 가격과 비교 필요`)]);
+  });
+  catRows.filter(c => c.m.length && !c.rOther.length).slice(0,2).forEach(c =>
+    ins.push(["chance", `<b>${esc(c.label)}</b> — 경쟁 6곳 기획전에 같은 품목이 없음. 자사 ${c.m.length}개 상품 검색광고·노출 확대 여지`]));
+  ending.slice().sort((a,b) => (b.max_discount||0) - (a.max_discount||0)).slice(0,2).forEach(p =>
+    ins.push(["watch", `<b>마감 임박</b> — ${ch(p.source_id)} '${esc(p.title)}' ${p.d_day === 0 ? "오늘" : "D-"+p.d_day} 종료${p.max_discount ? `, 최대 ${p.max_discount}%` : ""}. 종료 직후 수요 이동 대비`]));
+
+  /* 경쟁사별 진행 기획전 */
+  const bySrc = C.rivals.map(id => ({id, list: rp.filter(p => p.source_id === id)
+    .sort((a,b) => (b.is_new - a.is_new) || ((a.d_day ?? 999) - (b.d_day ?? 999)) || ((b.max_discount||0) - (a.max_discount||0)))}));
+
+  /* 검색광고 대응 키워드: 경쟁사 기획전 추천 키워드 중 핵심 카테고리와 겹치는 것 */
+  let kws = [];
+  try{
+    const pids = rp.filter(p => C.cats.some(([,re]) => re.test(p.title))).map(p => p.id).slice(0, 80);
+    if(pids.length){
+      const rows = await sb(`promotion_keywords?select=keyword,pc,mobile,comp,promotion_id&promotion_id=in.${inList(pids)}&order=rank.asc`);
+      const seen = new Map();
+      rows.forEach(r => { const v = (r.pc||0) + (r.mobile||0); if(!seen.has(r.keyword) || seen.get(r.keyword).v < v) seen.set(r.keyword, {k:r.keyword, v, comp:r.comp}); });
+      kws = [...seen.values()].filter(x => x.v >= 100).sort((a,b) => b.v - a.v).slice(0, 24);
+    }
+  }catch(e){ console.warn(e); }
+
+  const itemHtml = i => `<a class="it" href="${esc(i.url)}" target="_blank" rel="noopener">${i.image_url ? `<img src="${esc(i.image_url)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : `<span class="ph"></span>`}
+    <span><span class="nm">${esc(i.name)}</span><span class="pr">${i.discount_rate ? `<span class="dr">${i.discount_rate}%</span> ` : ""}<b>${won(i.price)}</b> · ${ch(i.source_id)}</span></span></a>`;
+  const dateTxt = today.toLocaleDateString("ko-KR", {year:"numeric", month:"long", day:"numeric", weekday:"short"});
+
+  $("app").innerHTML = `
+  <div class="hero"><div class="k">광고주 리포트 · 시제품</div>
+    <h1>${esc(C.name)} 경쟁 기획전 데일리 — ${dateTxt}</h1>
+    <p>경쟁 쇼핑몰 기획전과 그 안의 상품 가격을 매일 새벽 수집해, ${esc(C.name)} 핵심 카테고리 기준으로 비교했습니다.</p>
+    <div class="rivals"><span class="me">${esc(C.name)}</span>${C.rivals.map(id => `<span>${esc(nameOf.get(id)||id)}</span>`).join("")}</div></div>
+
+  <div class="kpis">
+    <div class="kpi"><span>경쟁사 진행 기획전</span><b>${rp.length}</b><small>자사 ${mp.length}건</small></div>
+    <div class="kpi"><span>경쟁사 24시간 내 새 기획전</span><b>${fresh.length}</b><small>${C.rivals.filter(id => fresh.some(p => p.source_id === id)).map(id => esc(nameOf.get(id))).slice(0,3).join(" · ") || "—"}</small></div>
+    <div class="kpi"><span>경쟁사 3일 내 마감</span><b>${ending.length}</b><small>종료 직후 수요 이동 구간</small></div>
+    <div class="kpi"><span>평균 할인율 (경쟁사 / 자사)</span><b>${avg(rDr) ?? "-"}% / ${avg(mDr) ?? "-"}%</b><small>기획전 상품 ${ri.length.toLocaleString()} / ${mi.length.toLocaleString()}개 기준</small></div>
+  </div>
+
+  <section><h2>오늘 볼 것</h2><p class="sub">가격·할인 차이가 큰 카테고리, 다른 채널에 나온 CJ 제품, 경쟁사가 비워 둔 카테고리를 자동으로 골랐습니다.</p>
+    ${ins.length ? `<ul class="ins">${ins.slice(0,8).map(([t,h]) => `<li><i class="t-${t}">${{threat:"경계",watch:"확인",chance:"기회"}[t]}</i><span>${h}</span></li>`).join("")}</ul>` : `<div class="none">오늘은 눈에 띄는 차이가 없습니다.</div>`}
+  </section>
+
+  <section><h2>핵심 카테고리 맞대결</h2><p class="sub">카테고리마다 경쟁사(CJ 제품 제외)와 자사 기획전 상품을 낮은 가격순으로 4개씩. CJ 제품이 다른 채널에서 팔리는 경우는 따로 표시했습니다.</p>
+    ${catRows.map(c => `<div class="cat"><div class="cat-h"><b>${esc(c.label)}</b>
+        <span>경쟁사 ${c.rOther.length}개${c.rMax ? ` · 최대 ${c.rMax}%` : ""}</span><span>자사 ${c.m.length}개${c.mMax ? ` · 최대 ${c.mMax}%` : ""}</span>
+        ${c.rCj.length ? `<span class="tag cj">다른 채널의 CJ 제품 ${c.rCj.length}개</span>` : ""}</div>
+      <div class="vs"><div><h4>경쟁사</h4>${c.rTop.map(itemHtml).join("") || `<div class="none">경쟁사 기획전에 없음</div>`}</div>
+        <div><h4>${esc(C.name)}</h4>${c.mTop.map(itemHtml).join("") || `<div class="none">자사 기획전에 없음</div>`}</div></div></div>`).join("") || `<div class="none">겹치는 카테고리가 없습니다.</div>`}
+  </section>
+
+  <section><h2>경쟁사별 진행 기획전</h2><p class="sub">새 기획전 → 마감 임박 → 할인율 순. 쇼핑몰마다 6건까지.</p>
+    <table><thead><tr><th>쇼핑몰</th><th>기획전</th><th class="hide-m">기간</th><th class="num">최대 할인</th><th class="num hide-m">상품</th></tr></thead><tbody>
+    ${bySrc.map(s => s.list.slice(0,6).map((p,i) => `<tr><td>${i ? "" : ch(s.id) + `<div style="color:var(--ink-3);font-size:11.5px">${s.list.length}건</div>`}</td>
+      <td><a href="${esc(p.url)}" target="_blank" rel="noopener" style="text-decoration:none">${esc(p.title)}</a>${p.is_new ? `<span class="tag">NEW</span>` : ""}${p.d_day != null && p.d_day <= 3 && p.d_day >= 0 ? `<span class="tag cj">${p.d_day ? "D-"+p.d_day : "오늘 마감"}</span>` : ""}</td>
+      <td class="hide-m" style="white-space:nowrap;color:var(--ink-2)">${p.start_date || p.end_date ? `${fmtD(p.start_date)} ~ ${fmtD(p.end_date)}` : "—"}</td>
+      <td class="num">${p.max_discount ? `<span class="dr">${p.max_discount}%</span>` : "—"}</td><td class="num hide-m">${p.item_count || "—"}</td></tr>`).join("")).join("")}
+    </tbody></table>
+  </section>
+
+  <section><h2>검색광고 대응 키워드</h2><p class="sub">경쟁사 핵심 카테고리 기획전에서 뽑은 키워드 중 네이버 월 검색량 100회 이상(PC+모바일). 자사 상품이 있는 키워드부터 입찰 검토를 권합니다.</p>
+    ${kws.length ? `<div class="kw">${kws.map(k => `<span>${esc(k.k)}<em>${k.v.toLocaleString()}${k.comp ? " · 경쟁 " + esc(k.comp) : ""}</em></span>`).join("")}</div>` : `<div class="none">오늘은 해당 키워드가 없습니다.</div>`}
+  </section>
+
+  <p class="foot">· 각 쇼핑몰 공개 기획전 페이지를 매일 새벽 5시에 수집합니다. 기획전 안 상품은 일부만 잡히는 경우가 있어, 가격 비교는 수집된 상품 기준입니다.<br>
+  · 쿠팡·SSG·풀무원샵·정육각 등은 사이트 정책·접속 차단으로 아직 포함되지 않았습니다. · 이 페이지는 검색엔진 노출을 막아 두었습니다(시제품).</p>`;
+}
+main().catch(e => { console.error(e); $("app").innerHTML = `<div class="empty">리포트를 불러오지 못했습니다. 잠시 후 새로고침해 주세요.<br><small>${esc(e.message).slice(0,160)}</small></div>`; });
+}
+</script>
+</body>
+</html>

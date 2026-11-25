@@ -153,3 +153,10 @@ def test_srcset_with_commas_in_url():
     v = "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/abc/shoe.png 592w, https://static.nike.com/a/images/c_limit,w_1024/abc/shoe.png 1024w"
     assert _first_src(v, "srcset") == "https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/abc/shoe.png"
     assert _first_src("https://a.com/x.jpg") == "https://a.com/x.jpg"
+
+
+def test_unit_price_is_not_sale_price():
+    from promohub.products import parse_price_text
+    assert parse_price_text("CJ 햇반 흑미밥 210G*8 9,890원 (100g당 411원) 60%")[0] == 9890
+    assert parse_price_text("햇반 210g x 18개 10,240원 1개당 569원")[0] == 10240
+    assert parse_price_text("정가 24,000원 판매가 19,900원 단위가격 : 1,105원")[0] == 19900
