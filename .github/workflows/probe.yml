@@ -8,6 +8,9 @@ on:
         description: "공백 구분 '채널id=URL' 목록"
         required: true
 
+permissions:
+  contents: write
+
 jobs:
   probe:
     runs-on: ubuntu-latest
@@ -22,9 +25,11 @@ jobs:
         env:
           TARGETS: ${{ github.event.inputs.targets }}
         run: mkdir -p probe_out && python scripts/probe.py $TARGETS | tee probe_out/summary.txt || true
-      - uses: actions/upload-artifact@v4
+      - name: 결과를 probe-out 브랜치에 저장(아티팩트 저장소에 접근 못 하는 환경에서도 git 으로 받을 수 있게)
         if: always()
-        with:
-          name: probe
-          path: probe_out/
-          retention-days: 3
+        run: |
+          cd probe_out
+          git init -q -b probe-out
+          git -c user.name=probe -c user.email=probe@users.noreply.github.com add -A
+          git -c user.name=probe -c user.email=probe@users.noreply.github.com commit -qm "probe ${{ github.run_id }}"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" probe-out
