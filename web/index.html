@@ -229,7 +229,7 @@
 </head>
 <body>
 <header class="top"><div class="top-in">
-  <div class="logo"><i></i>프로모션 허브</div>
+  <a class="logo" href="/" title="메인으로"><i></i>프로모션 허브</a>
   <label class="search">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
     <input id="q" type="search" placeholder="기획전·상품·브랜드 검색 (예: 패딩, 설화수, 블프)">
@@ -254,7 +254,6 @@
         <button data-view="picks" aria-pressed="false">✦ 추천</button>
         <button data-view="cards" aria-pressed="true">기획전</button>
         <button data-view="products" aria-pressed="false">상품</button>
-        <button data-view="compare" aria-pressed="false">가격비교</button>
         <button data-view="timeline" aria-pressed="false">타임라인</button>
       </div>
     </div>
@@ -275,7 +274,7 @@ const DAY = 864e5, today = new Date(); today.setHours(0,0,0,0);
 const $ = id => document.getElementById(id);
 
 let DATA = [], SOURCES = [], DEMO = false;
-const st = {q:"", ctypes:new Set(), sources:new Set(), cats:new Set(), kind:"", status:"", bens:new Set(), sort:"ending", view:"cards",
+const st = {q:"", ctypes:new Set(), sources:new Set(), cats:new Set(), kind:"", status:"", bens:new Set(), sort:"ending", view:"picks",
             pmode:"img", minP:"", maxP:"", allSrc:false, open:null};
 try{ const s = JSON.parse(localStorage.getItem("ph_prefs")||"{}"); if(s.pmode) st.pmode = s.pmode; }catch(e){}
 

@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import json
 import re
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 from typing import Optional
 from urllib.parse import urljoin
 
@@ -57,12 +57,15 @@ class Product:
     original_price: Optional[int] = None  # 정가(할인 전)
     discount_rate: Optional[int] = None
     brand: str = ""
+    alt_images: list = field(default_factory=list, repr=False)   # 대체 이미지 후보(공용 자리표시 이미지 교체용, 저장 안 함)
 
     def key(self) -> str:
         return product_key(self.url) if self.url else f"name:{self.name}"
 
     def to_dict(self) -> dict:
-        return asdict(self)
+        d = asdict(self)
+        d.pop("alt_images", None)
+        return d
 
 
 def _to_int(v) -> Optional[int]:
@@ -170,12 +173,17 @@ _URL_IN = re.compile(r"""url\(\s*['"]?([^'")]+)""")
 _IMG_URL = re.compile(r"""(https?:)?//[^\s'"]+?\.(?:jpe?g|png|webp|gif|avif)(?:\?[^\s'"]*)?""", re.I)
 
 
-def _img(tag: Tag, base: str) -> str:
+def _img_candidates(tag: Tag, base: str) -> list[str]:
+    out: list[str] = []
+    def add(u):
+        u = urljoin(base, u)
+        if u not in out:
+            out.append(u)
     for img in tag.find_all(["img", "source"]):
         for attr in ("data-src", "data-original", "data-lazy-src", "data-lazy", "src", "srcset", "data-srcset"):
             v = (img.get(attr) or "").strip()
             if v and not v.startswith("data:") and not _BAD_IMG.search(v):
-                return urljoin(base, v.split(",")[0].strip().split(" ")[0])
+                add(v.split(",")[0].strip().split(" ")[0])
     # 배경 이미지(style="background-image:url(...)") · 지연 로딩 속성(data-lazyload="{'_src': ...}")
     for el in [tag] + tag.find_all(True):
         for attr in ("style", "data-bg", "data-background", "data-lazyload", "data-bgset"):
@@ -185,8 +193,29 @@ def _img(tag: Tag, base: str) -> str:
             m = _URL_IN.search(v) or _IMG_URL.search(v)
             u = (m.group(1) if m and m.re is _URL_IN else m.group(0)) if m else ""
             if u and not u.startswith("data:") and not _BAD_IMG.search(u):
-                return urljoin(base, u)
-    return ""
+                add(u)
+    return out[:5]
+
+
+def _img(tag: Tag, base: str) -> str:
+    c = _img_candidates(tag, base)
+    return c[0] if c else ""
+
+
+def fix_shared_images(products: list["Product"], min_names: int = 4) -> int:
+    """여러 상품(이름이 다른 4개 이상)이 같은 이미지 주소를 쓰면 '이미지 준비 중' 같은 공용 자리표시 이미지다.
+    대체 후보가 있으면 바꾸고, 없으면 비워서 사이트가 상품명 자리표시로 보여 주게 한다. 바꾼 개수를 돌려준다."""
+    names: dict[str, set] = {}
+    for p in products:
+        if p.image_url:
+            names.setdefault(p.image_url, set()).add(_nk_name(p.name))
+    shared = {u for u, ns in names.items() if len(ns) >= min_names}
+    n = 0
+    for p in products:
+        if p.image_url in shared:
+            p.image_url = next((u for u in p.alt_images if u not in shared), "")
+            n += 1
+    return n
 
 
 def _name(card: Tag) -> str:
@@ -330,7 +359,8 @@ def products_from_html(html: str, page_url: str, pats: list[re.Pattern], link: d
         name = _name(card)
         if not name:
             continue
-        p = Product(name=name[:100], url=url, image_url=_img(card, page_url), price=price,
+        cands = _img_candidates(card, page_url)
+        p = Product(name=name[:100], url=url, image_url=cands[0] if cands else "", alt_images=cands[1:], price=price,
                     original_price=orig, discount_rate=pct, brand=_brand(card))
         prev = out.get(key)
         if prev is None or (p.price and not prev.price) or (len(p.name) > len(prev.name) and p.price):

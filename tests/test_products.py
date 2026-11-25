@@ -136,3 +136,13 @@ def test_drop_bare():
     assert len(drop_bare(rich + [Product(name="NIKE TEMPO", price=1000)])) == 4
     only = [Product(name="b", price=1000)] * 3
     assert drop_bare(only) == only
+
+
+def test_fix_shared_placeholder_images():
+    from promohub.products import Product, fix_shared_images
+    ph = "https://static.nike.com/a/images/t_web_pw_592_v2/f_auto/u_9ddf04c7"
+    ps = [Product(name=f"나이키 상품 {i}", image_url=ph, alt_images=[f"https://img/{i}.png"] if i % 2 else []) for i in range(6)]
+    ps.append(Product(name="단독 상품", image_url="https://img/solo.png"))
+    assert fix_shared_images(ps) == 6
+    assert ps[1].image_url == "https://img/1.png" and ps[0].image_url == "" and ps[-1].image_url == "https://img/solo.png"
+    assert "alt_images" not in ps[1].to_dict()
