@@ -5,7 +5,7 @@
 
 점검 항목(실패 시 fix 에 정상화 방법을 적는다)
 - site       : 사이트 HTML 200, config.js 에 supabaseUrl
-- promotions : 사이트 첫 화면 조회(v_promotions 1000건) 2.5초 안, 1건 이상  ← anon 제한 3초
+- promotions : 사이트 첫 화면 조회(v_promotions 1000건) 5초 안(전송 포함), HTTP 오류 없음 ← anon 서버 제한 3초 초과 시 500
 - sources    : v_sources 조회
 - items      : 상품 탭 조회(v_items)
 - freshness  : 마지막 수집이 26시간 안
@@ -27,7 +27,7 @@ KST = timezone(timedelta(hours=9))
 SITE = os.environ.get("PROMOHUB_SITE", "https://promo-hub-one.vercel.app")
 URL = os.environ.get("SUPABASE_URL", "https://wjfbcbiyzoymqqnoemvu.supabase.co")
 KEY = os.environ.get("SUPABASE_ANON_KEY", "sb_publishable_-DNHcg_lvpePh3aeXGRXGw_qDJAkXI5")
-SLOW_MS = 2500
+SLOW_MS = 5000  # 응답 전송 포함(미국 러너 기준). 서버 3초 초과는 HTTP 500으로 따로 잡힘
 
 checks: list[dict] = []
 
