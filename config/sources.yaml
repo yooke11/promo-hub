@@ -277,6 +277,8 @@ sources:
   - /sec/(event|promotion|offer|benefit|special)
   product_patterns:
   - /sec/[\w/-]+/buy
+  exclude_patterns:
+  - 'design\.samsung\.com'
 - id: uniqlo
   enabled: false   # 2026-11-24 운영자 결정: 정상 수집 채널만 운영 (B. 해외 IP/봇 차단)
   name: 유니클로
@@ -583,6 +585,8 @@ sources:
   - yes24\.com/.*(event|campaign|plan|promotion|special)
   product_patterns:
   - /Product/Goods/\d+|/goods/\d+
+  exclude_patterns:
+  - 'sarak\.yes24'
 - id: lge
   name: LG전자
   channel_type: brand

@@ -97,3 +97,13 @@ def test_fix_url_and_junk_titles():
         assert not is_meaningful_title(t), t
     for t in ["슈아뜰리에에 어드벤트캘린더", "출석체크", "신라블프 ~90% SALE", "11월의 굿즈"]:
         assert is_meaningful_title(t), t
+
+
+def test_title_cleanup_suffix_and_repeat():
+    from promohub.normalize import clean_title, is_meaningful_title, fix_url
+    assert clean_title("수어 상담 예약 | LG전자 : BEST SHOP") == "수어 상담 예약"
+    assert not is_meaningful_title(clean_title("수어 상담 예약 | LG전자 : BEST SHOP"))
+    assert clean_title("Home entertainment Home entertainment") == "Home entertainment"
+    assert clean_title("크리스마스 선물 추천 인형 키링 모음.zip|~50%") == "크리스마스 선물 추천 인형 키링 모음.zip|~50%"
+    assert not is_meaningful_title("@m****7") and not is_meaningful_title("기획전37066 바로가기")
+    assert fix_url("https://v3.account.samsung.com/x") is None

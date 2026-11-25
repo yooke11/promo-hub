@@ -33,7 +33,7 @@ def canonical_url(url: str) -> str:
 
 # 사이트가 JSON 에 API 서버 주소로 내려주는 기획전 링크 → 사람이 여는 주소로 바꾼다(그대로 두면 404)
 HOST_REWRITE = {"gateway.10x10.co.kr": "www.10x10.co.kr"}
-_API_HOST = re.compile(r"^(capi|api|gateway|apis?-?gw|openapi)\.", re.I)
+_API_HOST = re.compile(r"^(capi|api|gateway|apis?-?gw|openapi|(v\d\.)?account|accounts|login|auth)\.", re.I)
 # 목록·안내 페이지(개별 기획전이 아님)
 _LIST_URL = re.compile(r"/(events?|event/main|eventlist(/[a-z]+)?|eventhall|benefits?|leaflet|newsroom|news)/?(\?.*)?$|"
                        r"specialgrouplist|getboardlist|/exhibitioncollection|indexexhibitioncollection", re.I)
@@ -234,15 +234,28 @@ def status_of(start: Optional[date], end: Optional[date], today: Optional[date] 
 _NOISE_TITLE = re.compile(r"^(더보기|바로가기|자세히|more|view|click|go|이동|배너|banner|이미지|image|전체\s*보기|"
                           r"기획전|이벤트|기획전\s*[·/&]\s*이벤트|이벤트관|events?|promotions?|special|sale|\s)*$", re.I)
 # 화면 조작 문구·차단 페이지·쇼핑몰 이름만 있는 제목(기획전이 아님)
-_UI_TITLE = re.compile(r"\.(gif|jpe?g|png|webp|svg)$|^\d{4}[-./]\d{1,2}[-./]\d{1,2}$|^\d+\s*(메인)?\s*배너|배너\s*이미지$|"
+_UI_TITLE = re.compile(r"^@\S*\*{2,}|^기획전\s*\d+\s*바로\s*가기$|^라이브\s*방송$|\.(gif|jpe?g|png|webp|svg)$|^\d{4}[-./]\d{1,2}[-./]\d{1,2}$|^\d+\s*(메인)?\s*배너|배너\s*이미지$|"
                        r"^(app|앱)\s*다운|이벤트\s*/\s*쿠폰$|이벤트\s*상세$|외부\s*링크$|(모두|모아|전체)\s*보기$|"
                        r"상담\s*예약$|뉴스룸|^이벤트\s*존$|^이벤트\s*홀|^매장\s*이벤트$|^진행\s*중인\s*(이벤트|기획전)|더보기|슬라이드\s*보기|상세\s*페이지로\s*이동|플러스\s*아이콘|새\s*창|attention required|access denied|"
                        r"보안\s*확인|just a moment|^(로그인|회원가입|장바구니|고객센터)$|"
                        r"^.{0,20}(공식\s*(온라인\s*)?몰|인터넷\s*면세점|온라인\s*쇼핑몰)$", re.I)
 
 
+_SITE_SUFFIX = re.compile(r"(LG전자|BEST\s*SHOP|공식\s*(온라인\s*)?몰|쇼핑몰|온라인\s*스토어|official|\.com|\.co\.kr)", re.I)
+
+
 def clean_title(t: str) -> str:
     t = re.sub(r"\s+", " ", (t or "")).strip(" -|·>")
+    # "제목 | 사이트명" 꼴이면 사이트명 부분을 뗀다
+    parts = [x.strip() for x in re.split(r"\s+[|:]\s+", t) if x.strip()]
+    if len(parts) > 1:
+        keep = [x for x in parts if not _SITE_SUFFIX.search(x)]
+        first = (keep or parts)[0]
+        t = first if len(first) >= 4 else t
+    # "A B A B" 처럼 같은 문구가 두 번 붙은 제목
+    h = len(t) // 2
+    if len(t) >= 8 and t[:h].strip() == t[h:].strip():
+        t = t[:h].strip()
     return t[:120]
 
 
