@@ -477,6 +477,7 @@ sources:
   - /(c/)?(SpecialPriceOffers|WhatsNew|OnlineOnly|promotion|event)
   product_patterns:
   - /p/\d+
+  discount_amount_round: true   # 2026-11-25 '10,000원 할인'이 판매가로 잡힘(전기요 89,900원 → 10,000원 93%)
   pct_needs_original: true   # 2026-11-25 정가 없는 74~86% 할인율이 대량으로 잡힘(실제 화면엔 할인율 없음)
 - id: kolonmall
   name: 코오롱몰

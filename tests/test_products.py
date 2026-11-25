@@ -214,3 +214,18 @@ def test_discount_amount_not_price():
     assert parse_price_text("14,990원 5,000원 할인 9,990원")[:2] == (9990, 14990)
     assert parse_price_text("14,990원 할인 -5,000원")[0] == 14990
     assert parse_price_text("할인가 9,990원 14,990원")[:2] == (9990, 14990)
+
+
+def test_fix_discount_amounts():
+    from promohub.products import Product, fix_discount_amounts
+    a = Product(name="보이러 전기요 1인용", url="https://x/1", price=10000, original_price=89900, discount_rate=89)
+    b = Product(name="SOUP 여성 케이블 크루넥 니트", url="https://x/2", price=5000, original_price=14990, discount_rate=67)
+    c = Product(name="정상", url="https://x/3", price=12990, original_price=15990, discount_rate=19)
+    assert fix_discount_amounts([a, b, c]) == 2
+    assert (a.price, a.discount_rate) == (79900, 11) and b.price == 9990 and c.price == 12990
+
+
+def test_fix_discount_amounts_big():
+    from promohub.products import Product, fix_discount_amounts
+    a = Product(name="카시오 셀비아노 그랜드 하이브리드", url="https://x/1", price=450000, original_price=2849000, discount_rate=84)
+    assert fix_discount_amounts([a]) == 1 and a.price == 2399000

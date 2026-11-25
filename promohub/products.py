@@ -268,6 +268,19 @@ def fix_unit_prices(products: list["Product"], threshold: int = 85) -> int:
     return n
 
 
+def fix_discount_amounts(products: list["Product"]) -> int:
+    """판매가로 잡힌 값이 1,000원 단위 '할인 금액'인 경우(코스트코: 정가 89,900원·10,000원 할인 → 79,900원)
+    판매가 = 정가 - 할인 금액. 코스트코 가격은 90·990원으로 끝나고 할인 금액은 1,000원 단위라 구분된다."""
+    n = 0
+    for p in products:
+        if (p.original_price and p.price and p.price < p.original_price and p.price % 1000 == 0
+                and (p.original_price % 1000 or p.price % 10000 == 0)):
+            p.price = p.original_price - p.price
+            p.discount_rate = round((1 - p.price / p.original_price) * 100)
+            n += 1
+    return n
+
+
 def fix_shared_images(products: list["Product"], min_names: int = 4) -> int:
     """여러 상품(이름이 다른 4개 이상)이 같은 이미지 주소를 쓰면 '이미지 준비 중' 같은 공용 자리표시 이미지다.
     대체 후보가 있으면 바꾸고, 없으면 비워서 사이트가 상품명 자리표시로 보여 주게 한다. 바꾼 개수를 돌려준다."""
