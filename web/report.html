@@ -54,6 +54,8 @@
   .cat-h b{font-size:15px;font-weight:650}
   .cat-h span{font-size:12.5px;color:var(--ink-2)}
   .vs{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .vs.one{grid-template-columns:1fr}
+  .vs.one .its{display:grid;grid-template-columns:1fr 1fr;column-gap:16px}
   .vs h4{margin:0 0 6px;font-size:12px;color:var(--ink-3);font-weight:600}
   .it{display:flex;gap:10px;align-items:center;padding:6px 0;border-top:1px dashed #eeece7;text-decoration:none}
   .it:first-of-type{border-top:0}
@@ -99,6 +101,24 @@ const CLIENTS = {
       ["유산균·건강", /유산균|프로바이오틱|홍삼|비타민|오메가/],
       ["선물세트", /선물세트|선물 세트/]
     ]
+  },
+  lottehomeshopping: {
+    name: "롯데홈쇼핑", self: "lotteimall",
+    rivals: ["shoppingnt", "kshop", "nsmall"],
+    selfNote: "롯데홈쇼핑(롯데아이몰)·현대·CJ·GS·홈앤쇼핑은 사이트 정책(robots.txt)상 자동 수집이 금지돼 있어, 수집 가능한 홈쇼핑·T커머스 3곳을 비교합니다. 자사 편성·기획전 데이터는 광고주에게 받아 연결하는 방식을 권합니다.",
+    selfBrands: /롯데|LBL|라우렐|조르쥬레쉬|폴앤조/i,
+    cats: [
+      ["건강식품", /유산균|프로바이오틱|홍삼|비타민|오메가|콜라겐|단백질|루테인|밀크씨슬|마그네슘|효소|흑염소|녹용/],
+      ["뷰티", /크림|앰플|세럼|마스크팩|쿠션|선크림|토너|에센스|파운데이션|샴푸|트리트먼트/],
+      ["패션·의류", /패딩|코트|니트|팬츠|자켓|재킷|점퍼|베스트|원피스|가디건|맨투맨|기모|레깅스/],
+      ["속옷·잡화", /브라|팬티|속옷|양말|가방|지갑|머플러|목도리|장갑|모자/],
+      ["주방용품", /냄비|프라이팬|밀폐용기|도마|압력솥|웍|그릴팬|텀블러|칼세트/],
+      ["생활가전", /청소기|에어프라이어|안마|마사지|전기매트|온수매트|가습기|히터|드라이기|믹서|블렌더/],
+      ["침구·리빙", /이불|패드|베개|토퍼|매트리스|커튼|러그|수납/],
+      ["육류·수산", /갈비|한우|불고기|삼겹|목살|굴비|전복|고등어|새우|갈치|연어|장어/],
+      ["간편식·반찬", /만두|김치|곰탕|국밥|찌개|떡볶이|돈까스|반찬|젓갈|조미김|도시락김/],
+      ["과일·농산", /감귤|사과|고구마|딸기|샤인머스캣|포도|햅쌀|잡곡/]
+    ]
   }
 };
 const CFG = window.PROMOHUB_CONFIG || {};
@@ -137,6 +157,7 @@ async function main(){
   $("meta").textContent = last ? `데이터 기준 ${new Date(last).toLocaleString("ko-KR",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"})}` : "";
 
   const rp = promos.filter(p => !isSelf(p.source_id)), mp = promos.filter(p => isSelf(p.source_id));
+  const selfMissing = !items.some(i => isSelf(i.source_id)) && !mp.length;
   const ok = i => i.price >= 1000;   // 1,000원 미만은 단위 가격(100g당 등)을 판매가로 잘못 읽은 경우가 대부분
   const ri = items.filter(i => !isSelf(i.source_id) && ok(i)), mi = items.filter(i => isSelf(i.source_id) && ok(i));
   const avg = a => a.length ? Math.round(a.reduce((s,x) => s+x, 0) / a.length) : null;
@@ -151,13 +172,13 @@ async function main(){
     const rCj = r.filter(i => C.selfBrands.test((i.brand||"") + " " + i.name));   // 경쟁 채널에서 파는 CJ 제품
     const rOther = r.filter(i => !rCj.includes(i));
     const minBy = a => a.slice().sort((x,y) => x.price - y.price);
-    return {label, r, m, rCj, rOther, rTop: minBy(rOther).slice(0,4), mTop: minBy(m).slice(0,4),
+    return {label, r, m, rCj, rOther, rTop: minBy(rOther).slice(0, selfMissing ? 6 : 4), mTop: minBy(m).slice(0,4),
             rMax: Math.max(0, ...drOf(rOther)), mMax: Math.max(0, ...drOf(m))};
   }).filter(c => c.r.length || c.m.length);
 
   /* 오늘 볼 것: 규칙 기반 요약 */
   const ins = [];
-  catRows.filter(c => c.rOther.length && c.rMax >= 30 && c.rMax > c.mMax + 10).slice(0,3).forEach(c => {
+  catRows.filter(c => !selfMissing && c.rOther.length && c.rMax >= 30 && c.rMax > c.mMax + 10).slice(0,3).forEach(c => {
     const top = c.rOther.filter(i => i.discount_rate === c.rMax)[0];
     ins.push(["threat", `<b>${esc(c.label)}</b> — 경쟁사 최대 ${c.rMax}% 할인(${ch(top.source_id)} ${esc(top.name.slice(0,30))} ${won(top.price)}), 자사 최대 ${c.mMax ? c.mMax+"%" : "할인 상품 없음"}`]);
   });
@@ -168,11 +189,24 @@ async function main(){
     .sort((a,b) => ((b.m ? b.m.price - b.i.price : -1e9) - (a.m ? a.m.price - a.i.price : -1e9)));
   cjElse.slice(0,3).forEach(({i, m}) => {
     const gap = m ? m.price - i.price : null;
-    ins.push([gap > 0 ? "threat" : "watch", `<b>CJ 제품이 다른 채널 기획전에</b> — ${ch(i.source_id)} '${esc(i.promotion_title||"")}'에서 ${esc(i.name.slice(0,34))} ${won(i.price)}${i.discount_rate?` (${i.discount_rate}%)`:""}` +
+    ins.push([gap > 0 ? "threat" : "watch", `<b>${esc(C.name)} 제품이 다른 채널 기획전에</b> — ${ch(i.source_id)} '${esc(i.promotion_title||"")}'에서 ${esc(i.name.slice(0,34))} ${won(i.price)}${i.discount_rate?` (${i.discount_rate}%)`:""}` +
       (m ? (gap > 0 ? `, 자사몰(${won(m.price)})보다 <b>${won(gap)} 쌈</b>` : gap < 0 ? `, 자사몰(${won(m.price)})이 ${won(-gap)} 더 쌈` : `, 자사몰과 같은 가격`) : `. 자사몰 가격과 비교 필요`)]);
   });
+  if(selfMissing) catRows.filter(c => c.rOther.length).sort((a,b) => b.rOther.length - a.rOther.length).slice(0,2).forEach(c =>
+    ins.push(["threat", `<b>${esc(c.label)}</b> — 경쟁 ${C.rivals.length}곳 기획전 상품 ${c.rOther.length}개${c.rMax ? `, 최대 ${c.rMax}% 할인` : ""}. 경쟁사가 가장 많이 미는 카테고리`]));
   catRows.filter(c => c.m.length && !c.rOther.length).slice(0,2).forEach(c =>
-    ins.push(["chance", `<b>${esc(c.label)}</b> — 경쟁 6곳 기획전에 같은 품목이 없음. 자사 ${c.m.length}개 상품 검색광고·노출 확대 여지`]));
+    ins.push(["chance", `<b>${esc(c.label)}</b> — 경쟁 ${C.rivals.length}곳 기획전에 같은 품목이 없음. 자사 ${c.m.length}개 상품 검색광고·노출 확대 여지`]));
+  const bmap = new Map();
+  ri.forEach(i => { const b = (i.brand || "").trim(); if(b.length >= 2 && !/^(무료배송|단독|특가|공식|정품)$/.test(b)){ if(!bmap.has(b)) bmap.set(b, new Set()); bmap.get(b).add(i.source_id); } });
+  [...bmap].filter(([, set]) => set.size >= 2).sort((a,b) => b[1].size - a[1].size).slice(0,2).forEach(([b, set]) =>
+    ins.push(["watch", `<b>여러 채널이 함께 미는 브랜드</b> — '${esc(b)}': ${[...set].map(ch).join(" ")}`]));
+  if(selfMissing){
+    const groups = new Map();
+    ri.forEach(i => { const k = core(i.name).slice(0, 14); if(k.length >= 8){ if(!groups.has(k)) groups.set(k, []); groups.get(k).push(i); } });
+    [...groups.values()].map(g => g.filter((x, j, a) => a.findIndex(y => y.source_id === x.source_id) === j)).filter(g => g.length >= 2)
+      .map(g => g.sort((a,b) => a.price - b.price)).sort((a,b) => (b[b.length-1].price - b[0].price) - (a[a.length-1].price - a[0].price)).slice(0,2)
+      .forEach(g => ins.push(["chance", `<b>같은 상품, 채널마다 다른 가격</b> — ${esc(g[0].name.slice(0,30))}: ${g.map(i => `${ch(i.source_id)} ${won(i.price)}`).join(" / ")}`]));
+  }
   ending.slice().sort((a,b) => (b.max_discount||0) - (a.max_discount||0)).slice(0,2).forEach(p =>
     ins.push(["watch", `<b>마감 임박</b> — ${ch(p.source_id)} '${esc(p.title)}' ${p.d_day === 0 ? "오늘" : "D-"+p.d_day} 종료${p.max_discount ? `, 최대 ${p.max_discount}%` : ""}. 종료 직후 수요 이동 대비`]));
 
@@ -200,25 +234,27 @@ async function main(){
   <div class="hero"><div class="k">광고주 리포트 · 시제품</div>
     <h1>${esc(C.name)} 경쟁 기획전 데일리 — ${dateTxt}</h1>
     <p>경쟁 쇼핑몰 기획전과 그 안의 상품 가격을 매일 새벽 수집해, ${esc(C.name)} 핵심 카테고리 기준으로 비교했습니다.</p>
-    <div class="rivals"><span class="me">${esc(C.name)}</span>${C.rivals.map(id => `<span>${esc(nameOf.get(id)||id)}</span>`).join("")}</div></div>
+    ${C.selfNote ? `<p style="margin-top:8px;font-size:12.5px;color:var(--ink-3)">${esc(C.selfNote)}</p>` : ""}
+    <div class="rivals"><span class="me">${esc(C.name)}${selfMissing ? " (데이터 미연결)" : ""}</span>${C.rivals.map(id => `<span>${esc(nameOf.get(id)||id)}</span>`).join("")}</div></div>
 
   <div class="kpis">
-    <div class="kpi"><span>경쟁사 진행 기획전</span><b>${rp.length}</b><small>자사 ${mp.length}건</small></div>
+    <div class="kpi"><span>경쟁사 진행 기획전</span><b>${rp.length}</b><small>${selfMissing ? "자사 데이터 미연결" : "자사 " + mp.length + "건"}</small></div>
     <div class="kpi"><span>경쟁사 24시간 내 새 기획전</span><b>${fresh.length}</b><small>${C.rivals.filter(id => fresh.some(p => p.source_id === id)).map(id => esc(nameOf.get(id))).slice(0,3).join(" · ") || "—"}</small></div>
     <div class="kpi"><span>경쟁사 3일 내 마감</span><b>${ending.length}</b><small>종료 직후 수요 이동 구간</small></div>
-    <div class="kpi"><span>평균 할인율 (경쟁사 / 자사)</span><b>${avg(rDr) ?? "-"}% / ${avg(mDr) ?? "-"}%</b><small>기획전 상품 ${ri.length.toLocaleString()} / ${mi.length.toLocaleString()}개 기준</small></div>
+    ${selfMissing ? `<div class="kpi"><span>경쟁사 평균 할인율</span><b>${avg(rDr) ?? "-"}%</b><small>기획전 상품 ${ri.length.toLocaleString()}개 기준</small></div>`
+      : `<div class="kpi"><span>평균 할인율 (경쟁사 / 자사)</span><b>${avg(rDr) ?? "-"}% / ${avg(mDr) ?? "-"}%</b><small>기획전 상품 ${ri.length.toLocaleString()} / ${mi.length.toLocaleString()}개 기준</small></div>`}
   </div>
 
-  <section><h2>오늘 볼 것</h2><p class="sub">가격·할인 차이가 큰 카테고리, 다른 채널에 나온 CJ 제품, 경쟁사가 비워 둔 카테고리를 자동으로 골랐습니다.</p>
+  <section><h2>오늘 볼 것</h2><p class="sub">가격·할인 차이, 여러 채널이 함께 미는 브랜드, 경쟁사가 비워 둔 카테고리 등을 자동으로 골랐습니다.</p>
     ${ins.length ? `<ul class="ins">${ins.slice(0,8).map(([t,h]) => `<li><i class="t-${t}">${{threat:"경계",watch:"확인",chance:"기회"}[t]}</i><span>${h}</span></li>`).join("")}</ul>` : `<div class="none">오늘은 눈에 띄는 차이가 없습니다.</div>`}
   </section>
 
-  <section><h2>핵심 카테고리 맞대결</h2><p class="sub">카테고리마다 경쟁사(CJ 제품 제외)와 자사 기획전 상품을 낮은 가격순으로 4개씩. CJ 제품이 다른 채널에서 팔리는 경우는 따로 표시했습니다.</p>
+  <section><h2>${selfMissing ? "카테고리별 경쟁사 주력 상품" : "핵심 카테고리 맞대결"}</h2><p class="sub">${selfMissing ? "카테고리마다 경쟁사 기획전 상품을 낮은 가격순으로 6개씩." : "카테고리마다 경쟁사(자사 브랜드 제품 제외)와 자사 기획전 상품을 낮은 가격순으로 4개씩."} ${esc(C.name)} 제품이 다른 채널에서 팔리는 경우는 따로 표시했습니다.</p>
     ${catRows.map(c => `<div class="cat"><div class="cat-h"><b>${esc(c.label)}</b>
-        <span>경쟁사 ${c.rOther.length}개${c.rMax ? ` · 최대 ${c.rMax}%` : ""}</span><span>자사 ${c.m.length}개${c.mMax ? ` · 최대 ${c.mMax}%` : ""}</span>
-        ${c.rCj.length ? `<span class="tag cj">다른 채널의 CJ 제품 ${c.rCj.length}개</span>` : ""}</div>
-      <div class="vs"><div><h4>경쟁사</h4>${c.rTop.map(itemHtml).join("") || `<div class="none">경쟁사 기획전에 없음</div>`}</div>
-        <div><h4>${esc(C.name)}</h4>${c.mTop.map(itemHtml).join("") || `<div class="none">자사 기획전에 없음</div>`}</div></div></div>`).join("") || `<div class="none">겹치는 카테고리가 없습니다.</div>`}
+        <span>경쟁사 ${c.rOther.length}개${c.rMax ? ` · 최대 ${c.rMax}%` : ""}</span>${selfMissing ? "" : `<span>자사 ${c.m.length}개${c.mMax ? ` · 최대 ${c.mMax}%` : ""}</span>`}
+        ${c.rCj.length ? `<span class="tag cj">다른 채널의 ${esc(C.name)} 제품 ${c.rCj.length}개</span>` : ""}</div>
+      ${selfMissing ? `<div class="vs one"><div><h4>경쟁사 · 낮은 가격순</h4><div class="its">${c.rTop.map(itemHtml).join("") || `<div class="none">경쟁사 기획전에 없음</div>`}</div>` : `<div class="vs"><div><h4>경쟁사</h4>${c.rTop.map(itemHtml).join("") || `<div class="none">경쟁사 기획전에 없음</div>`}</div>
+        <div><h4>${esc(C.name)}</h4>${c.mTop.map(itemHtml).join("") || `<div class="none">${selfMissing ? "자사 데이터가 연결되면 같은 카테고리 상품을 나란히 보여 줍니다" : "자사 기획전에 없음"}</div>`}`}</div></div></div>`).join("") || `<div class="none">겹치는 카테고리가 없습니다.</div>`}
   </section>
 
   <section><h2>경쟁사별 진행 기획전</h2><p class="sub">새 기획전 → 마감 임박 → 할인율 순. 쇼핑몰마다 6건까지.</p>
@@ -235,7 +271,7 @@ async function main(){
   </section>
 
   <p class="foot">· 각 쇼핑몰 공개 기획전 페이지를 매일 새벽 5시에 수집합니다. 기획전 안 상품은 일부만 잡히는 경우가 있어, 가격 비교는 수집된 상품 기준입니다.<br>
-  · 쿠팡·SSG·풀무원샵·정육각 등은 사이트 정책·접속 차단으로 아직 포함되지 않았습니다. · 이 페이지는 검색엔진 노출을 막아 두었습니다(시제품).</p>`;
+  · ${C.selfNote ? "비교 대상에 없는 채널은 사이트 정책·접속 차단으로 수집하지 못한 곳입니다." : "쿠팡·SSG·풀무원샵·정육각 등은 사이트 정책·접속 차단으로 아직 포함되지 않았습니다."} · 이 페이지는 검색엔진 노출을 막아 두었습니다(시제품).</p>`;
 }
 main().catch(e => { console.error(e); $("app").innerHTML = `<div class="empty">리포트를 불러오지 못했습니다. 잠시 후 새로고침해 주세요.<br><small>${esc(e.message).slice(0,160)}</small></div>`; });
 }
