@@ -24,7 +24,7 @@
   .num{font-variant-numeric:tabular-nums;white-space:nowrap}
 
   .top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
-  .top-in{max-width:1400px;margin:0 auto;padding:12px 24px;display:flex;gap:18px;align-items:center}
+  .top-in{max-width:1640px;margin:0 auto;padding:12px 24px;display:flex;gap:18px;align-items:center}
   .logo{font-weight:700;letter-spacing:-.02em;font-size:18px;white-space:nowrap;display:flex;align-items:center;gap:8px}
   .logo i{width:10px;height:10px;border-radius:3px;background:var(--accent);transform:rotate(45deg)}
   .search{flex:1;max-width:560px;position:relative}
@@ -35,7 +35,7 @@
   .demo{background:light-dark(#fff4d6,#3a2f0f);color:light-dark(#6b4e00,#f3dc9b);border-bottom:1px solid light-dark(#f0dc9c,#54451a);font-size:13px}
   .demo div{max-width:1400px;margin:0 auto;padding:8px 24px}
 
-  .wrap{max-width:1400px;margin:0 auto;padding:20px 24px 80px;display:grid;grid-template-columns:250px minmax(0,1fr);gap:28px}
+  .wrap{max-width:1640px;margin:0 auto;padding:20px 24px 80px;display:grid;grid-template-columns:240px minmax(0,1fr) 250px;gap:24px}
   .side{position:sticky;top:72px;align-self:start;display:flex;flex-direction:column;gap:20px;max-height:calc(100vh - 92px);overflow:auto;padding:0 4px 20px 0}
   .grp h4{margin:0 0 8px;font-size:12px;color:var(--ink-3);font-weight:600;display:flex;justify-content:space-between}
   .chips{display:flex;flex-wrap:wrap;gap:6px}
@@ -53,7 +53,7 @@
   .range input{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--panel);font-size:13px}
   .reset{border:0;background:none;color:var(--ink-3);font-size:12px;text-decoration:underline;padding:0;align-self:flex-start}
 
-  .kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:16px}
+  .kpis{display:grid;grid-template-columns:1fr;gap:8px}
   .kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;text-align:left}
   .kpi b{display:block;font-size:24px;font-weight:700;letter-spacing:-.02em}
   .kpi span{color:var(--ink-2);font-size:12px}
@@ -199,9 +199,26 @@
   .empty .go{margin-top:16px;border:0}
   .loading{opacity:.5;pointer-events:none}
 
-  @media (max-width:1100px){ .kpis{grid-template-columns:repeat(3,minmax(0,1fr))} }
+  .rail{position:sticky;top:72px;align-self:start;display:flex;flex-direction:column;gap:12px;max-height:calc(100vh - 92px);overflow:auto}
+  .rail .kpi{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:11px 14px}
+  .rail .kpi b{font-size:20px;order:2}
+  .rail .kpi span{order:1;font-size:12.5px}
+  .rail-h{font-size:12px;color:var(--ink-3);font-weight:600;margin:4px 2px -2px}
+  .pk-hero.v{margin:0;padding:18px}
+  .pk-hero.v h2{font-size:18px}
+  .pk-hero.v p{font-size:12.5px}
+  @media (max-width:1280px){
+    .wrap{grid-template-columns:240px minmax(0,1fr)}
+    .rail{grid-column:2;grid-row:1;position:static;max-height:none;overflow:visible}
+    main{grid-column:2;grid-row:2}
+    .side{grid-row:1 / span 2}
+    .kpis{grid-template-columns:repeat(5,minmax(0,1fr))}
+    .rail .kpi{display:block}.rail .kpi b{font-size:22px}
+    .pk-hero.v{display:none}
+  }
   @media (max-width:900px){
     .wrap{grid-template-columns:minmax(0,1fr);padding:14px 16px 60px}
+    .rail,main,.side{grid-column:1!important;grid-row:auto!important}
     .side{position:static!important;display:none!important;max-height:none!important}
     body.fopen .side{display:flex!important}
     .ftoggle{display:inline-block}.meta{display:none}.top-in{padding:10px 16px}
@@ -219,6 +236,7 @@
   .pk-hero .how{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
   .pk-hero .how span{background:rgba(255,255,255,.2);border-radius:999px;padding:3px 10px;font-size:12px;font-weight:500}
   .pk-sec{margin:22px 0 10px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+  #view > .pk-sec:first-child{margin-top:2px}
   .pk-sec h3{margin:0;font-size:17px;font-weight:650;letter-spacing:-.01em}
   .pk-sec span{color:var(--ink-3);font-size:12.5px}
   .pk .copy{font-size:12.5px;font-weight:600;color:var(--accent);line-height:1.35}
@@ -241,7 +259,6 @@
 <div class="wrap">
   <aside class="side" id="side"></aside>
   <main>
-    <div class="kpis" id="kpis"></div>
     <div class="bar">
       <button class="ftoggle" id="ftoggle">필터</button>
       <div class="count" id="count"></div>
@@ -259,6 +276,11 @@
     </div>
     <div id="view"></div>
   </main>
+  <aside class="rail" id="rail">
+    <div class="rail-h">한눈에 보기</div>
+    <div class="kpis" id="kpis"></div>
+    <div id="railinfo"></div>
+  </aside>
 </div>
 <div class="scrim" id="scrim"></div>
 <aside class="drawer" id="drawer" aria-hidden="true"></aside>
@@ -559,10 +581,11 @@ function picksView(){
   const list = all.filter(p => (!st.ctypes.size || st.ctypes.has(p.channel_type)) && (!st.sources.size || st.sources.has(p.source_id))
                          && (!st.q || (p.name + " " + (p.brand||"") + " " + p.source_name).toLowerCase().includes(st.q.toLowerCase())));
   const day = all[0] && all[0].pick_date ? fmt(d(all[0].pick_date)) : fmt(today);
-  const hero = `<div class="pk-hero"><h2>오늘의 추천 상품</h2>
+  const hero = `<div class="pk-hero v"><h2>오늘의 추천 상품</h2>
     <p>${day} 기준, 모든 쇼핑몰 기획전 상품 중에서 <b>잘 팔릴 만한 상품 ${all.length}개</b>를 골랐어요. 쇼핑몰마다 4개, 기획전마다 2개까지만 담아 한쪽으로 쏠리지 않게 했어요.</p>
     <div class="how"><span>할인율</span><span>웹 최저가 비교</span><span>여러 쇼핑몰 중 최저가</span><span>검색 수요</span><span>마감 임박</span><span>가격대</span></div></div>`;
-  if(!list.length) return hero + `<div class="empty"><b>추천 상품이 아직 없습니다</b>매일 새벽 수집·가격 비교가 끝나면 자동으로 골라집니다.</div>`;
+  $("railinfo").innerHTML = hero;
+  if(!list.length) return `<div class="empty"><b>추천 상품이 아직 없습니다</b>매일 새벽 수집·가격 비교가 끝나면 자동으로 골라집니다.</div>`;
   const used = new Set(), out = [];
   for(const [key, title, sub] of PK_SECTIONS){
     const its = key === "top" ? list.slice(0, 10) : list.filter(p => p.section === key && !used.has(p.item_key || p.name));
@@ -570,7 +593,7 @@ function picksView(){
     if(!its.length) continue;
     out.push(`<div class="pk-sec"><h3>${title}</h3><span>${sub} · ${its.length}개</span></div><div class="pgrid">${its.map(pickCard).join("")}</div>`);
   }
-  return hero + out.join("");
+  return out.join("");
 }
 /* ── 가격 비교 탭 ── */
 let CCACHE = null;
@@ -635,12 +658,13 @@ function timeline(list){
 
 function render(){
   renderKpis();
+  if(st.view !== "picks") $("railinfo").innerHTML = "";
   if(!DATA.length){
     $("count").innerHTML = "";
     $("view").innerHTML = `<div class="empty"><b>첫 수집을 기다리는 중입니다</b>${SOURCES.length}개 채널이 등록돼 있고, 자동 수집이 돌면 기획전·상품이 여기에 채워집니다.<br>
       <button class="go" id="trydemo">샘플 데이터로 화면 미리보기</button></div>`;
   }else if(st.view === "picks"){
-    $("count").innerHTML = `추천 상품`;
+    $("count").innerHTML = `오늘의 추천 상품`;
     $("view").innerHTML = picksView();
   }else if(st.view === "compare"){
     $("count").innerHTML = `가격 비교`;
