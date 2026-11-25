@@ -588,7 +588,7 @@ function demoPicks(){
 function picksData(){
   if(MODE !== "supabase") return PICKCACHE || (PICKCACHE = demoPicks());
   if(PICKCACHE) return PICKCACHE;
-  sb(`v_picks?select=*&vertical=eq.${VCUR || "all"}&order=rank.asc`).then(r => { PICKCACHE = r; render(); }).catch(e => { console.warn(e); PICKCACHE = []; render(); });
+  sb(`v_picks?select=*&vertical=eq.${VCUR || "all"}&order=rank.asc`).then(r => { PICKCACHE = r; if(!r.length && VCUR && st.view === "picks"){ st.view = "cards"; if(typeof setSorts === "function") setSorts(); } render(); }).catch(e => { console.warn(e); PICKCACHE = []; render(); });
   return null;
 }
 function pickCard(p){
