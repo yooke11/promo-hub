@@ -936,3 +936,99 @@ sources:
   mobile: false
   entry_urls:
   - https://www.discovery-expedition.com/
+- id: isoi   # 2026-11-25 뷰티세일픽 시험 수집 통과
+  name: 아이소이
+  channel_type: brand
+  rank: 325
+  domains:
+  - isoi.co.kr
+  mobile: false
+  entry_urls:
+  - https://www.isoi.co.kr/
+  include_patterns:
+  - project\.html
+  - /board/(event|gallery)[^/]*/
+  - /article/[^/]+/\d+/\d+
+  - /exhibit
+  - /promotion
+  exclude_patterns:
+  - /product/detail\.html
+  - product_no=
+  - /product/[^?]+/\d+/category/
+- id: cellfusionc   # 2026-11-25 뷰티세일픽 시험 수집 통과
+  name: 셀퓨전씨
+  channel_type: brand
+  rank: 317
+  domains:
+  - cellfusionc.co.kr
+  mobile: false
+  entry_urls:
+  - https://cellfusionc.co.kr/
+  include_patterns:
+  - project\.html
+  - /board/(event|gallery)[^/]*/
+  - /article/[^/]+/\d+/\d+
+  - /exhibit
+  - /promotion
+  exclude_patterns:
+  - /product/detail\.html
+  - product_no=
+  - /product/[^?]+/\d+/category/
+- id: clubclio   # 2026-11-25 뷰티세일픽 시험 수집 통과
+  name: 클리오
+  channel_type: brand
+  rank: 306
+  domains:
+  - clubclio.co.kr
+  mobile: false
+  entry_urls:
+  - https://clubclio.co.kr/
+  include_patterns:
+  - project\.html
+  - /board/(event|gallery)[^/]*/
+  - /article/[^/]+/\d+/\d+
+  - /exhibit
+  - /promotion
+  exclude_patterns:
+  - /product/detail\.html
+  - product_no=
+  - /product/[^?]+/\d+/category/
+- id: skinfood   # 2026-11-25 뷰티세일픽 시험 수집 통과
+  name: 스킨푸드
+  channel_type: brand
+  rank: 328
+  domains:
+  - theskinfood.com
+  mobile: false
+  entry_urls:
+  - https://www.theskinfood.com/
+  include_patterns:
+  - project\.html
+  - /board/(event|gallery)[^/]*/
+  - /article/[^/]+/\d+/\d+
+  - /exhibit
+  - /promotion
+  exclude_patterns:
+  - /product/detail\.html
+  - product_no=
+  - /product/[^?]+/\d+/category/
+- id: banilaco   # 2026-11-25 뷰티세일픽 시험 수집 통과
+  name: 바닐라코
+  channel_type: brand
+  rank: 311
+  domains:
+  - banila.com
+  mobile: false
+  entry_urls:
+  - https://banila.com/
+  - https://banila.com/board/gallery/list.html?board_no=8
+  include_patterns:
+  - project\.html
+  - /board/(event|gallery)[^/]*/
+  - /article/[^/]+/\d+/\d+
+  - /exhibit
+  - /promotion
+  exclude_patterns:
+  - /product/detail\.html
+  - product_no=
+  - /product/[^?]+/\d+/category/
