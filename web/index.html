@@ -366,6 +366,7 @@ async function load(){
         p = p.filter(x => sv.has(x.source_id)); s = s.filter(x => sv.has(x.id));
       }
       DATA = p; SOURCES = s;
+      await applyPriceTrust();
     }else{
       const [p, s] = await Promise.all([fetch("/api/promotions?limit=3000&items_per=60"), fetch("/api/sources")]);
       if(!p.ok || !s.ok) throw 0;
@@ -379,6 +380,24 @@ async function load(){
     useDemo(MODE === "supabase" ? String(e && e.message || e).slice(0, 160) : ""); return;
   }
   boot();
+}
+// 가격 정확도: 상품 페이지 대조에서 틀린 것으로 나온 상품과, 표본의 20% 이상이 틀린 채널은 숫자를 보여 주지 않는다(2026-11-26).
+// 틀린 숫자를 보여 주느니 "판매처에서 확인"으로 둔다. 조회가 실패하면 그대로 둔다.
+async function applyPriceTrust(){
+  try{
+    const r = await fetch(`${CFG.supabaseUrl}/rest/v1/rpc/price_trust`, {method:"POST",
+      headers:Object.assign({apikey:CFG.anonKey, "Content-Type":"application/json"},
+        CFG.anonKey.startsWith("sb_") ? {} : {Authorization:"Bearer " + CFG.anonKey}), body:"{}"});
+    if(!r.ok) return;
+    const t = await r.json(), low = new Set(t.low_sources || []), bad = new Set(t.bad_urls || []);
+    if(!low.size && !bad.size) return;
+    DATA.forEach(pr => (pr.items||[]).forEach(p => {
+      if(low.has(pr.source_id) || bad.has(p.url)){
+        p.price = null; p.original_price = null; p.discount_rate = null; p.market_lowest = null; p.priceHidden = true;
+      }
+    }));
+    DATA.forEach(pr => { if(low.has(pr.source_id)){ pr.max_discount = null; pr.min_price = null; } });
+  }catch(e){ console.warn("price_trust", e); }
 }
 function useDemo(err){
   MODE = "demo"; DEMO = true; ({items:DATA, sources:SOURCES} = demoData());
@@ -521,7 +540,7 @@ function pimg(p, cls=""){
   const im = p.image_url ? `<img loading="lazy" referrerpolicy="no-referrer" src="${esc(p.image_url)}" alt="" onerror="this.remove()">` : "";
   return `<span class="pimg ${cls}">${ph}${im}</span>`;
 }
-const priceHtml = p => p.price == null ? `<span class="price"><span style="color:var(--ink-3)">가격 정보 없음</span></span>` :
+const priceHtml = p => p.price == null ? `<span class="price"><span style="color:var(--ink-3)">${p.priceHidden ? "가격은 판매처에서 확인" : "가격 정보 없음"}</span></span>` :
   `<span class="price">${p.discount_rate ? `<em>${p.discount_rate}%</em>` : ""}<b class="num">${won(p.price)}</b>${p.original_price ? `<s class="num">${won(p.original_price)}</s>` : ""}</span>`;
 function ddayTag(i){
   if(i.status === "upcoming" && i.start_date) return `<span class="dday up">D-${Math.round((d(i.start_date)-today)/DAY)} 오픈</span>`;
