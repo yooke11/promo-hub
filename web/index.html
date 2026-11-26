@@ -488,7 +488,7 @@ function serverProducts(){
   if(isFoodOnly()) f.push(`category=eq.${encodeURIComponent("식품")}`, "category_by_name=is.true", "price=not.is.null", `name=not.in.(${["장바구니 담기","재입고 신청","재입고 알림"].map(encodeURIComponent).join(",")})`);
   else if(st.cats.size) f.push(`category=in.(${[...st.cats].map(c => '"'+encodeURIComponent(c)+'"').join(",")})`);
   f.push("order=" + ({discount:"discount_rate.desc.nullslast,price.asc", vs_market:"vs_market_pct.asc.nullslast", price:"price.asc.nullslast", price_desc:"price.desc.nullslast", ending:"end_date.asc.nullslast", unit:"unit_price_100.asc.nullslast,price.asc"}[st.sort] || "discount_rate.desc.nullslast"));
-  return "v_items?" + f.join("&");
+  return "v_products?" + f.join("&");   // 같은 상품이 여러 기획전에 있어도 한 줄(가장 싼 값)
 }
 function requestProducts(){
   const key = serverProducts();
@@ -692,7 +692,7 @@ function pcard(p, inDrawer){
   const mall = inDrawer ? (st.open||{}).source_name : (p.promo ? p.promo.source_name : p.source_name);
   return `<div class="pcard"><a href="${esc(plink(p))}" target="_blank" rel="noopener">
       ${pimg(p)}
-      <div class="pb">${mall && !inDrawer ? `<span class="mall">${esc(mall)}</span>` : ""}<span class="nm">${p.brand && !String(p.name).includes(p.brand) ? esc(p.brand) + " " : ""}${esc(p.name)}</span>${priceHtml(p)}${unitLine(p)}${trustLine(p)}</div></a>
+      <div class="pb">${mall && !inDrawer ? `<span class="mall">${esc(mall)}</span>` : ""}<span class="nm">${p.brand && !String(p.name).includes(p.brand) ? esc(p.brand) + " " : ""}${esc(p.name)}</span>${priceHtml(p)}${unitLine(p)}${trustLine(p)}${p.promo_count > 1 ? `<span class="unit">기획전 ${p.promo_count}곳에 함께 있어요</span>` : ""}</div></a>
       ${heartBtn({...p, source_name: mall, url: plink(p)})}</div>`;
 }
 function productsView(list, inDrawer=false){
@@ -882,7 +882,7 @@ function channelStats(){
   if(MODE === "supabase"){
     if(CCACHE) return CCACHE;
     Promise.all([sb("v_channel_price?select=*&order=rank.asc"),
-                 sb("v_items?select=*&market_lowest=gt.0&order=vs_market_pct.asc&limit=40")])
+                 sb("v_products?select=*&market_lowest=gt.0&order=vs_market_pct.asc&limit=40")])
       .then(([ch, top]) => { const byId = new Map(DATA.map(i => [i.id, i]));
         CCACHE = {ch, top: top.map(r => ({...r, promo: byId.get(r.promotion_id) || {id:r.promotion_id, title:r.promotion_title, url:r.promotion_url, source_id:r.source_id, source_name:r.source_name}}))}; render(); })
       .catch(e => { console.warn(e); CCACHE = {ch:[], top:[]}; render(); });

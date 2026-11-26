@@ -31,3 +31,13 @@ alter table public.product_picks add column if not exists unit_price int, add co
 -- (4) 찜 알림 키: 서버 함수 send-alerts 가 처음 호출 때 만들어 private.app_keys 에 둔다(사람·대화·저장소를 거치지 않음)
 create table if not exists private.app_keys (name text primary key, value text not null, created_at timestamptz not null default now());
 -- public.vapid_public()(누구나), public.vapid_private()·vapid_store()(service_role 만)
+
+-- (5) 상품 보기 중복 제거(2026-11-26): 같은 상품이 여러 기획전에 있으면 한 줄만
+create or replace view public.v_products with (security_invoker = true) as
+select distinct on (x.dk) x.*, count(*) over (partition by x.dk) as promo_count
+from (
+  select v.*, case when length(coalesce(v.nkey, '')) >= 6 then v.source_id || '|' || v.nkey || '|' || coalesce(v.price::text, '-') else v.item_key end as dk
+  from public.v_items v
+) x
+order by x.dk, (x.price is null), x.price, x.end_date nulls last, x.promotion_id;
+grant select on public.v_products to anon, authenticated;
