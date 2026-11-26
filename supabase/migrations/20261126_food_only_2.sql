@@ -66,3 +66,19 @@ begin
   d := regexp_replace(d, 'delete from public\.source_default_category\s*;', 'delete from public.source_default_category where true;');
   execute d;
 end $$;
+
+-- 수정: 식품 조건을 첫 단계에 넣으면 실행 계획이 나빠져 7초(시간 초과) → 첫 단계를 고정(materialized)하고 조건은 다음 단계에서(0.7초)
+do $$
+declare d text := pg_get_functiondef('private.refresh_picks_for(text,text[],int,int,int,numeric,int)'::regprocedure);
+  flt text := ' and (v <> ''food'' or i.category = ''식품'') and i.name !~* ''^(장바구니(\s*담기)?|재입고(\s*(신청|알림))?)$'' and i.name !~ ''\*{2,}\s*고객님''';
+begin
+  if position(flt in d) > 0 then
+    d := replace(d, flt, '');
+    d := replace(d, 'base0 as (', 'base0 as materialized (');
+    d := replace(d, '      order by 2 desc limit 1) k on true
+  ),', '      order by 2 desc limit 1) k on true
+    where (v <> ''food'' or b.category = ''식품'') and b.name !~* ''^(장바구니(\s*담기)?|재입고(\s*(신청|알림))?)$'' and b.name !~ ''\*{2,}\s*고객님''
+  ),');
+    execute d;
+  end if;
+end $$;
