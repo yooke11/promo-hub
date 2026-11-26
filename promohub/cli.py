@@ -118,7 +118,13 @@ def _rpc(name: str, body: dict):
     import httpx
     from .verify import _sb
     base, h = _sb()
-    r = httpx.post(f"{base}/rest/v1/rpc/{name}", json=body, headers=h, timeout=60)
+    import time
+    for attempt in range(3):   # 방금 대량 저장한 직후 첫 호출은 3초 제한에 걸릴 수 있다 → 잠시 뒤 다시(두 번째부터는 1초대)
+        r = httpx.post(f"{base}/rest/v1/rpc/{name}", json=body, headers=h, timeout=60)
+        if r.status_code == 500 and "57014" in r.text and attempt < 2:
+            time.sleep(5 * (attempt + 1))
+            continue
+        break
     if r.status_code != 200:
         raise RuntimeError(f"{name} 실패: {r.status_code} {r.text[:200]}")
     return r.json()
