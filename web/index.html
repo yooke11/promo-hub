@@ -9,287 +9,280 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap">
 <script src="config.js"></script>
 <style>
+  /* 2026-11-26 재설계: 소비자용 딜 사이트 — 한 줄 상단(로고·검색) + 목적별 탭 + 접히는 필터, 가격이 주인공 */
   :root{color-scheme:light dark;
-    --bg:light-dark(#f6f5f2,#111113); --panel:light-dark(#fff,#1a1a1d); --ink:light-dark(#16161a,#f2f1ee);
-    --ink-2:light-dark(#55555f,#b4b3ae); --ink-3:light-dark(#8b8b95,#7d7c78); --line:light-dark(#e6e4df,#2a2a2e);
-    --chip:light-dark(#efede8,#242428); --accent:#ff4d2e; --soon:#1f6feb; --r:14px}
+    --bg:light-dark(#f4f5f7,#101114); --panel:light-dark(#fff,#191b1f); --ink:light-dark(#1b1d22,#eef0f3);
+    --ink-2:light-dark(#4a4f59,#b9bec7); --ink-3:light-dark(#8a8f98,#7c818b); --line:light-dark(#e4e6ea,#2a2d33);
+    --chip:light-dark(#eef0f3,#23262c); --deal:light-dark(#e3311f,#ff5a48); --ok:light-dark(#0b7d4b,#3ccf8e);
+    --accent:#2b50d8; --soon:#2b50d8; --r:14px}
   :root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
   *{box-sizing:border-box;min-width:0}
-  body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 "Pretendard Variable",Pretendard,"Noto Sans KR",-apple-system,system-ui,sans-serif;
-       -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;letter-spacing:-.005em;overflow-x:clip}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Pretendard Variable",Pretendard,"Noto Sans KR",-apple-system,system-ui,sans-serif;
+       -webkit-font-smoothing:antialiased;letter-spacing:-.01em;overflow-x:clip}
   a{color:inherit;text-decoration:none}
   button,input,select{font:inherit;color:inherit}
   button{cursor:pointer}
-  :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
   .num{font-variant-numeric:tabular-nums;white-space:nowrap}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 
-  .top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
-  .top-in{max-width:1640px;margin:0 auto;padding:12px 24px;display:flex;gap:18px;align-items:center}
-  .logo{font-weight:700;letter-spacing:-.02em;font-size:18px;white-space:nowrap;display:flex;align-items:center;gap:8px}
-  .logo i{width:10px;height:10px;border-radius:3px;background:var(--accent);transform:rotate(45deg)}
-  .search{flex:1;max-width:560px;position:relative}
-  .search input{width:100%;padding:10px 14px 10px 38px;border-radius:999px;border:1px solid var(--line);background:var(--panel);outline:none;font-size:15px}
-  .search input:focus{border-color:var(--ink)}
-  .search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--ink-3)}
-  .meta{margin-left:auto;color:var(--ink-3);font-size:12px;white-space:nowrap}
-  .demo{background:light-dark(#fff4d6,#3a2f0f);color:light-dark(#6b4e00,#f3dc9b);border-bottom:1px solid light-dark(#f0dc9c,#54451a);font-size:13px}
-  .demo div{max-width:1400px;margin:0 auto;padding:8px 24px}
+  /* 상단 */
+  .top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--panel) 92%,transparent);backdrop-filter:saturate(1.4) blur(12px);border-bottom:1px solid var(--line)}
+  .top-in{max-width:1280px;margin:0 auto;padding:12px 24px 0;display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+  .logo{font-weight:800;letter-spacing:-.04em;font-size:21px;white-space:nowrap;display:flex;align-items:baseline;gap:10px}
+  .logo i{display:none}
+  .logo .tagline{font-size:13px;font-weight:500;color:var(--ink-3);letter-spacing:-.01em}
+  .search{flex:1;max-width:520px;margin-left:auto;position:relative}
+  .search input{width:100%;padding:11px 16px 11px 42px;border-radius:12px;border:1px solid transparent;background:var(--chip);outline:none;font-size:15px}
+  .search input:focus{border-color:var(--ink);background:var(--panel)}
+  .search svg{position:absolute;left:15px;top:50%;transform:translateY(-50%);color:var(--ink-3)}
+  .meta{display:none}
+  .vnav{display:none}
+  .tabs{flex-basis:100%;display:flex;gap:26px;overflow-x:auto;scrollbar-width:none;margin-top:4px}
+  .tabs::-webkit-scrollbar{display:none}
+  .tabs button{border:0;background:none;padding:12px 0 13px;font-size:16px;font-weight:600;color:var(--ink-3);white-space:nowrap;position:relative;display:flex;gap:6px;align-items:center}
+  .tabs button[aria-pressed=true]{color:var(--ink)}
+  .tabs button[aria-pressed=true]::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:3px;border-radius:3px 3px 0 0;background:var(--accent)}
+  .tabs .cnt{font-size:12px;font-weight:700;color:var(--deal)}
+  .demo{background:light-dark(#fff4d6,#3a2f0f);color:light-dark(#6b4e00,#f3dc9b);font-size:13px}
+  .demo div{max-width:1280px;margin:0 auto;padding:8px 24px}
 
-  .wrap{max-width:1640px;margin:0 auto;padding:20px 24px 80px;display:grid;grid-template-columns:240px minmax(0,1fr) 250px;gap:24px}
-  .side{position:sticky;top:72px;align-self:start;display:flex;flex-direction:column;gap:20px;max-height:calc(100vh - 92px);overflow:auto;padding:0 4px 20px 0}
-  .grp h4{margin:0 0 8px;font-size:12px;color:var(--ink-3);font-weight:600;display:flex;justify-content:space-between}
-  .chips{display:flex;flex-wrap:wrap;gap:6px}
-  .chip{border:0;background:var(--chip);padding:5px 10px;border-radius:999px;font-size:13px;display:inline-flex;gap:6px;align-items:center}
-  .chip .n{color:var(--ink-3);font-size:11px}
-  .chip .rk{color:var(--ink-3);font-size:10.5px;min-width:14px;text-align:right}
-  .chip[aria-pressed=true]{background:var(--ink);color:var(--bg)}
-  .chip[aria-pressed=true] .n,.chip[aria-pressed=true] .rk{color:inherit;opacity:.6}
-  .dot{width:8px;height:8px;border-radius:50%;flex:none;display:inline-block}
-  .more{border:0;background:none;color:var(--ink-2);font-size:12px;text-decoration:underline;padding:4px 0}
-  .seg{display:flex;background:var(--chip);padding:3px;border-radius:10px}
-  .seg button{flex:1;border:0;background:transparent;padding:6px 8px;border-radius:8px;font-size:13px;white-space:nowrap}
-  .seg button[aria-pressed=true]{background:var(--panel);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.08)}
-  .range{display:flex;gap:6px;align-items:center}
-  .range input{width:100%;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:var(--panel);font-size:13px}
-  .reset{border:0;background:none;color:var(--ink-3);font-size:12px;text-decoration:underline;padding:0;align-self:flex-start}
+  /* 본문 */
+  .wrap{max-width:1280px;margin:0 auto;padding:28px 24px 96px}
+  .intro{margin-bottom:22px}
+  .intro h1{margin:0;font-size:30px;line-height:1.2;font-weight:800;letter-spacing:-.045em}
+  .intro p{margin:8px 0 0;color:var(--ink-2);font-size:15px;max-width:62ch}
+  .stats{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  .stat{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:6px 13px;font-size:13.5px;color:var(--ink-2);display:inline-flex;gap:6px;align-items:baseline}
+  .stat b{color:var(--ink);font-weight:700}
+  .stat.hot b{color:var(--deal)}
+  button.stat[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:var(--bg)}button.stat[aria-pressed=true] b{color:inherit}
 
-  .kpis{display:grid;grid-template-columns:1fr;gap:8px}
-  .kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;text-align:left}
-  .kpi b{display:block;font-size:24px;font-weight:700;letter-spacing:-.02em}
-  .kpi span{color:var(--ink-2);font-size:12px}
-  .kpi[aria-pressed=true]{outline:2px solid var(--ink)}
-  .kpi.hot b{color:var(--accent)}
-  .bar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
-  .bar .count{font-weight:600}.bar .count small{color:var(--ink-3);font-weight:400;margin-left:4px}
+  .bar{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap}
   .bar .sp{flex:1}
-  select{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px 10px}
-  .ftoggle{display:none;border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:6px 12px}
+  .count{font-size:14px;color:var(--ink-2)}.count b{color:var(--ink)}.count small{color:var(--ink-3);margin-left:4px;font-size:13px}
+  .fbtn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:7px 13px;font-size:14px;font-weight:600}
+  .fbtn .n{background:var(--accent);color:#fff;border-radius:999px;font-size:11.5px;padding:0 7px;line-height:18px}
+  .pill{display:inline-flex;align-items:center;gap:6px;border:0;background:var(--chip);border-radius:999px;padding:6px 8px 6px 12px;font-size:13px;font-weight:500}
+  .pill span{width:16px;height:16px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--ink) 12%,transparent);font-size:11px;line-height:1}
+  select{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:7px 10px;font-size:14px}
+  .seg{display:flex;background:var(--chip);padding:3px;border-radius:10px}
+  .seg button{flex:1;border:0;background:transparent;padding:5px 10px;border-radius:8px;font-size:13px;white-space:nowrap;color:var(--ink-2)}
+  .seg button[aria-pressed=true]{background:var(--panel);color:var(--ink);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.08)}
 
-  /* promo cards */
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column;cursor:pointer;
-        transition:transform .15s ease,box-shadow .15s ease;text-align:left;padding:0}
-  .card:hover{transform:translateY(-2px);box-shadow:0 10px 28px -12px rgba(0,0,0,.25)}
-  .head{position:relative;padding:12px 14px 12px;color:#fff;min-height:118px;display:flex;flex-direction:column;justify-content:space-between;gap:10px}
-  .head .htop{display:flex;align-items:flex-start;gap:8px}
-  .chname{font-size:18px;font-weight:650;letter-spacing:-.02em;line-height:1.15}
-  .chtype{display:block;font-size:11px;font-weight:600;opacity:.85;margin-top:2px;letter-spacing:0}
-  .head .flagr{margin-left:auto;display:flex;gap:5px;flex:none}
-  .head .big{font-size:28px;font-weight:700;letter-spacing:-.03em;line-height:1}
-  .head .cat{font-size:12px;opacity:.9;margin-top:4px}
-  .tag{font-size:11px;font-weight:600;padding:3px 8px;border-radius:999px;background:var(--accent);color:#fff}
-  .dday{font-size:11px;font-weight:600;padding:3px 8px;border-radius:999px;background:rgba(0,0,0,.55);color:#fff}
-  .dday.hot{background:var(--accent)}.dday.up{background:var(--soon)}
-  .body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:6px;flex:1}
-  .chip-ch{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:650;color:var(--ink);letter-spacing:-.01em}
-  .chip-ch .dot{width:10px;height:10px}
-  .vsm{display:flex;gap:5px;align-items:center;flex-wrap:wrap;font-size:11.5px;color:var(--ink-3);margin-top:2px}
-  .badge{font-size:11px;font-weight:650;padding:2px 7px;border-radius:6px;white-space:nowrap}
-  .badge.low{background:color-mix(in srgb,#11845b 16%,transparent);color:#11845b}
-  .badge.high{background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent)}
-  .badge.x{background:var(--chip);color:var(--ink-2)}
-  .cmpline{font-size:12px;color:var(--ink-2);display:flex;gap:6px;align-items:center}
-  .cmpline b{color:#11845b}
-  .mini .ok{color:#11845b;font-size:10.5px;font-weight:650}
-  /* 가격 비교 탭 */
-  .pc-intro{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;margin-bottom:14px;color:var(--ink-2);font-size:13.5px}
-  .pc-intro b{color:var(--ink)}
-  table.ct{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;font-size:13.5px;margin-bottom:22px}
-  .ct th{font-size:12px;color:var(--ink-3);font-weight:600;text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
-  .ct td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
-  .ct td.r,.ct th.r{text-align:right}
-  .ct .chn{font-weight:600;font-size:15px;letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
-  .ct .rk{color:var(--ink-3);font-size:12px;width:22px;display:inline-block;text-align:right}
-  .meter{height:8px;background:var(--chip);border-radius:99px;overflow:hidden;min-width:90px}
-  .meter i{display:block;height:100%;background:#11845b;border-radius:99px}
-  .neg{color:#11845b;font-weight:650}.pos{color:var(--accent);font-weight:650}
-  h3.sec{font-size:16px;margin:6px 0 10px;letter-spacing:-.01em}
-  /* 검색광고 추천 키워드 */
-  .kw{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;margin-bottom:16px}
+  /* 필터 시트 */
+  .side{position:fixed;top:0;right:0;bottom:0;width:min(400px,100vw);background:var(--panel);z-index:41;transform:translateX(100%);visibility:hidden;
+        transition:transform .22s ease,visibility .22s;display:flex;flex-direction:column}
+  body.fopen .side{transform:none;visibility:visible}
+  body.fopen .scrim{opacity:1;pointer-events:auto}
+  .side-h{display:flex;align-items:center;padding:18px 20px;border-bottom:1px solid var(--line)}
+  .side-h b{font-size:18px;font-weight:700}.side-h .sp{flex:1}
+  .side-b{flex:1;overflow:auto;padding:18px 20px 24px;display:flex;flex-direction:column;gap:24px}
+  .side-f{padding:14px 20px;border-top:1px solid var(--line);display:flex;gap:10px}
+  .side-f button{flex:1;border-radius:12px;padding:13px;font-weight:700;font-size:15px;border:1px solid var(--line);background:var(--panel)}
+  .side-f .apply{flex:2;background:var(--ink);color:var(--bg);border-color:var(--ink)}
+  .xbtn{border:0;background:var(--chip);width:36px;height:36px;border-radius:50%;font-size:18px;line-height:1}
+  .grp h4{margin:0 0 10px;font-size:15px;color:var(--ink);font-weight:700;display:flex;justify-content:space-between}
+  .grp h4 span:last-child{color:var(--ink-3);font-weight:500;font-size:13px}
+  .chips{display:flex;flex-wrap:wrap;gap:7px}
+  .chip{border:1px solid var(--line);background:var(--panel);padding:7px 12px;border-radius:999px;font-size:14px;display:inline-flex;gap:6px;align-items:center}
+  .chip .n{color:var(--ink-3);font-size:12px}
+  .chip .rk{display:none}
+  .chip[aria-pressed=true]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+  .chip[aria-pressed=true] .n{color:inherit;opacity:.65}
+  .dot{width:8px;height:8px;border-radius:50%;flex:none;display:inline-block}
+  .chip .dot{display:none}
+  .more{border:0;background:none;color:var(--ink-2);font-size:13px;text-decoration:underline;padding:8px 0 0}
+  .range{display:flex;gap:8px;align-items:center}
+  .range input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel);font-size:14px}
+  .reset{display:none}
+
+  /* 섹션 */
+  .pk-sec{margin:38px 0 14px;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+  #view > .pk-sec:first-child{margin-top:4px}
+  .pk-sec h3{margin:0;font-size:21px;font-weight:800;letter-spacing:-.035em}
+  .pk-sec span{color:var(--ink-3);font-size:14px}
+  .rowx{display:grid;grid-auto-flow:column;grid-auto-columns:calc((100% - 4*16px)/5);gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:6px;scrollbar-width:thin}
+  .rowx > *{scroll-snap-align:start}
+
+  /* 상품 카드 */
+  .pgrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:28px 16px}
+  .pcard{display:flex;flex-direction:column;gap:10px;color:inherit}
+  .pcard .pimg{aspect-ratio:1;border-radius:12px;border:1px solid color-mix(in srgb,var(--line) 70%,transparent)}
+  .pcard:hover .nm{text-decoration:underline;text-underline-offset:3px}
+  .pcard .pb{display:flex;flex-direction:column;gap:4px;flex:1;padding:0 2px}
+  .pcard .mall{font-size:12.5px;color:var(--ink-3);font-weight:600}
+  .pcard .br{display:none}
+  .pcard .nm{font-size:14.5px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;color:var(--ink)}
+  .price{display:flex;gap:6px;align-items:baseline;flex-wrap:wrap;margin-top:2px}
+  .price em{font-style:normal;color:var(--deal);font-weight:800;font-size:18px;letter-spacing:-.02em}
+  .price b{font-size:18px;font-weight:800;white-space:nowrap;letter-spacing:-.03em}
+  .price s{color:var(--ink-3);font-size:12.5px;flex-basis:100%;margin-top:-2px}
+  .price .na{color:var(--ink-3);font-size:13px}
+  .trust{font-size:12.5px;font-weight:600;color:var(--ok);display:flex;gap:4px;align-items:center}
+  .trust.warn{color:var(--ink-3);font-weight:500}
+  .trust.hot{color:var(--deal)}
+  .pcard .from{display:none}
+  .chtag{display:none}
+  .pk .rank{position:absolute;left:10px;bottom:4px;z-index:2;font-size:46px;font-weight:900;line-height:1;letter-spacing:-.06em;color:#fff;
+            -webkit-text-stroke:1px rgba(0,0,0,.25);text-shadow:0 2px 12px rgba(0,0,0,.35);font-variant-numeric:tabular-nums}
+
+  /* 이미지 */
+  .pimg{position:relative;overflow:hidden;background:var(--chip);display:block}
+  .pimg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .pimg .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:10px;
+            font-size:12px;font-weight:600;line-height:1.3;color:var(--ink-3);word-break:keep-all}
+
+  /* 기획전 카드 */
+  .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column;cursor:pointer;text-align:left;padding:0}
+  .card:hover{border-color:var(--ink-3)}
+  .thumbs{display:grid;grid-template-columns:2fr 1fr;grid-template-rows:1fr 1fr;gap:2px;aspect-ratio:3/2;background:var(--line)}
+  .thumbs .pimg:first-child{grid-row:1 / span 2}
+  .thumbs.one{grid-template-columns:1fr;grid-template-rows:1fr}
+  .thumbs.none{display:flex;align-items:center;justify-content:center;background:var(--chip);font-size:22px;font-weight:800;letter-spacing:-.04em;color:var(--ink-2);padding:16px;text-align:center}
+  .body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:6px;flex:1}
+  .card .r1{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-3);font-weight:600}
+  .card .r1 .sp{flex:1}
+  .ttl{font-weight:700;font-size:16px;line-height:1.35;letter-spacing:-.025em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .card .r3{display:flex;gap:6px;align-items:baseline;flex-wrap:wrap;font-size:13px;color:var(--ink-2);margin-top:auto;padding-top:4px}
+  .card .r3 .disc{color:var(--deal);font-weight:800;font-size:16px}
+  .dday{font-size:12px;font-weight:700;padding:2px 8px;border-radius:6px;background:var(--chip);color:var(--ink-2);white-space:nowrap}
+  .dday.hot{background:color-mix(in srgb,var(--deal) 12%,transparent);color:var(--deal)}
+  .dday.up{background:color-mix(in srgb,var(--soon) 12%,transparent);color:var(--soon)}
+  .tag{font-size:11.5px;font-weight:700;color:var(--accent)}
+  .ben{font-size:12px;padding:2px 7px;border-radius:6px;background:var(--chip);color:var(--ink-2)}
+  .tlist{display:flex;flex-direction:column;gap:4px;font-size:13px;margin-top:2px}
+  .tlist div{display:flex;gap:8px;align-items:baseline}
+  .tlist .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink-2)}
+  .tlist em{font-style:normal;color:var(--deal);font-weight:700;font-size:12.5px}
+  .tlist b{font-weight:700}
+
+  /* 표(텍스트 보기) */
+  table.pt{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;font-size:14px}
+  .pt th{font-size:12.5px;color:var(--ink-3);font-weight:600;text-align:left;padding:11px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
+  .pt td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  .pt td.r,.pt th.r{text-align:right}
+  .pt td.d{color:var(--deal);font-weight:700}
+  .pt tr:hover td{background:color-mix(in srgb,var(--chip) 60%,transparent)}
+  .pt .sub{color:var(--ink-3);font-size:12.5px}
+  .neg{color:var(--ok);font-weight:650}.pos{color:var(--deal);font-weight:650}
+  .chip-ch{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600}
+  .chip-ch .dot{display:none}
+
+  /* 상세 패널 */
+  .scrim{position:fixed;inset:0;background:rgba(10,12,16,.42);z-index:40;opacity:0;pointer-events:none;transition:opacity .2s}
+  .drawer{position:fixed;top:0;right:0;bottom:0;width:min(720px,100vw);background:var(--bg);z-index:41;transform:translateX(100%);visibility:hidden;
+          transition:transform .25s ease,visibility .25s;display:flex;flex-direction:column}
+  body.dopen .scrim{opacity:1;pointer-events:auto}body.dopen .drawer{transform:none;visibility:visible}
+  .dh{padding:22px 24px 18px;background:var(--panel);border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:8px;position:relative}
+  .dh .x{position:absolute;top:16px;right:16px;border:0;background:var(--chip);width:38px;height:38px;border-radius:50%;font-size:18px}
+  .dh h2{margin:0;font-size:23px;letter-spacing:-.035em;line-height:1.3;padding-right:44px;font-weight:800}
+  .dh .chbig{font-size:14px;font-weight:700;color:var(--ink-3)}
+  .dh .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:14px;color:var(--ink-2)}
+  .go{display:inline-flex;align-items:center;justify-content:center;gap:6px;background:var(--ink);color:var(--bg);border-radius:12px;padding:12px 18px;font-weight:700;font-size:15px;align-self:flex-start;border:0;margin-top:4px}
+  .db{padding:20px 24px 48px;overflow:auto;flex:1}
+  .db .pgrid{grid-template-columns:repeat(3,minmax(0,1fr))}
+  details.kwbox{margin-top:28px;border-top:1px solid var(--line);padding-top:14px}
+  details.kwbox summary{cursor:pointer;color:var(--ink-3);font-size:13.5px;font-weight:600}
+  .kw{padding:12px 0 0}
   .kw-h{display:flex;align-items:center;gap:8px;margin-bottom:10px}
-  .kw-h b{font-size:15px}
-  .kw-h .sp{flex:1}
-  .kw-h button{border:1px solid var(--line);background:var(--chip);border-radius:8px;padding:6px 10px;font-size:12.5px;font-weight:600}
+  .kw-h b{font-size:15px}.kw-h .sp{flex:1}
+  .kw-h button{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:6px 10px;font-size:12.5px;font-weight:600}
   .kw ol{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 14px}
   .kw li{display:flex;align-items:baseline;gap:8px;padding:5px 0;border-bottom:1px dashed var(--line)}
   .kw li .r{color:var(--ink-3);font-size:11.5px;width:16px;text-align:right;flex:none}
-  .kw li .k{font-weight:650;font-size:14px;letter-spacing:-.01em}
+  .kw li .k{font-weight:650;font-size:14px}
   .kw li .t{font-size:10.5px;padding:1px 6px;border-radius:5px;background:var(--chip);color:var(--ink-2);white-space:nowrap}
   .kw li .v{margin-left:auto;font-size:11.5px;color:var(--ink-3);white-space:nowrap}
-  .kw .note{font-size:11.5px;color:var(--ink-3);margin-top:8px}
-  @media (max-width:600px){ .kw ol{grid-template-columns:1fr} }
-  .ttl{font-weight:600;font-size:15px;letter-spacing:-.01em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-  .bens{display:flex;gap:4px;flex-wrap:wrap}
-  .ben{font-size:11px;padding:2px 7px;border-radius:6px;background:var(--chip);color:var(--ink-2)}
-  .ben.disc{background:color-mix(in srgb,var(--accent) 14%,transparent);color:var(--accent);font-weight:600}
-  .period{color:var(--ink-3);font-size:12px;margin-top:auto;display:flex;justify-content:space-between}
+  .kw .note{font-size:12px;color:var(--ink-3);margin-top:8px}
+  .kw .sub{color:var(--ink-3);font-size:12px}
 
-  /* product strip in card */
-  .strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:4px 0 2px}
-  .mini .pimg{aspect-ratio:1;border-radius:8px}
-  .mini .pr{margin-top:4px;display:flex;flex-direction:column;line-height:1.25}
-  .mini .pr em{font-style:normal;color:var(--accent);font-size:11px;font-weight:600;min-height:1.25em}
-  .mini .pr b{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.01em}
-  .tlist{display:flex;flex-direction:column;gap:3px;margin:2px 0;font-size:12.5px}
-  .tlist div{display:flex;gap:8px;align-items:baseline}
-  .tlist .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink-2)}
-  .tlist em{font-style:normal;color:var(--accent);font-weight:600;font-size:11.5px}
-  .tlist b{font-weight:600}
-  .morep{font-size:11.5px;color:var(--ink-3)}
-
-  /* product image / placeholder */
-  .pimg{position:relative;overflow:hidden;background:var(--chip);display:block}
-  .pimg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-  .pimg .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:6px;
-            font-size:11px;font-weight:600;line-height:1.25;color:var(--ink-2);word-break:keep-all}
-
-  /* product view */
-  .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px}
-  .pcard{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
-  .pcard .pimg{aspect-ratio:1}
-  .pcard .pb{padding:9px 10px 11px;display:flex;flex-direction:column;gap:3px;flex:1}
-  .pcard .br{font-size:11.5px;color:var(--ink-3)}
-  .pcard .chtag{position:absolute;top:8px;left:8px;z-index:2;color:#fff;font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;letter-spacing:-.01em;box-shadow:0 2px 6px rgba(0,0,0,.18)}
-  .pcard .nm{font-size:13px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-  .price{display:flex;gap:5px;align-items:baseline;flex-wrap:wrap;margin-top:auto}
-  .price em{font-style:normal;color:var(--accent);font-weight:650}
-  .price b{font-size:16px;font-weight:650;white-space:nowrap}
-  .price s{color:var(--ink-3);font-size:12px}
-  .pcard .from{font-size:11px;color:var(--ink-3);display:flex;gap:5px;align-items:center;margin-top:4px;overflow:hidden;white-space:nowrap}
-  table.pt{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;font-size:13px}
-  .pt th{font-size:12px;color:var(--ink-3);font-weight:600;text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);white-space:nowrap}
-  .pt td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
-  .pt td.r,.pt th.r{text-align:right}
-  .pt td.d{color:var(--accent);font-weight:600}
-  .pt tr:hover td{background:color-mix(in srgb,var(--chip) 60%,transparent)}
-  .pt .sub{color:var(--ink-3);font-size:11.5px}
-
-  /* drawer */
-  .scrim{position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:40;opacity:0;pointer-events:none;transition:opacity .2s}
-  .drawer{position:fixed;top:0;right:0;bottom:0;width:min(640px,100vw);background:var(--bg);z-index:41;transform:translateX(100%);
-          transition:transform .25s ease;display:flex;flex-direction:column;box-shadow:-20px 0 40px -20px rgba(0,0,0,.3)}
-  body.dopen .scrim{opacity:1;pointer-events:auto}body.dopen .drawer{transform:none}
-  .dh{padding:18px 20px 14px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
-  .dh .x{position:absolute;top:12px;right:12px;border:0;background:var(--chip);width:36px;height:36px;border-radius:50%;font-size:18px}
-  .dh h2{margin:0;font-size:20px;letter-spacing:-.02em;line-height:1.3;padding-right:40px}
-  .dh .chbig{display:inline-flex;align-self:flex-start;align-items:center;gap:6px;color:#fff;font-weight:600;font-size:15px;padding:5px 12px;border-radius:999px}
-  .dh .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--ink-2)}
-  .go{display:inline-flex;align-items:center;gap:6px;background:var(--ink);color:var(--bg);border-radius:10px;padding:9px 14px;font-weight:600;font-size:13px;align-self:flex-start}
-  .db{padding:16px 20px 40px;overflow:auto;flex:1}
-  .db .bar{margin-bottom:12px}
-
-  /* timeline */
+  /* 달력(타임라인) */
   .tl{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);overflow:auto;max-height:76vh}
   .tl-head,.tl-row{display:grid;grid-template-columns:160px 1fr;min-width:900px}
   .tl-head{position:sticky;top:0;background:var(--panel);z-index:3;border-bottom:1px solid var(--line)}
   .tl-days{position:relative;height:40px}
-  .tl-day{position:absolute;top:0;bottom:0;font-size:10.5px;color:var(--ink-2);font-weight:600;padding:4px 0 0 3px;border-left:1px solid var(--line)}
+  .tl-day{position:absolute;top:0;bottom:0;font-size:11px;color:var(--ink-2);font-weight:600;padding:4px 0 0 3px;border-left:1px solid var(--line)}
   .tl-name{padding:9px 12px;font-weight:600;font-size:13px;display:flex;gap:7px;align-items:flex-start;border-right:1px solid var(--line);position:sticky;left:0;background:var(--panel);z-index:2}
   .tl-name small{color:var(--ink-3);font-weight:400}
   .tl-row{border-bottom:1px solid var(--line)}
   .tl-lane{position:relative;padding:5px 0}
   .tl-bar{position:relative;height:22px;margin:3px 0}
-  .tl-bar button{position:absolute;top:0;height:22px;border:0;border-radius:6px;padding:0 8px;font-size:12px;line-height:22px;white-space:nowrap;overflow:hidden;
-                 text-overflow:ellipsis;color:#fff;font-weight:600;min-width:6px;z-index:2;text-align:left}
-  .today{position:absolute;top:0;bottom:0;width:2px;background:var(--accent);opacity:.8;pointer-events:none}
-  .today.lbl::after{content:"오늘";position:absolute;top:22px;left:4px;font-size:10px;color:var(--accent);font-weight:600;white-space:nowrap}
-  .tl-note{padding:10px 14px;color:var(--ink-3);font-size:12px}
-  .empty{padding:60px 20px;text-align:center;color:var(--ink-3)}
-  .empty b{display:block;color:var(--ink);font-size:17px;margin-bottom:6px}
-  .empty .go{margin-top:16px;border:0}
+  .tl-bar button{position:absolute;top:0;height:22px;border:0;border-radius:6px;padding:0 8px;font-size:12px;line-height:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff;font-weight:600;min-width:6px;z-index:2;text-align:left}
+  .today{position:absolute;top:0;bottom:0;width:2px;background:var(--deal);opacity:.8;pointer-events:none}
+  .today.lbl::after{content:"오늘";position:absolute;top:22px;left:4px;font-size:10px;color:var(--deal);font-weight:600;white-space:nowrap}
+  .tl-note{padding:12px 4px;color:var(--ink-3);font-size:13px}
+  .empty{padding:72px 20px;text-align:center;color:var(--ink-3)}
+  .empty b{display:block;color:var(--ink);font-size:18px;margin-bottom:6px}
+  .empty .go{margin:18px auto 0}
   .loading{opacity:.5;pointer-events:none}
+  .pc-intro{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;margin-bottom:14px;color:var(--ink-2);font-size:14px}
+  table.ct{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;font-size:14px;margin-bottom:22px}
+  .ct th,.ct td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left}
+  .meter{height:8px;background:var(--chip);border-radius:99px;overflow:hidden;min-width:90px}.meter i{display:block;height:100%;background:var(--ok)}
+  h3.sec{font-size:18px;margin:6px 0 12px}
 
-  .rail{position:sticky;top:72px;align-self:start;display:flex;flex-direction:column;gap:12px;max-height:calc(100vh - 92px);overflow:auto}
-  .rail .kpi{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:11px 14px}
-  .rail .kpi b{font-size:20px;order:2}
-  .rail .kpi span{order:1;font-size:12.5px}
-  .rail-h{font-size:12px;color:var(--ink-3);font-weight:600;margin:4px 2px -2px}
-  .pk-hero.v{margin:0;padding:18px}
-  .pk-hero.v h2{font-size:18px}
-  .pk-hero.v p{font-size:12.5px}
-  @media (max-width:1280px){
-    .wrap{grid-template-columns:240px minmax(0,1fr)}
-    .rail{grid-column:2;grid-row:1;position:static;max-height:none;overflow:visible}
-    main{grid-column:2;grid-row:2}
-    .side{grid-row:1 / span 2}
-    .kpis{grid-template-columns:repeat(5,minmax(0,1fr))}
-    .rail .kpi{display:block}.rail .kpi b{font-size:22px}
-    .pk-hero.v{display:none}
+  @media (max-width:1100px){
+    .pgrid{grid-template-columns:repeat(4,minmax(0,1fr))}
+    .grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+    .rowx{grid-auto-columns:calc((100% - 3*16px)/4)}
   }
-  @media (max-width:900px){
-    .wrap{grid-template-columns:minmax(0,1fr);padding:14px 16px 60px}
-    .rail,main,.side{grid-column:1!important;grid-row:auto!important}
-    .side{position:static!important;display:none!important;max-height:none!important}
-    body.fopen .side{display:flex!important}
-    .ftoggle{display:inline-block}.meta{display:none}.top-in{padding:10px 16px}
-    .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
-    .pgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  @media (max-width:760px){
+    .top-in{padding:10px 16px 0;gap:10px}
+    .logo{font-size:19px}.logo .tagline{display:none}
+    .search{flex-basis:100%;max-width:none;order:3;margin:0}
+    .tabs{order:4;gap:22px}
+    .wrap{padding:20px 16px 80px}
+    .intro h1{font-size:24px}.intro p{font-size:14px}
+    .pgrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 12px}
+    .grid{grid-template-columns:repeat(1,minmax(0,1fr))}
+    .rowx{grid-auto-columns:calc((100% - 12px)/2.3);gap:12px}
+    .db .pgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .side{top:auto;left:0;width:100%;height:86vh;border-radius:18px 18px 0 0;transform:translateY(100%)}
+    .pk .rank{font-size:38px}
+    .pt .hide-m{display:none}
+    .kw ol{grid-template-columns:1fr}
   }
-  @media (max-width:600px){ .pt .hide-m{display:none} }
-  @media (prefers-reduced-motion:reduce){ .card,.drawer,.scrim{transition:none} }
-
-  /* 추천 상품 */
-  .pk-hero{border-radius:var(--r);padding:22px 24px;margin-bottom:18px;color:#fff;
-           background:linear-gradient(120deg,var(--accent),color-mix(in srgb,var(--accent) 65%,#ffb347))}
-  .pk-hero h2{margin:0 0 6px;font-size:22px;font-weight:700;letter-spacing:-.02em}
-  .pk-hero p{margin:0;font-size:13.5px;opacity:.92;line-height:1.55}
-  .pk-hero .how{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
-  .pk-hero .how span{background:rgba(255,255,255,.2);border-radius:999px;padding:3px 10px;font-size:12px;font-weight:500}
-  .pk-sec{margin:22px 0 10px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
-  #view > .pk-sec:first-child{margin-top:2px}
-  .pk-sec h3{margin:0;font-size:17px;font-weight:650;letter-spacing:-.01em}
-  .pk-sec span{color:var(--ink-3);font-size:12.5px}
-  .pk .copy{font-size:12.5px;font-weight:600;color:var(--accent);line-height:1.35}
-  .pk .rs{display:flex;flex-wrap:wrap;gap:4px;margin-top:2px}
-  .pk .rs i{font-style:normal;font-size:10.5px;color:var(--ink-2);background:var(--chip);border-radius:5px;padding:1px 6px}
-  .pk .rank{position:absolute;top:8px;right:8px;z-index:2;background:rgba(0,0,0,.7);color:#fff;font-size:11px;font-weight:600;border-radius:6px;padding:2px 7px}
-  .logo .tagline{font-size:12px;font-weight:500;color:var(--ink-3);margin-left:8px;white-space:nowrap}
-  @media (max-width:900px){ .logo .tagline{display:none} }
-  .vnav{display:flex;gap:4px;flex:none}
-  .vnav a{text-decoration:none;color:var(--ink-2);font-size:14px;font-weight:500;padding:7px 12px;border-radius:999px;white-space:nowrap}
-  .vnav a:hover{background:var(--chip)}
-  .vnav a.on{background:var(--ink);color:#fff}
-  @media (max-width:900px){ .vnav{order:3;width:100%;overflow-x:auto} .top-in{flex-wrap:wrap} }
+  @media (prefers-reduced-motion:reduce){ .drawer,.scrim,.side{transition:none} }
 </style>
 </head>
 <body>
 <header class="top"><div class="top-in">
-  <a class="logo" href="/" title="메인으로"><i></i>프로모션 허브</a>
+  <a class="logo" href="/" title="처음으로"><i></i>프로모션 허브<small class="tagline">쇼핑몰 기획전·특가를 매일 아침 한곳에</small></a>
   <nav class="vnav" id="vnav"></nav>
   <label class="search">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-    <input id="q" type="search" placeholder="기획전·상품·브랜드 검색 (예: 패딩, 설화수, 블프)">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <span class="sr">검색</span>
+    <input id="q" type="search" placeholder="상품·브랜드·기획전 검색 (예: 패딩, 설화수)">
   </label>
   <div class="meta" id="meta"></div>
+  <nav class="tabs" id="tabs" aria-label="보기">
+    <button data-view="picks" aria-pressed="true">오늘의 추천</button>
+    <button data-view="ending" aria-pressed="false">마감 임박<span class="cnt" id="endcnt"></span></button>
+    <button data-view="cards" aria-pressed="false">기획전</button>
+    <button data-view="products" aria-pressed="false">전체 상품</button>
+  </nav>
 </div></header>
 <div class="demo" id="demo" hidden><div>지금 보이는 것은 <b>샘플 데이터</b>입니다(기획전·상품·가격 모두 예시). 실제 수집 결과가 들어오면 새로고침 시 자동으로 바뀝니다.</div></div>
 
-<div class="wrap">
-  <aside class="side" id="side"></aside>
-  <main>
-    <div class="bar">
-      <button class="ftoggle" id="ftoggle">필터</button>
-      <div class="count" id="count"></div>
-      <div class="sp"></div>
-      <select id="sort" aria-label="정렬"></select>
-      <div class="seg" id="pmode" title="상품 표시 방식">
-        <button data-pmode="img" aria-pressed="true">이미지</button><button data-pmode="text" aria-pressed="false">텍스트</button>
-      </div>
-      <div class="seg">
-        <button data-view="picks" aria-pressed="false">✦ 추천</button>
-        <button data-view="cards" aria-pressed="true">기획전</button>
-        <button data-view="products" aria-pressed="false">상품</button>
-        <button data-view="timeline" aria-pressed="false">타임라인</button>
-      </div>
+<main class="wrap">
+  <section class="intro" id="intro"></section>
+  <div class="bar" id="bar">
+    <button class="fbtn" id="ftoggle" aria-controls="side"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg>필터<span class="n" id="fcount" hidden></span></button>
+    <div id="pills" style="display:contents"></div>
+    <div class="sp"></div>
+    <div class="count" id="count"></div>
+    <select id="sort" aria-label="정렬"></select>
+    <div class="seg" id="lmode" title="기획전 보기 방식"><button data-lmode="cards" aria-pressed="true">카드</button><button data-lmode="timeline" aria-pressed="false">달력</button></div>
+    <div class="seg" id="pmode" title="상품 표시 방식">
+      <button data-pmode="img" aria-pressed="true">사진</button><button data-pmode="text" aria-pressed="false">목록</button>
     </div>
-    <div id="view"></div>
-  </main>
-  <aside class="rail" id="rail">
-    <div class="rail-h">한눈에 보기</div>
-    <div class="kpis" id="kpis"></div>
-    <div id="railinfo"></div>
-  </aside>
-</div>
+  </div>
+  <div id="view"></div>
+</main>
+<div id="kpis" hidden></div><div id="railinfo" hidden></div>
+<aside class="side" id="side" aria-label="필터"></aside>
 <div class="scrim" id="scrim"></div>
 <aside class="drawer" id="drawer" aria-hidden="true"></aside>
 
@@ -298,8 +291,8 @@
 const CT = {openmarket:"오픈마켓·종합몰", crossborder:"해외직구", department:"백화점·대형마트", homeshopping:"홈쇼핑", fashion:"패션", vertical:"뷰티·리빙·식품", brand:"가전·브랜드몰"};
 const PALETTE = ["#ff4d2e","#1f6feb","#11845b","#8a3ffc","#d99a00","#d0287a","#0e8f9c","#5b6b00","#b5521b","#3f51b5","#c2185b","#2e7d32","#6a4c93","#00796b"];
 const BENEFITS = ["할인","쿠폰","적립","카드혜택","경품·추첨","사은품","1+1","무료배송"];
-const SORTS = {cards:[["ending","마감 임박순"],["new","최근 발견순"],["discount","할인율 높은순"],["rank","채널 순위순"]],
-               products:[["discount","할인율 높은순"],["vs_market","웹 최저가보다 싼 순"],["price","낮은 가격순"],["price_desc","높은 가격순"],["ending","기획전 마감순"]]};
+const SORTS = {cards:[["ending","마감 빠른 순"],["new","새로 뜬 순"],["discount","할인율 높은 순"],["rank","인기 쇼핑몰 순"]],
+               products:[["discount","할인율 높은 순"],["vs_market","웹 최저가보다 싼 순"],["price","낮은 가격 순"],["price_desc","높은 가격 순"],["ending","마감 빠른 순"]]};
 const DAY = 864e5, today = new Date(); today.setHours(0,0,0,0);
 /* 분야별 페이지: /food /fashion /beauty, 전용 주소 장보기픽·패션세일픽·뷰티세일픽 (채널 묶음은 DB source_verticals) */
 const VERTS = {
@@ -326,7 +319,7 @@ let DATA = [], SOURCES = [], DEMO = false;
 // 장보기픽은 먹는 것만(식품·건강식품). VCUR 은 아래에서 정해지므로 함수로 판단
 const isFoodOnly = () => typeof VCUR !== "undefined" && VCUR === "food";
 const st = {q:"", ctypes:new Set(), sources:new Set(), cats:new Set(), kind:"", status:"", bens:new Set(), sort:"ending", view:"picks",
-            pmode:"img", minP:"", maxP:"", allSrc:false, open:null};
+            pmode:"img", lmode:"cards", minP:"", maxP:"", allSrc:false, open:null};
 try{ const s = JSON.parse(localStorage.getItem("ph_prefs")||"{}"); if(s.pmode) st.pmode = s.pmode; }catch(e){}
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -493,36 +486,71 @@ function renderSide(){
   const base = DATA.filter(i => !st.ctypes.size || st.ctypes.has(i.channel_type));
   const bySrc = countBy(base, i => i.source_id), byCat = countBy(base, i => i.category), byBen = countBy(base, i => i.benefits), byCt = countBy(DATA, i => i.channel_type);
   const srcs = SOURCES.filter(s => (!st.ctypes.size || st.ctypes.has(s.channel_type)) && (bySrc.get(s.id) || st.sources.has(s.id)));
-  const shown = st.allSrc || st.ctypes.size ? srcs : srcs.slice(0, 15);
+  const shown = st.allSrc || st.ctypes.size ? srcs : srcs.slice(0, 16);
   const cats = [...byCat.entries()].sort((a,b) => b[1]-a[1]);
+  const cts = Object.entries(CT).filter(([k]) => byCt.get(k));
   $("side").innerHTML = `
-    <div class="grp"><h4>채널 유형</h4><div class="chips">
-      ${Object.entries(CT).filter(([k]) => byCt.get(k)).map(([k,l]) => `<button class="chip" data-ctype="${k}" aria-pressed="${st.ctypes.has(k)}">${l}<span class="n">${byCt.get(k)}</span></button>`).join("")}</div></div>
-    <div class="grp"><h4><span>채널 (트래픽 순위)</span><span>${srcs.length}</span></h4><div class="chips">
-      ${shown.map(s => `<button class="chip" data-src="${esc(s.id)}" aria-pressed="${st.sources.has(s.id)}"><span class="rk">${s.rank < 100 ? s.rank : ""}</span><span class="dot" style="background:${srcColor(s.id)}"></span>${esc(s.name)}<span class="n">${bySrc.get(s.id)||0}</span></button>`).join("")}</div>
-      ${shown.length < srcs.length ? `<button class="more" id="allsrc">채널 ${srcs.length - shown.length}개 더 보기</button>` : ""}</div>
-    <div class="grp"><h4>상품 가격대</h4><div class="range">
-      <input id="minp" inputmode="numeric" placeholder="최소 원" value="${esc(st.minP)}"><span>~</span><input id="maxp" inputmode="numeric" placeholder="최대 원" value="${esc(st.maxP)}"></div>
-      <div class="chips" style="margin-top:6px">${[["","10000","1만 원 이하"],["10000","30000","1~3만"],["30000","100000","3~10만"],["100000","","10만 이상"]].map(([a,z,l]) =>
-        `<button class="chip" data-pr="${a}|${z}" aria-pressed="${st.minP===a && st.maxP===z}">${l}</button>`).join("")}</div></div>
-    <div class="grp"><h4>유형</h4><div class="seg">
-      ${[["","전체"],["기획전","기획전"],["이벤트","이벤트"]].map(([v,l]) => `<button data-kind="${v}" aria-pressed="${st.kind===v}">${l}</button>`).join("")}</div></div>
-    ${isFoodOnly() ? "" : `<div class="grp"><h4>카테고리</h4><div class="chips">
-      ${cats.map(([c,n]) => `<button class="chip" data-cat="${esc(c)}" aria-pressed="${st.cats.has(c)}">${esc(c)}<span class="n">${n}</span></button>`).join("")}</div></div>`}
-    <div class="grp"><h4>혜택</h4><div class="chips">
+    <div class="side-h"><b>필터</b><span class="sp"></span><button class="xbtn" id="fclose" aria-label="필터 닫기">×</button></div>
+    <div class="side-b">
+    <div class="grp"><h4><span>쇼핑몰</span><span>${srcs.length}곳</span></h4><div class="chips">
+      ${shown.map(s => `<button class="chip" data-src="${esc(s.id)}" aria-pressed="${st.sources.has(s.id)}">${esc(s.name)}<span class="n">${bySrc.get(s.id)||0}</span></button>`).join("")}</div>
+      ${shown.length < srcs.length ? `<button class="more" id="allsrc">쇼핑몰 ${srcs.length - shown.length}곳 더 보기</button>` : ""}</div>
+    <div class="grp"><h4><span>가격대</span></h4>
+      <div class="chips" style="margin-bottom:10px">${[["","10000","1만 원 이하"],["10000","30000","1~3만 원"],["30000","100000","3~10만 원"],["100000","","10만 원 이상"]].map(([a,z,l]) =>
+        `<button class="chip" data-pr="${a}|${z}" aria-pressed="${st.minP===a && st.maxP===z}">${l}</button>`).join("")}</div>
+      <div class="range"><input id="minp" inputmode="numeric" placeholder="최소 금액" aria-label="최소 금액" value="${esc(st.minP)}"><span>~</span><input id="maxp" inputmode="numeric" placeholder="최대 금액" aria-label="최대 금액" value="${esc(st.maxP)}"></div></div>
+    <div class="grp"><h4><span>혜택</span></h4><div class="chips">
       ${BENEFITS.filter(b => byBen.get(b)).map(b => `<button class="chip" data-ben="${b}" aria-pressed="${st.bens.has(b)}">${b}<span class="n">${byBen.get(b)}</span></button>`).join("")}</div></div>
-    <button class="reset" id="reset">필터 초기화</button>`;
+    ${isFoodOnly() ? "" : `<div class="grp"><h4><span>카테고리</span></h4><div class="chips">
+      ${cats.map(([c,n]) => `<button class="chip" data-cat="${esc(c)}" aria-pressed="${st.cats.has(c)}">${esc(c)}<span class="n">${n}</span></button>`).join("")}</div></div>`}
+    ${cts.length > 1 ? `<div class="grp"><h4><span>쇼핑몰 종류</span></h4><div class="chips">
+      ${cts.map(([k,l]) => `<button class="chip" data-ctype="${k}" aria-pressed="${st.ctypes.has(k)}">${l}<span class="n">${byCt.get(k)}</span></button>`).join("")}</div></div>` : ""}
+    <div class="grp"><h4><span>종류</span></h4><div class="seg">
+      ${[["","전체"],["기획전","기획전"],["이벤트","이벤트"]].map(([v,l]) => `<button data-kind="${v}" aria-pressed="${st.kind===v}">${l}</button>`).join("")}</div></div>
+    </div>
+    <div class="side-f"><button id="reset">초기화</button><button class="apply" id="fapply">결과 보기</button></div>`;
+  renderPills();
+}
+const STATUS_LABEL = {active:"진행 중", ending_soon:"마감 임박", upcoming:"오픈 예정", new:"새로 뜬 기획전"};
+function activeFilters(){
+  const out = [];
+  st.sources.forEach(v => out.push(["src", v, (SOURCES.find(s => s.id===v)||{}).name || v]));
+  st.ctypes.forEach(v => out.push(["ctype", v, CT[v] || v]));
+  st.cats.forEach(v => out.push(["cat", v, v]));
+  st.bens.forEach(v => out.push(["ben", v, v]));
+  if(st.minP !== "" || st.maxP !== "") out.push(["pr", "", `${st.minP ? won(st.minP) : ""} ~ ${st.maxP ? won(st.maxP) : ""}`.trim()]);
+  if(st.kind) out.push(["kind", "", st.kind]);
+  if(st.status) out.push(["status", "", STATUS_LABEL[st.status] || st.status]);
+  return out;
+}
+function renderPills(){
+  const f = activeFilters();
+  $("fcount").hidden = !f.length; $("fcount").textContent = f.length;
+  $("pills").innerHTML = f.map(([k,v,l]) => `<button class="pill" data-rm="${k}|${esc(v)}" aria-label="${esc(l)} 필터 빼기">${esc(l)}<span aria-hidden="true">×</span></button>`).join("");
+}
+function removeFilter(k, v){
+  if(k === "src") st.sources.delete(v); else if(k === "ctype") st.ctypes.delete(v); else if(k === "cat") st.cats.delete(v);
+  else if(k === "ben") st.bens.delete(v); else if(k === "pr"){ st.minP = ""; st.maxP = ""; } else if(k === "kind") st.kind = ""; else if(k === "status") st.status = "";
 }
 
 function renderKpis(){
   const scope = DATA.filter(i => (!st.ctypes.size || st.ctypes.has(i.channel_type)) && (!st.sources.size || st.sources.has(i.source_id)));
-  const nItems = scope.reduce((a,i) => a + (i.item_count ?? i.items.length), 0);
-  const k = [["active","진행 중 기획전", scope.filter(i => i.status==="active"||i.status==="ending_soon").length, ""],
-    ["ending_soon","마감 임박 (D-3)", scope.filter(i => i.status==="ending_soon").length, "hot"],
-    ["upcoming","오픈 예정", scope.filter(i => i.status==="upcoming").length, ""],
-    ["new","24시간 내 신규", scope.filter(i => i.is_new).length, ""],
-    ["","수집 상품 수", nItems.toLocaleString(), ""]];
-  $("kpis").innerHTML = k.map(([v,l,n,c]) => `<button class="kpi ${c}" ${v?`data-status="${v}"`:`data-view="products"`} aria-pressed="${!!v && st.status===v}"><b class="num">${n}</b><span>${l}</span></button>`).join("");
+  const nEnd = scope.filter(i => i.status==="ending_soon").length;
+  $("endcnt").textContent = nEnd ? nEnd : "";
+  const V = VERTS[VCUR], nMall = new Set(DATA.map(i => i.source_id)).size;
+  const dt = new Date(), day = `${dt.getMonth()+1}월 ${dt.getDate()}일`;
+  const last = SOURCES.map(s => s.last_crawled).filter(Boolean).sort().pop();
+  const upd = last ? new Date(last).toLocaleString("ko-KR",{month:"numeric",day:"numeric",hour:"numeric",minute:"2-digit"}) : "";
+  const T = {
+    picks: [V.title, `${day} 아침, 쇼핑몰 ${nMall}곳의 기획전에서 할인 폭·가격·마감일을 따져 골랐어요. 추천 상품 가격은 판매 페이지와 한 번 더 맞춰 봤어요.`],
+    ending: ["곧 끝나는 기획전", "3일 안에 끝나는 기획전이에요. 놓치기 전에 확인하세요."],
+    cards: ["진행 중인 기획전", `쇼핑몰 ${nMall}곳의 기획전·이벤트를 마감 순으로 모았어요.`],
+    products: ["전체 상품", "기획전에 담긴 상품을 할인율·가격으로 비교해 보세요."],
+    compare: ["가격 비교", "쇼핑몰별로 기획전 가격이 웹 최저가보다 얼마나 싼지 보여 줘요."]
+  }[st.view] || [V.title, ""];
+  const stats = [["ending_soon","마감 임박", nEnd, "hot"], ["new","새로 뜬 기획전", scope.filter(i => i.is_new).length, ""], ["upcoming","오픈 예정", scope.filter(i => i.status==="upcoming").length, ""]].filter(x => x[2]);
+  $("intro").innerHTML = `<h1>${esc(T[0])}</h1>${T[1] ? `<p>${esc(T[1])}${upd ? ` <span class="num" style="color:var(--ink-3)">업데이트 ${esc(upd)}</span>` : ""}</p>` : ""}
+    ${st.view === "cards" ? `<div class="stats">${stats.map(([v,l,n,c]) => `<button class="stat ${c}" data-status="${v}" aria-pressed="${st.status===v}">${l} <b class="num">${n}</b></button>`).join("")}</div>` : ""}`;
 }
 
 /* ── 웹 최저가 비교 ── */
@@ -546,8 +574,16 @@ function pimg(p, cls=""){
   const im = p.image_url ? `<img loading="lazy" referrerpolicy="no-referrer" src="${esc(p.image_url)}" alt="" onerror="this.remove()">` : "";
   return `<span class="pimg ${cls}">${ph}${im}</span>`;
 }
-const priceHtml = p => p.price == null ? `<span class="price"><span style="color:var(--ink-3)">${p.priceHidden ? "가격은 판매처에서 확인" : "가격 정보 없음"}</span></span>` :
-  `<span class="price">${p.discount_rate ? `<em>${p.discount_rate}%</em>` : ""}<b class="num">${won(p.price)}</b>${p.original_price ? `<s class="num">${won(p.original_price)}</s>` : ""}</span>`;
+const priceHtml = p => p.price == null ? `<span class="price"><span class="na">${p.priceHidden ? "가격은 판매처에서 확인" : "가격 정보 없음"}</span></span>` :
+  `<span class="price">${p.discount_rate ? `<em class="num">${p.discount_rate}%</em>` : ""}<b class="num">${won(p.price)}</b>${p.discount_rate && p.original_price ? `<s class="num">${won(p.original_price)}</s>` : ""}</span>`;
+/* 믿을 만한 한 줄: 웹 최저가보다 싸면 초록, 다른 기획전이 더 싸면 회색 안내 */
+function trustLine(p){
+  const v = vsPct(p);
+  if(v != null && v < 0) return `<span class="trust">웹 최저가보다 <span class="num">${won(p.market_lowest - p.price)}</span> 저렴</span>`;
+  if(v === 0) return `<span class="trust">웹 최저가와 같은 가격</span>`;
+  if(p.cross_lowest && p.price && p.cross_lowest < p.price) return `<span class="trust warn">다른 기획전 <span class="num">${won(p.cross_lowest)}</span></span>`;
+  return "";
+}
 function ddayTag(i){
   if(i.status === "upcoming" && i.start_date) return `<span class="dday up">D-${Math.round((d(i.start_date)-today)/DAY)} 오픈</span>`;
   if(i.d_day == null) return "";
@@ -558,59 +594,56 @@ const periodText = i => (i.start_date || i.end_date) ? `${fmt(d(i.start_date))} 
 
 function stripHtml(i){
   const its = i.items.filter(inPrice); if(!its.length) return "";
-  const n = i.item_count ?? i.items.length;
-  if(st.pmode === "text"){
-    return `<div class="tlist">${its.slice(0,4).map(p => `<div><span class="nm">${esc(p.name)}</span>${p.discount_rate?`<em>${p.discount_rate}%</em>`:""}<b class="num">${won(p.price)||"-"}</b>${vsBadge(p)}</div>`).join("")}</div>
-      ${n > 4 ? `<div class="morep">상품 ${n}개 · 최저 ${won(i.min_price ?? Math.min(...i.items.map(p=>p.price||1e12)))}</div>` : ""}`;
-  }
-  return `<div class="strip">${its.slice(0,4).map(p => `<div class="mini">${pimg(p)}<div class="pr"><em>${p.discount_rate?`${p.discount_rate}%`:""}</em><b class="num">${won(p.price)||"-"}</b></div>${vsPct(p)!=null ? (vsPct(p)<=0 ? `<div class="ok">✓ 웹 최저가</div>` : `<div class="ok" style="color:var(--accent)">웹 +${vsPct(p)}%</div>`) : ""}</div>`).join("")}</div>
-    ${n > 4 ? `<div class="morep">상품 ${n}개 더 보기 ›</div>` : ""}`;
+  return `<div class="tlist">${its.slice(0,3).map(p => `<div><span class="nm">${esc(p.name)}</span>${p.discount_rate?`<em>${p.discount_rate}%</em>`:""}<b class="num">${won(p.price)||"-"}</b></div>`).join("")}</div>`;
 }
-
+function thumbs(i){
+  const im = i.items.filter(p => p.image_url).slice(0, 3);
+  if(!im.length) return `<div class="thumbs none">${esc(i.source_name)}</div>`;
+  if(im.length < 3) return `<div class="thumbs one">${pimg(im[0])}</div>`;
+  return `<div class="thumbs">${im.map(p => pimg(p)).join("")}</div>`;
+}
 function card(i){
-  const c = srcColor(i.source_id);
-  const cmp = (i.compared||0) > 0 ? `<div class="cmpline">웹 최저가 이하 <b>${i.cheaper_cnt||0}/${i.compared}</b>개</div>` : "";
+  const n = i.item_count ?? i.items.length;
+  const bens = i.benefits.filter(b => b!=="할인").slice(0, 2);
   return `<button class="card" data-open="${esc(i.id)}">
-    <div class="head" style="background:linear-gradient(135deg, ${c}, color-mix(in srgb, ${c} 55%, #000))">
-      <div class="htop"><div class="chname">${esc(i.source_name)}<span class="chtype">${esc(ctLabel(i.channel_type))} · ${esc(i.kind)}</span></div>
-        <div class="flagr">${i.is_new ? `<span class="tag">NEW</span>` : ""}${ddayTag(i)}</div></div>
-      <div><div class="big">${i.max_discount ? `~${i.max_discount}%` : esc(i.kind)}</div><div class="cat">${esc(i.category)}</div></div></div>
+    ${st.pmode === "text" ? "" : thumbs(i)}
     <div class="body">
+      <div class="r1"><span>${esc(i.source_name)}</span>${i.is_new ? `<span class="tag">NEW</span>` : ""}<span class="sp"></span>${ddayTag(i)}</div>
       <div class="ttl">${esc(i.title)}</div>
-      <div class="bens">${i.benefits.filter(b => b!=="할인").map(b => `<span class="ben">${b}</span>`).join("")}</div>
-      ${stripHtml(i)}${cmp}
-      <div class="period"><span class="num">${esc(periodText(i))}</span></div>
+      ${st.pmode === "text" ? stripHtml(i) : ""}
+      <div class="r3">${i.max_discount ? `<span class="disc num">최대 ${i.max_discount}%</span>` : ""}${n ? `<span>상품 ${n}개</span>` : `<span>${esc(i.kind)}</span>`}${bens.map(b => `<span class="ben">${b}</span>`).join("")}</div>
     </div></button>`;
 }
 
 /* 상품 링크: 상품 주소 → 없으면 그 상품이 담긴 기획전 주소(상세 패널에서는 p.promo 가 없으므로 열린 기획전).
    "#" 로 두면 새 탭에 프로모션 허브가 한 번 더 열리므로 절대 쓰지 않는다. */
 const plink = p => p.url || (p.promo||{}).url || (st.open||{}).url || "about:blank";
+function pcard(p, inDrawer){
+  const mall = inDrawer ? "" : (p.promo ? p.promo.source_name : p.source_name);
+  return `<a class="pcard" href="${esc(plink(p))}" target="_blank" rel="noopener">
+      ${pimg(p)}
+      <div class="pb">${mall ? `<span class="mall">${esc(mall)}</span>` : ""}<span class="nm">${p.brand && !String(p.name).includes(p.brand) ? esc(p.brand) + " " : ""}${esc(p.name)}</span>${priceHtml(p)}${trustLine(p)}</div></a>`;
+}
 function productsView(list, inDrawer=false){
-  if(!list.length) return `<div class="empty">조건에 맞는 상품이 없습니다.</div>`;
+  if(!list.length) return `<div class="empty"><b>조건에 맞는 상품이 없어요</b>필터를 줄이거나 다른 검색어로 찾아보세요.</div>`;
   const lim = inDrawer ? list : list.slice(0, 400);
+  const more = lim.length < list.length ? `<div class="tl-note">상위 ${lim.length}개만 보여 드려요. 필터로 좁혀 보세요.</div>` : "";
   if(st.pmode === "text"){
-    return `<table class="pt"><thead><tr>${inDrawer?"":`<th>쇼핑몰</th>`}<th>상품</th><th class="r">할인</th><th class="r">판매가</th><th class="r hide-m">정가</th><th class="r">웹 최저가</th><th class="r">차이</th></tr></thead><tbody>
-      ${lim.map(p => { const v = vsPct(p); return `<tr>${inDrawer?"":`<td style="white-space:nowrap"><span class="chip-ch"><span class="dot" style="background:${srcColor(p.promo.source_id)}"></span>${esc(p.promo.source_name)}</span></td>`}
-        <td><a href="${esc(plink(p))}" target="_blank" rel="noopener">${p.brand?`<span class="sub">${esc(p.brand)}</span> `:""}${esc(p.name)}</a>${inDrawer?"":`<div class="sub">${esc(p.promo.title.slice(0,30))}</div>`}</td>
+    return `<table class="pt"><thead><tr>${inDrawer?"":`<th>쇼핑몰</th>`}<th>상품</th><th class="r">할인</th><th class="r">판매가</th><th class="r hide-m">정가</th><th class="r">웹 최저가</th></tr></thead><tbody>
+      ${lim.map(p => { const v = vsPct(p); return `<tr>${inDrawer?"":`<td style="white-space:nowrap">${esc(p.promo.source_name)}</td>`}
+        <td><a href="${esc(plink(p))}" target="_blank" rel="noopener">${p.brand?`<span class="sub">${esc(p.brand)}</span> `:""}${esc(p.name)}</a></td>
         <td class="r d num">${p.discount_rate ? p.discount_rate+"%" : ""}</td><td class="r num"><b>${won(p.price)||"-"}</b></td>
-        <td class="r num hide-m sub"><s>${won(p.original_price)}</s></td>
-        <td class="r num">${p.market_lowest ? `${won(p.market_lowest)}<div class="sub">${esc(p.market_mall||"")}</div>` : `<span class="sub">-</span>`}</td>
-        <td class="r num ${v==null?"":v<=0?"neg":"pos"}">${v==null?"":(v>0?"+":"")+v+"%"}</td></tr>`; }).join("")}</tbody></table>
-      ${lim.length < list.length ? `<div class="tl-note">상위 ${lim.length}개만 표시했습니다. 필터로 좁혀 보세요.</div>` : ""}`;
+        <td class="r num hide-m sub">${p.discount_rate ? `<s>${won(p.original_price)}</s>` : ""}</td>
+        <td class="r num">${p.market_lowest ? `${won(p.market_lowest)}${v!=null ? `<div class="${v<=0?"neg":"sub"}">${v<=0 ? "이 상품이 더 쌈" : "+"+v+"%"}</div>` : ""}` : `<span class="sub">-</span>`}</td></tr>`; }).join("")}</tbody></table>${more}`;
   }
-  return `<div class="pgrid">${lim.map(p => `<a class="pcard" href="${esc(plink(p))}" target="_blank" rel="noopener">
-      <span style="position:relative;display:block">${inDrawer?"":`<span class="chtag" style="background:${srcColor(p.promo.source_id)}">${esc(p.promo.source_name)}</span>`}${pimg(p)}</span>
-      <div class="pb">${p.brand?`<span class="br">${esc(p.brand)}</span>`:""}<span class="nm">${esc(p.name)}</span>${priceHtml(p)}${vsLine(p)}
-      ${inDrawer?"":`<span class="from">${esc(p.promo.title)}</span>`}</div></a>`).join("")}</div>
-    ${lim.length < list.length ? `<div class="tl-note">상위 ${lim.length}개만 표시했습니다. 필터로 좁혀 보세요.</div>` : ""}`;
+  return `<div class="pgrid">${lim.map(p => pcard(p, inDrawer)).join("")}</div>${more}`;
 }
 
 
 /* ── 추천 상품 탭 ── 매일 DB 함수(refresh_picks)가 고른 상품(v_picks). 샘플 모드에선 화면에서 바로 계산 */
 let PICKCACHE = null;
 const PK_SECTIONS = [
-  ["top", "오늘의 TOP 10", "할인율·웹 최저가·검색 수요·마감 임박 점수가 가장 높은 상품"],
+  ["top", "오늘의 TOP 10", "할인 폭·가격·찾는 사람 수·마감일을 모두 따진 순위"],
   ["web_low", "웹 최저가보다 싸요", "가격비교 사이트 최저가와 같거나 더 싼 기획전 상품"],
   ["ending", "마감 임박, 지금 담기", "3일 안에 끝나는 기획전의 인기 상품"],
   ["half", "반값 이하 특가", "정가 대비 50% 넘게 할인 중"],
@@ -635,29 +668,25 @@ function picksData(){
 }
 function pickCard(p){
   const nm = String(p.name||"").replace(/\[\s*\]/g, "").trim();
+  const c = String(p.copy||"");
+  const cls = /마감/.test(c) ? "hot" : /최저가|싸요/.test(c) ? "" : "warn";
   return `<a class="pcard pk" href="${esc(p.url || p.promotion_url || "about:blank")}" target="_blank" rel="noopener">
-    <span style="position:relative;display:block"><span class="chtag" style="background:${srcColor(p.source_id)}">${esc(p.source_name)}</span>${p.rank<=10?`<span class="rank">${p.rank}위</span>`:""}${pimg({...p, name:nm})}</span>
-    <div class="pb"><span class="copy">${esc(p.copy)}</span>${p.brand?`<span class="br">${esc(p.brand)}</span>`:""}<span class="nm">${esc(nm)}</span>
-      ${priceHtml(p)}${(p.reasons||[]).filter(r => !/% 할인$/.test(r)).length ? `<span class="rs">${p.reasons.filter(r => !/% 할인$/.test(r)).slice(0,3).map(r => `<i>${esc(r)}</i>`).join("")}</span>` : ""}
-      <span class="from">${esc(p.promotion_title||"")}</span></div></a>`;
+    <span style="position:relative;display:block">${p.rank<=10 && p.top ? `<span class="rank num" aria-label="${p.rank}위">${p.rank}</span>` : ""}${pimg({...p, name:nm})}</span>
+    <div class="pb"><span class="mall">${esc(p.source_name)}</span><span class="nm">${esc(nm)}</span>
+      ${priceHtml(p)}${c && cls !== "warn" ? `<span class="trust ${cls}">${esc(c)}</span>` : ""}</div></a>`;
 }
 function picksView(){
   const all = picksData();
   if(all === null) return `<div class="empty">추천 상품을 불러오는 중…</div>`;
   const list = all.filter(p => (!st.ctypes.size || st.ctypes.has(p.channel_type)) && (!st.sources.size || st.sources.has(p.source_id))
                          && (!st.q || (p.name + " " + (p.brand||"") + " " + p.source_name).toLowerCase().includes(st.q.toLowerCase())));
-  const day = all[0] && all[0].pick_date ? fmt(d(all[0].pick_date)) : fmt(today);
-  const hero = `<div class="pk-hero v"><h2>${VERTS[VCUR].title}</h2>${VERTS[VCUR].desc ? `<p style="margin-bottom:8px">${VERTS[VCUR].desc}</p>` : ""}
-    <p>${day} 기준, 모든 쇼핑몰 기획전 상품 중에서 <b>잘 팔릴 만한 상품 ${all.length}개</b>를 골랐어요. 쇼핑몰마다 4개, 기획전마다 2개까지만 담아 한쪽으로 쏠리지 않게 했어요.</p>
-    <div class="how"><span>할인율</span><span>웹 최저가 비교</span><span>여러 쇼핑몰 중 최저가</span><span>검색 수요</span><span>마감 임박</span><span>가격대</span></div></div>`;
-  $("railinfo").innerHTML = hero;
-  if(!list.length) return `<div class="empty"><b>추천 상품이 아직 없습니다</b>매일 새벽 수집·가격 비교가 끝나면 자동으로 골라집니다.</div>`;
+  if(!list.length) return `<div class="empty"><b>추천 상품이 아직 없어요</b>매일 아침 수집과 가격 확인이 끝나면 자동으로 골라져요.</div>`;
   const used = new Set(), out = [];
   for(const [key, title, sub] of PK_SECTIONS){
-    const its = key === "top" ? list.slice(0, 10) : list.filter(p => p.section === key && !used.has(p.item_key || p.name));
+    const its = key === "top" ? list.slice(0, 10).map(p => ({...p, top:true})) : list.filter(p => p.section === key && !used.has(p.item_key || p.name));
     if(key === "top") its.forEach(p => used.add(p.item_key || p.name));
     if(!its.length) continue;
-    out.push(`<div class="pk-sec"><h3>${title}</h3><span>${sub} · ${its.length}개</span></div><div class="pgrid">${its.map(pickCard).join("")}</div>`);
+    out.push(`<div class="pk-sec"><h3>${title}</h3><span>${sub}</span></div><div class="${key === "top" ? "pgrid" : "rowx"}">${its.map(pickCard).join("")}</div>`);
   }
   return out.join("");
 }
@@ -723,33 +752,38 @@ function timeline(list){
 }
 
 function render(){
-  renderKpis();
-  if(st.view !== "picks") $("railinfo").innerHTML = "";
+  renderKpis(); renderPills();
+  const isPromo = st.view === "cards" || st.view === "ending";
   if(!DATA.length){
     $("count").innerHTML = "";
-    $("view").innerHTML = `<div class="empty"><b>첫 수집을 기다리는 중입니다</b>${SOURCES.length}개 채널이 등록돼 있고, 자동 수집이 돌면 기획전·상품이 여기에 채워집니다.<br>
-      <button class="go" id="trydemo">샘플 데이터로 화면 미리보기</button></div>`;
+    $("view").innerHTML = `<div class="empty"><b>첫 수집을 기다리는 중이에요</b>쇼핑몰 ${SOURCES.length}곳이 등록돼 있고, 자동 수집이 돌면 기획전·상품이 채워져요.<br>
+      <button class="go" id="trydemo">샘플 데이터로 미리보기</button></div>`;
   }else if(st.view === "picks"){
-    $("count").innerHTML = esc(VERTS[VCUR].title);
+    $("count").innerHTML = "";
     $("view").innerHTML = picksView();
   }else if(st.view === "compare"){
-    $("count").innerHTML = `가격 비교`;
+    $("count").innerHTML = "";
     $("view").innerHTML = compareView();
   }else if(st.view === "products"){
     const list = products();
     if(list === null){ return; }
-    $("count").innerHTML = `상품 ${list.length.toLocaleString()}개${MODE==="supabase" && list.length>=400 ? "+" : ""}<small>/ 기획전 ${DATA.length}건</small>`;
+    $("count").innerHTML = `<b class="num">${list.length.toLocaleString()}${MODE==="supabase" && list.length>=400 ? "+" : ""}</b>개`;
     $("view").innerHTML = productsView(list);
   }else{
-    const list = promos();
-    $("count").innerHTML = `${list.length}건<small>/ 전체 ${DATA.length}건</small>`;
-    $("view").innerHTML = !list.length ? `<div class="empty">조건에 맞는 기획전·이벤트가 없습니다.</div>`
-      : st.view === "cards" ? `<div class="grid">${list.map(card).join("")}</div>` : timeline(list);
+    let list = promos();
+    if(st.view === "ending") list = list.filter(i => i.status === "ending_soon" || (i.d_day != null && i.d_day <= 3));
+    $("count").innerHTML = `<b class="num">${list.length}</b>개`;
+    $("view").innerHTML = !list.length ? `<div class="empty"><b>조건에 맞는 기획전이 없어요</b>필터를 줄이거나 다른 검색어로 찾아보세요.</div>`
+      : (st.view === "cards" && st.lmode === "timeline") ? timeline(list) : `<div class="grid">${list.map(card).join("")}</div>`;
   }
-  $("pmode").style.display = st.view === "timeline" || st.view === "picks" ? "none" : "";
+  $("pmode").style.display = st.view === "picks" || st.view === "compare" || (st.view === "cards" && st.lmode === "timeline") ? "none" : "";
+  $("lmode").style.display = st.view === "cards" ? "" : "none";
   $("sort").style.display = st.view === "compare" || st.view === "picks" ? "none" : "";
+  $("ftoggle").style.display = st.view === "picks" ? "none" : "";
+  $("pills").style.display = st.view === "picks" ? "none" : "contents";
   document.querySelectorAll("[data-pmode]").forEach(b => b.setAttribute("aria-pressed", b.dataset.pmode === st.pmode));
-  document.querySelectorAll(".bar [data-view]").forEach(b => b.setAttribute("aria-pressed", b.dataset.view === st.view));
+  document.querySelectorAll("[data-lmode]").forEach(b => b.setAttribute("aria-pressed", b.dataset.lmode === st.lmode));
+  document.querySelectorAll(".tabs [data-view]").forEach(b => b.setAttribute("aria-pressed", b.dataset.view === st.view));
 }
 function setSorts(){
   const opts = SORTS[st.view === "products" ? "products" : "cards"];
@@ -820,18 +854,17 @@ function drawDrawer(){
   if(dsort === "vs") its.sort((a,b) => (vsPct(a) ?? 1e9)-(vsPct(b) ?? 1e9));
   $("drawer").innerHTML = `<div class="dh" style="position:relative">
       <button class="x" id="dclose" aria-label="닫기">×</button>
-      <span class="chbig" style="background:${c}">${esc(i.source_name)}</span>
-      <div class="row">${esc(ctLabel(i.channel_type))} · ${esc(i.kind)} · ${esc(i.category)} ${ddayTag(i)}${(i.compared||0)>0 ? ` · 웹 최저가 이하 <b style="color:#11845b">${i.cheaper_cnt||0}/${i.compared}</b>개` : ""}</div>
+      <span class="chbig">${esc(i.source_name)}</span>
       <h2>${esc(i.title)}</h2>
       ${i.description ? `<div class="row">${esc(i.description)}</div>` : ""}
-      <div class="row num">${esc(periodText(i))}${i.max_discount ? ` · <b style="color:var(--accent)">최대 ${i.max_discount}%</b>` : ""} ${i.benefits.map(b => `<span class="ben">${b}</span>`).join("")}</div>
-      <a class="go" href="${esc(i.url)}" target="_blank" rel="noopener">${esc(i.source_name)}에서 기획전 보기 ↗</a>
+      <div class="row"><span class="num">${esc(periodText(i))}</span>${ddayTag(i)}${i.max_discount ? `<b class="num" style="color:var(--deal)">최대 ${i.max_discount}%</b>` : ""}${i.benefits.filter(b => b!=="할인").map(b => `<span class="ben">${b}</span>`).join("")}</div>
+      <a class="go" href="${esc(i.url)}" target="_blank" rel="noopener">${esc(i.source_name)}에서 보기</a>
     </div>
     <div class="db">
-      ${kwHtml(i)}
-      <div class="bar"><div class="count">판매 상품 ${its.length}개</div><div class="sp"></div>
-        <div class="seg">${[["position","노출순"],["price","낮은 가격"],["discount","할인율"],["vs","웹보다 싼 순"]].map(([v,l]) => `<button data-dsort="${v}" aria-pressed="${dsort===v}">${l}</button>`).join("")}</div></div>
-      ${its.length ? productsView(its, true) : `<div class="empty">이 기획전에서 수집된 상품이 없습니다.<br>이벤트형 페이지이거나 상품 목록을 읽지 못했습니다.</div>`}
+      <div class="bar"><div class="count"><b class="num">${its.length}</b>개 상품</div><div class="sp"></div>
+        <div class="seg">${[["position","쇼핑몰 순서"],["price","낮은 가격"],["discount","할인율"]].map(([v,l]) => `<button data-dsort="${v}" aria-pressed="${dsort===v}">${l}</button>`).join("")}</div></div>
+      ${its.length ? productsView(its, true) : `<div class="empty"><b>담긴 상품을 읽지 못했어요</b>이벤트 페이지이거나 상품 목록이 따로 없는 기획전이에요. 위 버튼으로 쇼핑몰에서 확인하세요.</div>`}
+      <details class="kwbox"><summary>광고 담당자용: 이 기획전 검색광고 키워드</summary>${kwHtml(i)}</details>
     </div>`;
 }
 function closeDrawer(){ document.body.classList.remove("dopen"); $("drawer").setAttribute("aria-hidden","true"); st.open = null; }
@@ -839,7 +872,7 @@ function closeDrawer(){ document.body.classList.remove("dopen"); $("drawer").set
 /* ── 이벤트 ── */
 const toggle = (set, v) => set.has(v) ? set.delete(v) : set.add(v);
 document.addEventListener("click", e => {
-  const b = e.target.closest("button"); if(!b) { if(e.target.id === "scrim") closeDrawer(); return; }
+  const b = e.target.closest("button"); if(!b) return;
   const ds = b.dataset;
   if(ds.open){ openDrawer(ds.open); return; }
   if(b.id === "trydemo"){ useDemo(); return; }
@@ -854,8 +887,11 @@ document.addEventListener("click", e => {
   if(b.id === "dclose"){ closeDrawer(); return; }
   if(ds.dsort){ dsort = ds.dsort; drawDrawer(); return; }
   if(ds.pmode){ st.pmode = ds.pmode; try{ localStorage.setItem("ph_prefs", JSON.stringify({pmode:st.pmode})); }catch(_){}; drawDrawer(); render(); return; }
-  if(ds.view){ st.view = ds.view; setSorts(); render(); return; }
-  if(b.id === "ftoggle"){ document.body.classList.toggle("fopen"); return; }
+  if(ds.view){ st.view = ds.view; if(st.view !== "cards") st.status = ""; setSorts(); render(); window.scrollTo({top:0}); return; }
+  if(ds.lmode){ st.lmode = ds.lmode; render(); return; }
+  if(b.id === "ftoggle"){ renderSide(); document.body.classList.add("fopen"); return; }
+  if(b.id === "fclose" || b.id === "fapply"){ document.body.classList.remove("fopen"); return; }
+  if(ds.rm != null){ const [k, ...v] = ds.rm.split("|"); removeFilter(k, v.join("|")); renderSide(); render(); return; }
   if(ds.ctype){ toggle(st.ctypes, ds.ctype); st.sources.clear(); }
   else if(ds.src) toggle(st.sources, ds.src);
   else if("kind" in ds) st.kind = ds.kind;
@@ -868,8 +904,8 @@ document.addEventListener("click", e => {
   else return;
   renderSide(); render();
 });
-$("scrim").addEventListener("click", closeDrawer);
-document.addEventListener("keydown", e => { if(e.key === "Escape") closeDrawer(); });
+$("scrim").addEventListener("click", () => { closeDrawer(); document.body.classList.remove("fopen"); });
+document.addEventListener("keydown", e => { if(e.key === "Escape"){ closeDrawer(); document.body.classList.remove("fopen"); } });
 $("q").addEventListener("input", e => { st.q = e.target.value; render(); });
 $("sort").addEventListener("change", e => { st.sort = e.target.value; render(); });
 document.addEventListener("change", e => {
