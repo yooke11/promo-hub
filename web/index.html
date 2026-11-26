@@ -150,6 +150,28 @@
          opacity:0;pointer-events:none;transition:opacity .2s}
   .toast.on{opacity:1}
 
+  /* PC: 따라다니는 찜 목록(오른쪽). 넓은 화면은 목록, 좁은 PC 화면은 작은 버튼, 모바일은 숨김(상단 '찜' 탭) */
+  .favrail{position:fixed;right:20px;top:50%;transform:translateY(-50%);z-index:30;width:104px;background:var(--panel);border:1px solid var(--line);
+           border-radius:16px;box-shadow:0 8px 28px -12px rgba(0,0,0,.25);display:flex;flex-direction:column;align-items:stretch;overflow:hidden}
+  .favrail .fr-h{border:0;background:none;padding:12px 8px 10px;font-size:13.5px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:2px;border-bottom:1px solid var(--line)}
+  .favrail .fr-h svg{width:20px;height:20px;color:var(--deal)}
+  .favrail .fr-h svg path{fill:currentColor}
+  .favrail .fr-h b{color:var(--deal)}
+  .favrail .fr-list{display:flex;flex-direction:column;gap:10px;padding:10px 10px 4px;max-height:52vh;overflow:auto;scrollbar-width:none}
+  .favrail .fr-list::-webkit-scrollbar{display:none}
+  .favrail .fr-it{display:flex;flex-direction:column;gap:3px;position:relative}
+  .favrail .fr-it .pimg{aspect-ratio:1;border-radius:10px;border:1px solid var(--line)}
+  .favrail .fr-it .pr{font-size:12px;font-weight:700;text-align:center}
+  .favrail .fr-it .x{position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;border:0;background:rgba(0,0,0,.55);color:#fff;font-size:12px;line-height:20px;padding:0;display:none}
+  .favrail .fr-it:hover .x,.favrail .fr-it:focus-within .x{display:block}
+  .favrail .fr-empty{font-size:12px;color:var(--ink-3);text-align:center;padding:12px 8px;line-height:1.45;word-break:keep-all}
+  .favrail .fr-more{border:0;background:none;font-size:12.5px;font-weight:600;color:var(--ink-2);padding:9px 6px;border-top:1px solid var(--line)}
+  .favrail .fr-top{border:0;background:var(--chip);font-size:12px;color:var(--ink-2);padding:8px 6px}
+  @media (max-width:1439px){ .favrail{width:auto;top:auto;bottom:24px;transform:none;border-radius:999px}
+    .favrail .fr-list,.favrail .fr-more,.favrail .fr-top,.favrail .fr-empty{display:none}
+    .favrail .fr-h{flex-direction:row;padding:11px 16px;border:0;gap:6px} }
+  @media (max-width:760px){ .favrail{display:none} }
+
   /* 이미지 */
   .pimg{position:relative;overflow:hidden;background:var(--chip);display:block}
   .pimg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -310,6 +332,7 @@
 <div class="scrim" id="scrim"></div>
 <aside class="drawer" id="drawer" aria-hidden="true"></aside>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<aside class="favrail" id="favrail" aria-label="찜한 상품"></aside>
 
 <script>
 {
@@ -699,7 +722,17 @@ function heartBtn(p){
   const on = isFav(p.item_key);
   return `<button class="heart" data-fav="${esc(p.item_key)}" aria-pressed="${on}" aria-label="${on ? "찜 빼기" : "찜하기"}">${HEART}</button>`;
 }
-function saveFavs(){ try{ localStorage.setItem("ph_favs", JSON.stringify(FAVS)); }catch(e){} $("favcnt").textContent = FAVS.length || ""; syncAlerts(); }
+function saveFavs(){ try{ localStorage.setItem("ph_favs", JSON.stringify(FAVS)); }catch(e){} $("favcnt").textContent = FAVS.length || ""; renderFavRail(); syncAlerts(); }
+function renderFavRail(){
+  const el = $("favrail"); if(!el) return;
+  const list = FAVS.slice(0, 12);
+  el.innerHTML = `<button class="fr-h" data-view="fav" aria-label="찜한 상품 ${FAVS.length}개 보기">${HEART}<span>찜 <b class="num">${FAVS.length}</b></span></button>
+    ${list.length ? `<div class="fr-list">${list.map(f => `<div class="fr-it"><a href="${esc(f.url || "about:blank")}" target="_blank" rel="noopener" title="${esc(f.name)}">${pimg(f)}</a>
+      ${f.saved_price ? `<span class="pr num">${won(f.saved_price)}</span>` : ""}<button class="x" data-fav="${esc(f.item_key)}" aria-label="찜 빼기">×</button></div>`).join("")}</div>
+      <button class="fr-more" data-view="fav">${FAVS.length > list.length ? `${FAVS.length - list.length}개 더 · ` : ""}전체 보기</button>`
+      : `<div class="fr-empty">상품의 ♡를 누르면 여기에 모여요</div>`}
+    <button class="fr-top" id="totop">맨 위로</button>`;
+}
 function toast(t){ const el = $("toast"); el.textContent = t; el.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove("on"), 1800); }
 function toggleFav(k){
   if(isFav(k)){ FAVS = FAVS.filter(f => f.item_key !== k); toast("찜에서 뺐어요"); }
@@ -1033,6 +1066,7 @@ document.addEventListener("click", e => {
   const b = e.target.closest("button"); if(!b) return;
   const ds = b.dataset;
   if(ds.fav){ e.preventDefault(); toggleFav(ds.fav); return; }
+  if(b.id === "totop"){ window.scrollTo({top:0, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"}); return; }
   if(b.id === "alerton"){ alertOn(); return; }
   if(b.id === "alertoff"){ alertOff(); return; }
   if(ds.open){ openDrawer(ds.open); return; }
@@ -1140,7 +1174,7 @@ function demoData(){
   return {items, sources:S};
 }
 
-load(); alertState();
+load(); alertState(); renderFavRail();
 }
 </script>
 </body>
