@@ -112,8 +112,6 @@ def main(argv=None):
         print(f"{len(data['items'])}건 → {args.out}")
 
 
-if __name__ == "__main__":
-    sys.exit(main())
 
 
 def _rpc(name: str, body: dict):
@@ -155,3 +153,6 @@ def _run_picks(args):
     if not sum(report["stage2"].values()):
         raise SystemExit("최종 추천 0개 — 대조 결과 확인 필요")
 
+
+if __name__ == "__main__":
+    sys.exit(main())
