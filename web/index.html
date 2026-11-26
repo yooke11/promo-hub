@@ -838,7 +838,7 @@ async function openDrawer(id){
   st.open = i;
   if(!DEMO && (i.item_count||0) > i.items.length){
     try{
-      if(MODE === "supabase") i.items = await sb(`promotion_items?select=*&promotion_id=eq.${encodeURIComponent(id)}&order=position.asc`);
+      if(MODE === "supabase") i.items = await sb(`promotion_items?select=*&promotion_id=eq.${encodeURIComponent(id)}${isFoodOnly() ? `&category=eq.${encodeURIComponent("식품")}&category_by_name=is.true&price=not.is.null` : ""}&order=position.asc`);
       else { const r = await fetch(`/api/promotions/${encodeURIComponent(id)}/items`); if(r.ok) i.items = (await r.json()).items; }
     }catch(e){}
   }
