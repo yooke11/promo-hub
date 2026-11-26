@@ -435,7 +435,7 @@ function serverProducts(){
   const srcIds = st.sources.size ? [...st.sources] : (VCUR ? SOURCES.map(s => s.id) : []);
   if(srcIds.length) f.push(`source_id=in.(${srcIds.map(encodeURIComponent).join(",")})`);
   if(st.ctypes.size) f.push(`channel_type=in.(${[...st.ctypes].join(",")})`);
-  if(isFoodOnly()) f.push(`category=eq.${encodeURIComponent("식품")}`);
+  if(isFoodOnly()) f.push(`category=eq.${encodeURIComponent("식품")}`, "price=not.is.null", `name=not.in.(${["장바구니 담기","재입고 신청","재입고 알림"].map(encodeURIComponent).join(",")})`);
   else if(st.cats.size) f.push(`category=in.(${[...st.cats].map(c => '"'+encodeURIComponent(c)+'"').join(",")})`);
   f.push("order=" + ({discount:"discount_rate.desc.nullslast,price.asc", vs_market:"vs_market_pct.asc.nullslast", price:"price.asc.nullslast", price_desc:"price.desc.nullslast", ending:"end_date.asc.nullslast"}[st.sort] || "discount_rate.desc.nullslast"));
   return "v_items?" + f.join("&");
