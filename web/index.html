@@ -428,7 +428,9 @@ function serverProducts(){
   if(q) f.push(`search_text=ilike.*${encodeURIComponent(q.replace(/[*,()]/g," "))}*`);
   if(st.minP !== "") f.push(`price=gte.${+st.minP}`);
   if(st.maxP !== "") f.push(`price=lte.${+st.maxP}`);
-  if(st.sources.size) f.push(`source_id=in.(${[...st.sources].map(encodeURIComponent).join(",")})`);
+  // 분야 사이트(장보기픽 등)는 그 분야 쇼핑몰 상품만 — 예전엔 빠져 있어 KT알파쇼핑 등 다른 몰 상품이 섞였다(2026-11-26)
+  const srcIds = st.sources.size ? [...st.sources] : (VCUR ? SOURCES.map(s => s.id) : []);
+  if(srcIds.length) f.push(`source_id=in.(${srcIds.map(encodeURIComponent).join(",")})`);
   if(st.ctypes.size) f.push(`channel_type=in.(${[...st.ctypes].join(",")})`);
   if(st.cats.size) f.push(`category=in.(${[...st.cats].map(c => '"'+encodeURIComponent(c)+'"').join(",")})`);
   f.push("order=" + ({discount:"discount_rate.desc.nullslast,price.asc", vs_market:"vs_market_pct.asc.nullslast", price:"price.asc.nullslast", price_desc:"price.desc.nullslast", ending:"end_date.asc.nullslast"}[st.sort] || "discount_rate.desc.nullslast"));

@@ -202,6 +202,9 @@ EVENT_KIND_RE = re.compile(r"응모|추첨|출석|룰렛|댓글|경품|퀴즈|�
 MEGA_SALE_RE = re.compile(r"빅스마일|블랙\s*프라이데이|블프|와우\s*세일|십일절|11절|무진장|대축제|페스타|festa|페스티벌|빅세일|쇼핑\s*축제|코리아\s*세일|연중\s*최대")
 
 
+from .categorize import classify_promotion  # noqa: E402
+
+
 def classify_category(text: str) -> str:
     t = (text or "").lower()
     if MEGA_SALE_RE.search(t):
@@ -300,7 +303,9 @@ def _normalize(raw: RawPromotion, ref: Optional[date] = None) -> Optional[Promot
         url=url,
         title=title,
         kind=classify_kind(blob),
-        category=classify_category(blob),
+        # 카테고리: 상품명 다수결 → 제목(설명은 페이지 메뉴 글자가 섞여 쓰지 않음). 2026-11-26
+        category=classify_promotion(title, [x.name for x in (raw.products or [])],
+                                    mega_sale=bool(MEGA_SALE_RE.search(title.lower()))),
         benefits=extract_benefits(blob),
         max_discount=extract_max_discount(blob),
         start_date=start,
