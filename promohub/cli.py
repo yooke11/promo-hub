@@ -39,12 +39,19 @@ def main(argv=None):
     pc.add_argument("--limit", type=int, default=400)
     kw = sub.add_parser("keywords", help="새로 수집된 기획전에 검색광고 추천 키워드(최대 10개) 생성 → Supabase 저장")
     kw.add_argument("--limit", type=int, default=500)
+    pk = sub.add_parser("picks", help="추천 상품 계산 + 상품 페이지 대조(가격 확인된 상품만 최종 추천)")
+    pk.add_argument("--sample", type=int, default=6, help="채널마다 무작위로 대조할 상품 수(가격 정확도 측정)")
+    pk.add_argument("--budget", type=float, default=900, help="상품 페이지 대조 시간 예산(초, 단계마다)")
     e = sub.add_parser("export")
     e.add_argument("out")
     args = ap.parse_args(argv)
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s", datefmt="%H:%M:%S")
     db = os.environ.get("PROMOHUB_DB", str(ROOT / "data" / "promohub.db"))
+
+    if args.cmd == "picks":
+        _run_picks(args)
+        return
 
     if args.cmd == "collect":
         from .collector import run
@@ -107,3 +114,44 @@ def main(argv=None):
 
 if __name__ == "__main__":
     sys.exit(main())
+
+
+def _rpc(name: str, body: dict):
+    import httpx
+    from .verify import _sb
+    base, h = _sb()
+    r = httpx.post(f"{base}/rest/v1/rpc/{name}", json=body, headers=h, timeout=60)
+    if r.status_code != 200:
+        raise RuntimeError(f"{name} 실패: {r.status_code} {r.text[:200]}")
+    return r.json()
+
+
+def _run_picks(args):
+    """추천 3단계: 계산 → 페이지 대조 → 불일치 빼고 재계산 → 새로 들어온 것 대조 → 확인된 것만 최종 추천."""
+    import httpx
+    from .verify import _sb, fetch_targets, send, summarize, verify
+    tok = os.environ["PROMOHUB_INGEST_TOKEN"]
+    base, h = _sb()
+    verts = sorted({r["vertical"] for r in httpx.get(base + "/rest/v1/source_verticals", params={"select": "vertical"},
+                                                       headers=h, timeout=30).json()})
+    verts = ["all"] + verts
+    mobile = {s.id for s in load_config().sources if s.mobile}
+    done: dict[str, dict] = {}
+    report = {}
+    for stage in (0, 1, 2):
+        counts = {v: _rpc("refresh_picks_v", {"p_token": tok, "p_vertical": v, "p_strict": stage}) for v in verts}
+        report[f"stage{stage}"] = counts
+        print(f"추천 {stage}단계:", counts, flush=True)
+        if stage == 2:
+            break
+        targets = [t for t in fetch_targets(args.sample if stage == 0 else 0) if t["item_key"] not in done]
+        rows = asyncio.run(verify(targets, mobile, budget_s=args.budget))
+        for r in rows:
+            done[r["item_key"]] = r
+        send(rows)
+        report[f"verify{stage}"] = summarize(rows)
+        print(f"상품 페이지 대조 {stage}:", json.dumps(report[f"verify{stage}"], ensure_ascii=False), flush=True)
+    print(json.dumps(report, ensure_ascii=False, indent=2))
+    if not sum(report["stage2"].values()):
+        raise SystemExit("최종 추천 0개 — 대조 결과 확인 필요")
+

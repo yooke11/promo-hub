@@ -1,0 +1,31 @@
+name: picks
+
+# 추천 상품 계산 + 상품 페이지 가격 대조만 따로 다시 돌릴 때(수집은 하지 않음).
+# 매일 새벽에는 collect.yml 의 picks 잡이 같은 일을 한다.
+on:
+  workflow_dispatch:
+    inputs:
+      sample:
+        description: "채널마다 대조할 무작위 상품 수"
+        required: false
+        default: "6"
+
+concurrency:
+  group: picks
+  cancel-in-progress: false
+
+jobs:
+  picks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      SUPABASE_URL: https://wjfbcbiyzoymqqnoemvu.supabase.co
+      SUPABASE_ANON_KEY: sb_publishable_-DNHcg_lvpePh3aeXGRXGw_qDJAkXI5
+      PROMOHUB_INGEST_TOKEN: ${{ secrets.PROMOHUB_INGEST_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12", cache: pip }
+      - run: pip install -r requirements.txt && python -m playwright install --with-deps chromium
+      - name: 추천 상품 계산 + 상품 페이지 가격 대조
+        run: python -m promohub.cli picks --sample ${{ github.event.inputs.sample || '6' }} --budget 900

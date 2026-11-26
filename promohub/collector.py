@@ -46,12 +46,28 @@ class RobotsCache:
         return True if rp is None else rp.can_fetch("*", url)
 
 
-async def _new_context(browser: Browser, mobile: bool) -> BrowserContext:
+# 이미지·동영상·글꼴 파일은 내려받지 않는다(주소는 HTML 속성에 그대로 남으므로 수집에는 영향 없음).
+# 상대 쇼핑몰 서버 부담과 수집 시간을 크게 줄인다. 2026-11-26
+BLOCK_TYPES = {"image", "media", "font"}
+
+
+async def _block_heavy(route):
+    if route.request.resource_type in BLOCK_TYPES:
+        await route.abort()
+    else:
+        await route.continue_()
+
+
+async def _new_context(browser: Browser, mobile: bool, block: bool = True) -> BrowserContext:
     if mobile:
-        return await browser.new_context(user_agent=MOBILE_UA, viewport={"width": 390, "height": 844},
-                                         is_mobile=True, has_touch=True, locale="ko-KR", timezone_id="Asia/Seoul")
-    return await browser.new_context(user_agent=DESKTOP_UA, viewport={"width": 1440, "height": 900},
-                                     locale="ko-KR", timezone_id="Asia/Seoul")
+        ctx = await browser.new_context(user_agent=MOBILE_UA, viewport={"width": 390, "height": 844},
+                                        is_mobile=True, has_touch=True, locale="ko-KR", timezone_id="Asia/Seoul")
+    else:
+        ctx = await browser.new_context(user_agent=DESKTOP_UA, viewport={"width": 1440, "height": 900},
+                                        locale="ko-KR", timezone_id="Asia/Seoul")
+    if block:
+        await ctx.route("**/*", _block_heavy)
+    return ctx
 
 
 async def _auto_scroll(page, steps: int):

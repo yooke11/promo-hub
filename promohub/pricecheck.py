@@ -168,18 +168,38 @@ def _sb_headers():
     return h
 
 
+def fetch_pick_targets() -> list[dict]:
+    """현재 추천 상품은 날마다 다시 비교한다 — '웹 최저가보다 N원 싸요' 문구는 하루 이내 비교 결과로만 쓴다."""
+    url = os.environ["SUPABASE_URL"].rstrip("/") + "/rest/v1/v_picks"
+    r = httpx.get(url, params={"select": "item_key,name,brand,price,source_name,source_id"}, headers=_sb_headers(), timeout=60)
+    r.raise_for_status()
+    seen, out = set(), []
+    for x in r.json():
+        if x["item_key"] not in seen:
+            seen.add(x["item_key"])
+            out.append(dict(x, checked_at=None))
+    return out
+
+
 def fetch_targets(limit: int) -> list[dict]:
+    """추천 상품(매일 재비교) + 비교한 지 3일 지난 상품(오래된 순) — 추천 상품을 먼저 처리한다."""
+    try:
+        picks = fetch_pick_targets()
+    except Exception as e:  # 추천이 없거나 조회 실패해도 일반 대상은 계속
+        log.warning("추천 상품 대상 조회 실패: %s", e)
+        picks = []
     url = os.environ["SUPABASE_URL"].rstrip("/") + "/rest/v1/v_price_targets"
-    out, page = [], 1000
+    rest, page = [], 1000
     for start in range(0, limit, page):
         h = dict(_sb_headers(), Range=f"{start}-{min(start + page, limit) - 1}")
         r = httpx.get(url, params={"select": "*", "order": "checked_at.asc.nullsfirst"}, headers=h, timeout=60)
         r.raise_for_status()
         part = r.json()
-        out += part
+        rest += part
         if len(part) < page:
             break
-    return out[:limit]
+    keys = {x["item_key"] for x in picks}
+    return picks + [x for x in rest[:limit] if x["item_key"] not in keys]
 
 
 def send_results(rows: list[PriceResult]) -> int:
@@ -280,6 +300,8 @@ class EnuriShop:
         ctx = self._browser.new_context(locale="ko-KR", timezone_id="Asia/Seoul",
                                         user_agent=("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                                                     "(KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"))
+        # 이미지·동영상·글꼴은 받지 않는다(가격 비교에는 텍스트만 필요) — 에누리 서버 부담·시간 절감
+        ctx.route("**/*", lambda r: r.abort() if r.request.resource_type in ("image", "media", "font") else r.continue_())
         self._page = ctx.new_page()
         return self
 
