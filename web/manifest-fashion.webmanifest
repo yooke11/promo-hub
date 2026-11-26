@@ -1,0 +1,24 @@
+{
+ "name": "패션세일픽",
+ "short_name": "패션세일픽",
+ "description": "브랜드 공식몰 세일을 매일 아침 한곳에",
+ "start_url": "/?src=pwa",
+ "scope": "/",
+ "display": "standalone",
+ "background_color": "#f4f5f7",
+ "theme_color": "#6d28d9",
+ "lang": "ko",
+ "icons": [
+  {
+   "src": "/icon-fashion-192.png",
+   "sizes": "192x192",
+   "type": "image/png"
+  },
+  {
+   "src": "/icon-fashion-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any maskable"
+  }
+ ]
+}

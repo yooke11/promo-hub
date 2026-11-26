@@ -142,6 +142,12 @@ def _run_picks(args):
     mobile = {s.id for s in load_config().sources if s.mobile}
     done: dict[str, dict] = {}
     report = {}
+    # 가격 기록(바뀐 날만, 60일 보관) — '최근 N일 중 최저가' 표시의 근거. 실패해도 추천은 계속
+    try:
+        report["prices"] = _rpc("record_prices", {"p_token": tok})
+        print("가격 기록:", report["prices"], flush=True)
+    except Exception as e:  # noqa: BLE001
+        print("가격 기록 실패:", e, flush=True)
     for stage in (0, 1, 2):
         counts = {v: _rpc("refresh_picks_v", {"p_token": tok, "p_vertical": v, "p_strict": stage}) for v in verts}
         report[f"stage{stage}"] = counts
@@ -155,6 +161,13 @@ def _run_picks(args):
         send(rows)
         report[f"verify{stage}"] = summarize(rows)
         print(f"상품 페이지 대조 {stage}:", json.dumps(report[f"verify{stage}"], ensure_ascii=False), flush=True)
+    # 찜 알림: 가격이 내렸거나 내일 마감인 찜 상품을 브라우저 알림으로(Supabase 서버 함수 send-alerts)
+    try:
+        r = httpx.post(f"{base}/functions/v1/send-alerts", json={"token": tok}, headers=h, timeout=120)
+        report["alerts"] = r.json() if r.status_code == 200 else {"status": r.status_code}
+        print("찜 알림:", report["alerts"], flush=True)
+    except Exception as e:  # noqa: BLE001
+        print("찜 알림 실패:", e, flush=True)
     print(json.dumps(report, ensure_ascii=False, indent=2))
     if not sum(report["stage2"].values()):
         raise SystemExit("최종 추천 0개 — 대조 결과 확인 필요")

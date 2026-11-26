@@ -1,0 +1,24 @@
+{
+ "name": "장보기픽",
+ "short_name": "장보기픽",
+ "description": "마트·식품몰 특가를 매일 아침 한곳에",
+ "start_url": "/?src=pwa",
+ "scope": "/",
+ "display": "standalone",
+ "background_color": "#f4f5f7",
+ "theme_color": "#12a150",
+ "lang": "ko",
+ "icons": [
+  {
+   "src": "/icon-food-192.png",
+   "sizes": "192x192",
+   "type": "image/png"
+  },
+  {
+   "src": "/icon-food-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any maskable"
+  }
+ ]
+}
