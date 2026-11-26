@@ -49,6 +49,14 @@ begin
   end loop;
   if besti = 0 then return null; end if;
   pidx := array_position(cs, p_prefer);
+  if cs[besti] = '식품' then   -- 식품어와 다른 분야어가 같은 수면 식품이 아닌 쪽(기획전 제목이 식품이어도)
+    for i in 1 .. array_length(cs, 1) loop
+      if i <> besti and sc_score[i] = best then
+        if pidx is not null and pidx <> besti and sc_score[pidx] = best then return p_prefer; end if;
+        return cs[i];
+      end if;
+    end loop;
+  end if;
   if pidx is not null and sc_score[pidx] = best then return p_prefer; end if;   -- 동점이면 기획전 제목 분류 우선
   return cs[besti];
 end $$;""")

@@ -46,6 +46,8 @@ def classify_product(name: str, prefer: str | None = None) -> str | None:
         return None
     top = max(score.values())
     tied = [c for c, v in score.items() if v == top]
+    if len(tied) > 1 and "식품" in tied:   # '프로틴 샴푸'·'버터 바디로션'처럼 식품어와 다른 분야어가 같은 수면 식품이 아닌 쪽(기획전 제목이 식품이어도)
+        tied.remove("식품")
     if prefer in tied:
         return prefer
     return min(tied, key=lambda c: order.get(c, 99))
