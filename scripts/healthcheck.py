@@ -56,7 +56,8 @@ def main():
     a = ap.parse_args()
     now = datetime.now(KST)
     today0 = now.replace(hour=0, minute=0, second=0, microsecond=0)
-    run0 = today0 + timedelta(hours=5)
+    # 수집은 04:53(예약 작업)에 시작한다 — 05:00 기준이면 앞쪽 묶음 채널이 빠져 '14/45곳'처럼 틀리게 센다
+    run0 = today0 + timedelta(hours=4, minutes=30)
     with httpx.Client(timeout=20, follow_redirects=True) as c:
         # 1. 사이트
         try:
