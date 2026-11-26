@@ -323,6 +323,8 @@ const VCUR = VERTS[VKEY] ? VKEY : "";
 const $ = id => document.getElementById(id);
 
 let DATA = [], SOURCES = [], DEMO = false;
+// 장보기픽은 먹는 것만(식품·건강식품). VCUR 은 아래에서 정해지므로 함수로 판단
+const isFoodOnly = () => typeof VCUR !== "undefined" && VCUR === "food";
 const st = {q:"", ctypes:new Set(), sources:new Set(), cats:new Set(), kind:"", status:"", bens:new Set(), sort:"ending", view:"picks",
             pmode:"img", minP:"", maxP:"", allSrc:false, open:null};
 try{ const s = JSON.parse(localStorage.getItem("ph_prefs")||"{}"); if(s.pmode) st.pmode = s.pmode; }catch(e){}
@@ -357,7 +359,8 @@ async function load(){
     if(CFG && CFG.supabaseUrl){
       MODE = "supabase";
       const get = () => Promise.all([
-        sbAll("v_promotions?select=*&status=neq.ended&order=end_date.asc.nullslast"),
+        // 장보기픽: 사람이 먹는 상품(식품·건강식품)만 담은 전용 뷰 — 프라이팬·가전 등은 빠진다(2026-11-26)
+        sbAll(`${isFoodOnly() ? "v_promotions_food" : "v_promotions"}?select=*&status=neq.ended&order=end_date.asc.nullslast`),
         sb("v_sources?select=*&order=rank.asc")]);
       let p, s;
       try { [p, s] = await get(); } catch(e1) { await new Promise(r => setTimeout(r, 1500)); [p, s] = await get(); }  // 일시 오류면 한 번 더
@@ -432,7 +435,8 @@ function serverProducts(){
   const srcIds = st.sources.size ? [...st.sources] : (VCUR ? SOURCES.map(s => s.id) : []);
   if(srcIds.length) f.push(`source_id=in.(${srcIds.map(encodeURIComponent).join(",")})`);
   if(st.ctypes.size) f.push(`channel_type=in.(${[...st.ctypes].join(",")})`);
-  if(st.cats.size) f.push(`category=in.(${[...st.cats].map(c => '"'+encodeURIComponent(c)+'"').join(",")})`);
+  if(isFoodOnly()) f.push(`category=eq.${encodeURIComponent("식품")}`);
+  else if(st.cats.size) f.push(`category=in.(${[...st.cats].map(c => '"'+encodeURIComponent(c)+'"').join(",")})`);
   f.push("order=" + ({discount:"discount_rate.desc.nullslast,price.asc", vs_market:"vs_market_pct.asc.nullslast", price:"price.asc.nullslast", price_desc:"price.desc.nullslast", ending:"end_date.asc.nullslast"}[st.sort] || "discount_rate.desc.nullslast"));
   return "v_items?" + f.join("&");
 }
@@ -503,8 +507,8 @@ function renderSide(){
         `<button class="chip" data-pr="${a}|${z}" aria-pressed="${st.minP===a && st.maxP===z}">${l}</button>`).join("")}</div></div>
     <div class="grp"><h4>유형</h4><div class="seg">
       ${[["","전체"],["기획전","기획전"],["이벤트","이벤트"]].map(([v,l]) => `<button data-kind="${v}" aria-pressed="${st.kind===v}">${l}</button>`).join("")}</div></div>
-    <div class="grp"><h4>카테고리</h4><div class="chips">
-      ${cats.map(([c,n]) => `<button class="chip" data-cat="${esc(c)}" aria-pressed="${st.cats.has(c)}">${esc(c)}<span class="n">${n}</span></button>`).join("")}</div></div>
+    ${isFoodOnly() ? "" : `<div class="grp"><h4>카테고리</h4><div class="chips">
+      ${cats.map(([c,n]) => `<button class="chip" data-cat="${esc(c)}" aria-pressed="${st.cats.has(c)}">${esc(c)}<span class="n">${n}</span></button>`).join("")}</div></div>`}
     <div class="grp"><h4>혜택</h4><div class="chips">
       ${BENEFITS.filter(b => byBen.get(b)).map(b => `<button class="chip" data-ben="${b}" aria-pressed="${st.bens.has(b)}">${b}<span class="n">${byBen.get(b)}</span></button>`).join("")}</div></div>
     <button class="reset" id="reset">필터 초기화</button>`;
