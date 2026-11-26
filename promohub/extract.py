@@ -206,6 +206,28 @@ def extract_from_json(payload, page_url: str, source: Source) -> list[RawPromoti
 
 
 # ── 상세 페이지 메타 ─────────────────────────────────
+_IMG_SKIP = re.compile(r"logo|icon|ico_|sprite|blank|spacer|loading|btn_|button|arrow|badge|common/|gnb|footer|sns|kakao|naver_|facebook|banner_top|top_banner|\.svg|\.gif|data:", re.I)
+_IMG_GOOD = re.compile(r"event|promo|plan|exhibit|banner|visual|main|kv|campaign|special|theme|bnr", re.I)
+
+
+def _banner_image(soup: BeautifulSoup, page_url: str) -> str:
+    """og:image 가 없는 기획전: 본문의 첫 큰 배너 이미지(로고·아이콘·버튼 제외). 2026-11-26."""
+    best, best_score = "", 0
+    for i, img in enumerate(soup.find_all("img")[:80]):
+        src = img.get("src") or img.get("data-src") or img.get("data-original") or img.get("data-lazy") or ""
+        if not src or src.startswith("data:") or _IMG_SKIP.search(src) or _IMG_SKIP.search(" ".join(img.get("class") or [])):
+            continue
+        try:
+            w = int(re.sub(r"\D", "", str(img.get("width") or "")) or 0)
+        except ValueError:
+            w = 0
+        if 0 < w < 250:
+            continue
+        score = (3 if _IMG_GOOD.search(src) or _IMG_GOOD.search(" ".join(img.get("class") or [])) else 0) + (2 if w >= 500 else 0) + max(0, 3 - i // 10)
+        if score > best_score:
+            best, best_score = urljoin(page_url, src), score
+    return best if best_score >= 3 else ""
+
 def extract_detail_meta(html: str, page_url: str) -> dict:
     soup = BeautifulSoup(html, "html.parser")
 
@@ -213,6 +235,8 @@ def extract_detail_meta(html: str, page_url: str) -> dict:
         t = soup.find("meta", attrs={"property": prop}) or soup.find("meta", attrs={"name": prop})
         return (t.get("content") or "").strip() if t else ""
 
+    og_img = meta("og:image") or meta("twitter:image")
+    page_img = "" if og_img else _banner_image(soup, page_url)
     for t in soup(["script", "style", "noscript"]):
         t.decompose()
     text = soup.get_text("\n", strip=True)
@@ -221,7 +245,7 @@ def extract_detail_meta(html: str, page_url: str) -> dict:
     title = re.split(r"\s+[|\-–]\s+(?=[^|\-–]{1,15}$)", title)[0]
     return {
         "title": clean_title(title),
-        "image_url": urljoin(page_url, meta("og:image")) if meta("og:image") else "",
+        "image_url": urljoin(page_url, og_img) if og_img else page_img,
         "description": clean_title(meta("og:description") or meta("description")),
         "period_text": _period_from_text(text[:20000]),
     }

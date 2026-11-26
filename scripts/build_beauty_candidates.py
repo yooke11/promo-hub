@@ -31,7 +31,6 @@ C = [
     ("beplain", "비플레인", "beplain.co.kr", ["https://beplain.co.kr/"], True),
     ("dalba", "달바", "dalba.co.kr", ["https://www.dalba.co.kr/"], True),
     ("cellfusionc", "셀퓨전씨", "cellfusionc.co.kr", ["https://cellfusionc.co.kr/"], True),
-    ("abib", "아비브", "abib.co.kr", ["https://abib.co.kr/"], True),
     ("numbuzin", "넘버즈인", "numbuzin.com", ["https://numbuzin.com/"], True),
     ("fwee", "퓌", "fwee.kr", ["https://fwee.kr/"], True),
     ("hince", "힌스", "hince.co.kr", ["https://hince.co.kr/"], True),
@@ -42,7 +41,6 @@ C = [
     ("drg", "닥터지", "drg.co.kr", ["https://www.drg.co.kr/", "https://www.gowoonsesang.com/"], True),
     ("missha", "미샤", "missha.co.kr", ["https://www.missha.co.kr/"], False),
     ("skinfood", "스킨푸드", "theskinfood.com", ["https://www.theskinfood.com/"], True),
-    ("aritaum", "VT코스메틱", "vtcosmetics.com", ["https://www.vtcosmetics.com/"], True),
 ]
 
 

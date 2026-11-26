@@ -26,7 +26,6 @@ C = [
      [r"cate_no=101\b"]),
     ("torriden", "토리든", ["torriden.com"],
      ["https://torriden.com/goods/goods_list.php?cateCd=011", "https://torriden.com/board/list.php?bdId=promotion&period=current"], []),
-    ("abib", "아비브", ["abib.com", "abib.co.kr"], ["https://abib.com/promotion/list.html?tab=campaign"], []),
     ("anua", "아누아", ["anua.kr"], ["https://anua.kr/", "https://anua.kr/board/event/list.html"], []),
 ]
 

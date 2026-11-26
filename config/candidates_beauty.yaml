@@ -227,18 +227,6 @@ sources:
   - https://cellfusionc.co.kr/
   include_patterns: *id001
   exclude_patterns: *id002
-- id: abib
-  name: 아비브
-  channel_type: brand
-  rank: 318
-  vertical: beauty
-  domains:
-  - abib.co.kr
-  mobile: false
-  entry_urls:
-  - https://abib.co.kr/
-  include_patterns: *id001
-  exclude_patterns: *id002
 - id: numbuzin
   name: 넘버즈인
   channel_type: brand
@@ -357,17 +345,5 @@ sources:
   mobile: false
   entry_urls:
   - https://www.theskinfood.com/
-  include_patterns: *id001
-  exclude_patterns: *id002
-- id: aritaum
-  name: VT코스메틱
-  channel_type: brand
-  rank: 329
-  vertical: beauty
-  domains:
-  - vtcosmetics.com
-  mobile: false
-  entry_urls:
-  - https://www.vtcosmetics.com/
   include_patterns: *id001
   exclude_patterns: *id002

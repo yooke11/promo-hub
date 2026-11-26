@@ -635,11 +635,19 @@ function stripHtml(i){
   const its = i.items.filter(inPrice); if(!its.length) return "";
   return `<div class="tlist">${its.slice(0,3).map(p => `<div><span class="nm">${esc(p.name)}</span>${p.discount_rate?`<em>${p.discount_rate}%</em>`:""}<b class="num">${won(p.price)||"-"}</b></div>`).join("")}</div>`;
 }
+// 한 쇼핑몰의 기획전 3개 이상이 같은 그림을 쓰면 사이트 공통 그림(로고 등)이라 대표 이미지로 쓰지 않는다
+let GENERIC = null;
+const promoImg = i => {
+  if(!GENERIC){ const c = new Map(); DATA.forEach(x => { if(x.image_url){ const k = x.source_id + "|" + x.image_url; c.set(k, (c.get(k)||0) + 1); } });
+    GENERIC = new Set([...c].filter(([, n]) => n >= 3).map(([k]) => k)); }
+  return i.image_url && !GENERIC.has(i.source_id + "|" + i.image_url) ? i.image_url : "";
+};
 function thumbs(i){
-  const im = i.items.filter(p => p.image_url).slice(0, 3);
-  if(!im.length) return `<div class="thumbs none">${esc(i.source_name)}</div>`;
-  if(im.length < 3) return `<div class="thumbs one">${pimg(im[0])}</div>`;
-  return `<div class="thumbs">${im.map(p => pimg(p)).join("")}</div>`;
+  const im = i.items.filter(p => p.image_url).slice(0, 3), banner = promoImg(i);
+  if(im.length >= 3) return `<div class="thumbs">${im.map(p => pimg(p)).join("")}</div>`;
+  if(banner) return `<div class="thumbs one">${pimg({image_url:banner, name:i.title})}</div>`;
+  if(im.length) return `<div class="thumbs one">${pimg(im[0])}</div>`;
+  return `<div class="thumbs none">${esc(i.source_name)}</div>`;
 }
 function card(i){
   const n = i.item_count ?? i.items.length;
