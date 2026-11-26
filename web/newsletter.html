@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>뉴스레터 만들기</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<script src="config.js"></script>
+<style>
+  /* 이 페이지의 바깥(도구 막대)만. 뉴스레터 본문은 이메일 호환을 위해 표 + 인라인 스타일로 따로 만든다 */
+  :root{--bg:#eef0f3;--ink:#1b1d22;--ink2:#4a4f59;--ink3:#8a8f98;--line:#dfe2e6}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 "Pretendard Variable",Pretendard,system-ui,sans-serif}
+  .tool{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid var(--line)}
+  .tool-in{max-width:980px;margin:0 auto;padding:12px 20px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .tool h1{font-size:16px;margin:0 12px 0 0;font-weight:800;letter-spacing:-.02em}
+  .seg{display:flex;background:#eef0f3;border-radius:10px;padding:3px}
+  .seg button{border:0;background:none;padding:6px 12px;border-radius:8px;font:inherit;font-size:13px;color:var(--ink2);cursor:pointer}
+  .seg button[aria-pressed=true]{background:#fff;color:var(--ink);font-weight:700;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+  .sp{flex:1}
+  .btn{border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 14px;font:inherit;font-size:13.5px;font-weight:600;cursor:pointer}
+  .btn.main{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .note{max-width:980px;margin:14px auto 0;padding:0 20px;color:var(--ink2);font-size:13px}
+  .note b{color:var(--ink)}
+  .stage{padding:18px 12px 60px}
+  iframe{display:block;margin:0 auto;width:100%;max-width:680px;border:0;background:#fff;border-radius:6px;box-shadow:0 10px 30px -18px rgba(0,0,0,.35)}
+  .msg{max-width:640px;margin:60px auto;text-align:center;color:var(--ink3)}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:10px;opacity:0;transition:opacity .2s;pointer-events:none}
+  .toast.on{opacity:1}
+  :focus-visible{outline:2px solid #2b50d8;outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="tool"><div class="tool-in">
+  <h1>뉴스레터 만들기</h1>
+  <div class="seg" id="vseg" aria-label="분야">
+    <button data-v="food">장보기픽</button><button data-v="beauty">뷰티세일픽</button><button data-v="fashion">패션세일픽</button><button data-v="">프로모션 허브</button>
+  </div>
+  <span class="sp"></span>
+  <button class="btn" id="dl">HTML 파일 받기</button>
+  <button class="btn main" id="copy">이메일용 HTML 복사</button>
+</div></div>
+<p class="note">오늘 아침 추천 상품(판매 페이지와 가격을 맞춰 본 상품만)으로 자동으로 만들어져요. <b>이메일용 HTML 복사</b>를 눌러 스티비·메일침프 같은 발송 도구의 'HTML 붙여넣기'에 넣으면 됩니다. 수신 거부 링크 자리에는 <code>{{수신거부}}</code>가 들어 있으니 발송 도구의 수신 거부 변수로 바꿔 주세요.</p>
+<div class="stage"><div id="out" class="msg">오늘 추천 상품을 불러오는 중…</div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+{
+const CFG = window.PROMOHUB_CONFIG;
+const V = {
+  food:    {brand:"장보기픽",   color:"#12a150", site:"https://jangbopick.vercel.app",       title:"오늘의 장보기 특가", lead:"마트·식품몰 기획전에서 오늘 장보기 좋은 상품만 골랐어요."},
+  beauty:  {brand:"뷰티세일픽", color:"#e11d74", site:"https://beautysalepick.vercel.app",   title:"오늘의 뷰티 특가",   lead:"화장품 브랜드 공식몰 기획전에서 할인 폭이 크고 많이 찾는 제품을 골랐어요."},
+  fashion: {brand:"패션세일픽", color:"#6d28d9", site:"https://fashionsalepick.vercel.app",  title:"오늘의 패션 세일",   lead:"브랜드 공식몰·편집숍 기획전에서 지금 사기 좋은 옷과 신발을 골랐어요."},
+  "":      {brand:"프로모션 허브", color:"#2b50d8", site:"https://promo-hub-yooke-team.vercel.app", title:"오늘의 추천 상품", lead:"쇼핑몰 기획전에서 할인 폭·가격·마감일을 따져 골랐어요."}
+};
+const HOSTS = {jangbopick:"food", fashionsalepick:"fashion", beautysalepick:"beauty"};
+const hv = Object.keys(HOSTS).find(k => location.hostname.startsWith(k));
+let vkey = new URLSearchParams(location.search).get("v") ?? (hv ? HOSTS[hv] : "food");
+if(!(vkey in V)) vkey = "food";
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const won = n => n == null ? "" : Number(n).toLocaleString("ko-KR") + "원";
+const FONT = "-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic','맑은 고딕',sans-serif";
+let HTML = "";
+
+async function sb(path){
+  const h = {apikey: CFG.anonKey}; if(!CFG.anonKey.startsWith("sb_")) h.Authorization = "Bearer " + CFG.anonKey;
+  const r = await fetch(`${CFG.supabaseUrl}/rest/v1/${path}`, {headers:h}); if(!r.ok) throw new Error(r.status); return r.json();
+}
+async function priceTrust(){
+  try{ const r = await fetch(`${CFG.supabaseUrl}/rest/v1/rpc/price_trust`, {method:"POST", headers:{apikey:CFG.anonKey, "Content-Type":"application/json"}, body:"{}"});
+    if(!r.ok) return {low:new Set(), bad:new Set()}; const t = await r.json(); return {low:new Set(t.low_sources||[]), bad:new Set(t.bad_urls||[])}; }
+  catch(e){ return {low:new Set(), bad:new Set()}; }
+}
+
+/* ── 이메일 본문(표 + 인라인 스타일, 폭 600) ── */
+const utm = (u, c) => u + (u.includes("?") ? "&" : "?") + `utm_source=newsletter&utm_medium=email&utm_campaign=${c}`;
+const nm = p => String(p.name || "").replace(/\[\s*\]/g, "").trim();
+function priceCell(p, big){
+  const fs = big ? 22 : 17;
+  return `${p.discount_rate ? `<span style="color:#e3311f;font-weight:800;font-size:${fs}px;">${p.discount_rate}%</span>&nbsp;` : ""}<span style="color:#1b1d22;font-weight:800;font-size:${fs}px;">${won(p.price)}</span>`
+    + (p.discount_rate && p.original_price ? `<br><span style="color:#8a8f98;font-size:12px;text-decoration:line-through;">${won(p.original_price)}</span>` : "");
+}
+function note(p){
+  const bits = [];
+  if(p.unit_price && p.unit_label) bits.push(`${esc(p.unit_label)} ${won(p.unit_price)}`);
+  if(p.low_days >= 14 && p.prev_min > p.price) bits.push(`<span style="color:#0b7d4b;font-weight:700;">최근 ${p.low_days}일 중 최저가</span>`);
+  else if(p.copy && /최저가|마감/.test(p.copy)) bits.push(`<span style="color:${/마감/.test(p.copy) ? "#e3311f" : "#0b7d4b"};font-weight:700;">${esc(p.copy)}</span>`);
+  return bits.length ? `<div style="font-size:12px;color:#6b7079;margin-top:6px;">${bits.join(" · ")}</div>` : "";
+}
+const img = (p, w, h) => p.image_url
+  ? `<img src="${esc(p.image_url)}" width="${w}" height="${h}" alt="${esc(nm(p)).slice(0,60)}" style="display:block;width:${w}px;max-width:100%;height:${h}px;object-fit:cover;border:0;border-radius:10px;background:#f0f1f3;">`
+  : `<div style="width:${w}px;max-width:100%;height:${h}px;background:#f0f1f3;border-radius:10px;"></div>`;
+function hero(p, c){
+  return `<tr><td style="padding:0 24px 28px;">
+    <a href="${esc(p.url || p.promotion_url)}" target="_blank" style="text-decoration:none;color:#1b1d22;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+        <td width="220" valign="top" style="padding-right:18px;">${img(p, 220, 220)}</td>
+        <td valign="top" style="font-family:${FONT};">
+          <div style="font-size:30px;font-weight:900;color:${c};line-height:1;margin-bottom:10px;">${p.rank}</div>
+          <div style="font-size:12px;color:#8a8f98;font-weight:700;margin-bottom:4px;">${esc(p.source_name)}</div>
+          <div style="font-size:16px;line-height:1.4;font-weight:600;margin-bottom:10px;">${esc(nm(p))}</div>
+          <div style="line-height:1.3;">${priceCell(p, true)}</div>${note(p)}
+        </td></tr></table></a></td></tr>`;
+}
+function cell(p){
+  return `<td width="50%" valign="top" style="padding:0 8px 24px;font-family:${FONT};">
+    <a href="${esc(p.url || p.promotion_url)}" target="_blank" style="text-decoration:none;color:#1b1d22;">${img(p, 260, 260)}
+      <div style="font-size:12px;color:#8a8f98;font-weight:700;margin:10px 0 3px;">${p.rank <= 10 ? `${p.rank}위 · ` : ""}${esc(p.source_name)}</div>
+      <div style="font-size:14px;line-height:1.4;margin-bottom:6px;">${esc(nm(p))}</div>
+      <div style="line-height:1.3;">${priceCell(p, false)}</div>${note(p)}</a></td>`;
+}
+function grid(list){
+  let rows = ""; for(let i = 0; i < list.length; i += 2) rows += `<tr>${cell(list[i])}${list[i+1] ? cell(list[i+1]) : `<td width="50%"></td>`}</tr>`;
+  return `<tr><td style="padding:0 16px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">${rows}</table></td></tr>`;
+}
+function rowItem(p){
+  return `<tr><td style="padding:0 24px 14px;font-family:${FONT};">
+    <a href="${esc(p.url || p.promotion_url)}" target="_blank" style="text-decoration:none;color:#1b1d22;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+      <td width="84" valign="top">${img(p, 72, 72)}</td>
+      <td valign="middle"><div style="font-size:12px;color:#8a8f98;font-weight:700;">${esc(p.source_name)}</div>
+        <div style="font-size:14px;line-height:1.35;margin:2px 0 4px;">${esc(nm(p))}</div><div>${priceCell(p, false)}</div></td>
+    </tr></table></a></td></tr>`;
+}
+const secTitle = (t, sub) => `<tr><td style="padding:12px 24px 16px;font-family:${FONT};"><div style="font-size:19px;font-weight:800;color:#1b1d22;">${t}</div>${sub ? `<div style="font-size:13px;color:#8a8f98;margin-top:3px;">${sub}</div>` : ""}</td></tr>`;
+const hr = `<tr><td style="padding:8px 24px 20px;"><div style="height:1px;background:#e4e6ea;line-height:1px;font-size:1px;">&nbsp;</div></td></tr>`;
+
+function build(picks){
+  const c = V[vkey], d = new Date(), day = d.toLocaleDateString("ko-KR", {month:"long", day:"numeric", weekday:"long"});
+  const camp = `${vkey || "all"}_${d.getFullYear()}${String(d.getMonth()+1).padStart(2,"0")}${String(d.getDate()).padStart(2,"0")}`;
+  const top = picks.slice(0, 10), used = new Set(top.map(p => p.item_key));
+  const ending = picks.filter(p => p.section === "ending" && !used.has(p.item_key)).slice(0, 4); ending.forEach(p => used.add(p.item_key));
+  const webLow = picks.filter(p => p.section === "web_low" && !used.has(p.item_key)).slice(0, 4);
+  const pre = `${c.brand} ${day} — ${top.slice(0,2).map(p => `${nm(p).slice(0,18)} ${p.discount_rate ? p.discount_rate + "%" : won(p.price)}`).join(", ")} 외`;
+  return `<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(c.brand)} ${esc(day)}</title></head>
+<body style="margin:0;padding:0;background:#f4f5f7;">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;">${esc(pre)}</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f4f5f7;"><tr><td align="center" style="padding:24px 12px;">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:100%;background:#ffffff;border-radius:14px;overflow:hidden;">
+  <tr><td style="height:6px;background:${c.color};line-height:6px;font-size:6px;">&nbsp;</td></tr>
+  <tr><td style="padding:26px 24px 6px;font-family:${FONT};">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+      <td style="font-size:20px;font-weight:900;color:#1b1d22;letter-spacing:-0.5px;">${esc(c.brand)}</td>
+      <td align="right" style="font-size:13px;color:#8a8f98;">${esc(day)}</td></tr></table></td></tr>
+  <tr><td style="padding:18px 24px 8px;font-family:${FONT};">
+    <div style="font-size:28px;line-height:1.25;font-weight:900;color:#1b1d22;letter-spacing:-0.8px;">${esc(c.title)}</div>
+    <div style="font-size:15px;line-height:1.6;color:#4a4f59;margin-top:10px;">${esc(c.lead)} 추천 상품 가격은 판매 페이지와 한 번 더 맞춰 봤어요.</div></td></tr>
+  <tr><td style="padding:18px 24px 22px;font-family:${FONT};font-size:13px;color:#8a8f98;">오늘의 TOP 10 · 할인 폭·가격·찾는 사람 수·마감일을 모두 따진 순위</td></tr>
+  ${top.slice(0, 3).map(p => hero(p, c.color)).join("")}
+  ${top.length > 3 ? grid(top.slice(3, 10)) : ""}
+  ${ending.length ? hr + secTitle("곧 끝나요", "3일 안에 끝나는 기획전의 인기 상품") + ending.map(rowItem).join("") : ""}
+  ${webLow.length ? hr + secTitle("웹 최저가보다 싸요", "가격비교 사이트 최저가와 같거나 더 싼 기획전 상품") + webLow.map(rowItem).join("") : ""}
+  <tr><td align="center" style="padding:20px 24px 34px;">
+    <a href="${esc(utm(c.site + "/", camp))}" target="_blank" style="display:inline-block;background:${c.color};color:#ffffff;font-family:${FONT};font-size:16px;font-weight:800;text-decoration:none;padding:15px 34px;border-radius:12px;">오늘 특가 전체 보기</a></td></tr>
+  <tr><td style="padding:22px 24px 28px;background:#f8f9fa;font-family:${FONT};font-size:12px;line-height:1.7;color:#8a8f98;">
+    가격은 ${esc(d.toLocaleDateString("ko-KR", {month:"long", day:"numeric"}))} 아침 판매 페이지 기준이며, 쿠폰·카드 할인과 재고·가격 변동에 따라 판매처에서 달라질 수 있어요. 구매 전 판매처에서 확인해 주세요.<br>
+    ${esc(c.brand)} · <a href="${esc(utm(c.site + "/", camp))}" target="_blank" style="color:#8a8f98;">사이트 바로가기</a> · <a href="{{수신거부}}" style="color:#8a8f98;">수신 거부</a></td></tr>
+</table></td></tr></table></body></html>`;
+}
+
+async function run(){
+  document.querySelectorAll("#vseg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === vkey));
+  $("out").className = "msg"; $("out").textContent = "오늘 추천 상품을 불러오는 중…";
+  try{
+    const [picks, trust] = await Promise.all([sb(`v_picks?select=*&vertical=eq.${vkey || "all"}&order=rank.asc`), priceTrust()]);
+    // 가격 확인에서 틀린 것으로 나온 채널·상품은 뉴스레터에 넣지 않는다
+    const ok = picks.filter(p => p.price && !trust.low.has(p.source_id) && !trust.bad.has(p.url));
+    if(!ok.length){ $("out").textContent = "오늘 추천 상품이 아직 없어요. 매일 아침 수집과 가격 확인이 끝나면 만들어져요."; HTML = ""; return; }
+    HTML = build(ok);
+    const f = document.createElement("iframe"); f.title = "뉴스레터 미리보기"; f.srcdoc = HTML;
+    f.onload = () => { try{ f.style.height = f.contentDocument.documentElement.scrollHeight + 20 + "px"; }catch(e){ f.style.height = "4000px"; } };
+    $("out").className = ""; $("out").innerHTML = ""; $("out").appendChild(f);
+  }catch(e){ console.warn(e); $("out").textContent = "추천 상품을 불러오지 못했어요. 잠시 뒤 새로고침해 주세요."; HTML = ""; }
+}
+function toast(t){ $("toast").textContent = t; $("toast").classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => $("toast").classList.remove("on"), 1800); }
+document.addEventListener("click", e => {
+  const b = e.target.closest("button"); if(!b) return;
+  if(b.dataset.v != null){ vkey = b.dataset.v; history.replaceState(null, "", `?v=${vkey}`); run(); }
+  if(b.id === "copy"){ if(!HTML) return; navigator.clipboard.writeText(HTML).then(() => toast("이메일용 HTML을 복사했어요"), () => toast("복사하지 못했어요. HTML 파일 받기를 써 주세요")); }
+  if(b.id === "dl"){ if(!HTML) return; const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([HTML], {type:"text/html"}));
+    a.download = `${V[vkey].brand}_${new Date().toISOString().slice(0,10)}.html`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); }
+});
+run();
+}
+</script>
+</body>
+</html>
