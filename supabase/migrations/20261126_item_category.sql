@@ -118,7 +118,7 @@ create or replace function private.refresh_source_defaults() returns int
 language plpgsql security definer set search_path = public as $$
 declare n int;
 begin
-  delete from public.source_default_category;
+  delete from public.source_default_category where true;
   insert into public.source_default_category (source_id, category, share)
   select source_id, category, share from (
     select p.source_id, i.category, count(*)::numeric / sum(count(*)) over (partition by p.source_id) share,

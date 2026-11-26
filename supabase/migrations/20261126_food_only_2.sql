@@ -58,3 +58,11 @@ begin
     execute d;
   end if;
 end $$;
+
+-- 수정: API(PostgREST)는 WHERE 없는 DELETE를 막는다 → 추천 계산('all')이 400으로 실패하던 원인
+do $$
+declare d text := pg_get_functiondef('private.refresh_source_defaults()'::regprocedure);
+begin
+  d := regexp_replace(d, 'delete from public\.source_default_category\s*;', 'delete from public.source_default_category where true;');
+  execute d;
+end $$;
