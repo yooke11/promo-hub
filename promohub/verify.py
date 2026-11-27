@@ -112,6 +112,33 @@ def judge(our_price: int, our_original: int | None, structured: set[int], text: 
     return "match", ""
 
 
+_GONE_TEXT = re.compile(r"(판매\s*(가\s*)?(종료|중지|중단)(된|되었|됨)?|판매하지\s*않는|존재하지\s*않는\s*상품|삭제된\s*상품|"
+                        r"상품\s*정보가\s*없|찾을\s*수\s*없는\s*상품|단종)")
+
+
+def _pid(url: str) -> tuple[str, str]:
+    """상품 주소의 (경로, 상품번호 쿼리) — 다른 페이지로 넘어갔는지 비교용."""
+    u = urlparse(url)
+    q = "&".join(sorted(x for x in (u.query or "").split("&") if re.match(r"(goods|product|item|prd)[_-]?(no|id|code|cd)=", x, re.I)))
+    return u.path.rstrip("/").lower(), q
+
+
+def gone_reason(target: str, final: str, text: str) -> str:
+    """판매하지 않는 상품이면 이유, 아니면 ''. 상품 페이지가 홈·목록 등 다른 곳으로 넘어가거나 판매 종료 문구가 있을 때."""
+    t_path, t_q = _pid(target)
+    f_path, f_q = _pid(final)
+    ids = [x.split("=", 1)[1] for x in t_q.split("&") if "=" in x]
+    if urlparse(final).netloc and (t_q and t_q != f_q) and not any(i and i in final for i in ids):
+        return f"상품 페이지가 열리지 않고 다른 페이지로 이동({final[:80]})"
+    if not t_q and f_path in ("", "/", "/index.html", "/main", "/main/index") and t_path not in ("", "/"):
+        return f"상품 페이지가 열리지 않고 첫 화면으로 이동"
+    head = (text or "")[:1500]
+    m = _GONE_TEXT.search(head)
+    if m:
+        return f"판매 종료 표시: {m.group(0)}"
+    return ""
+
+
 async def _check(ctx, robots: RobotsCache, t: dict, structured_only: bool = False) -> dict:
     row = {"item_key": t["item_key"], "source_id": t.get("source_id"), "kind": t["kind"], "url": t["url"],
            "our_price": t["price"], "our_original": t.get("original_price"), "page_price": None}
@@ -127,6 +154,10 @@ async def _check(ctx, robots: RobotsCache, t: dict, structured_only: bool = Fals
                 await page.wait_for_load_state("networkidle", timeout=6_000)
             except Exception:
                 pass
+            gone = gone_reason(t["url"], page.url, await page.evaluate(
+                "() => (document.body ? document.body.innerText : '').slice(0, 4000)"))
+            if gone:
+                return dict(row, status="not_found", detail=gone)
             data = await page.evaluate("""() => ({
                 ld: [...document.querySelectorAll('script[type="application/ld+json"]')].map(s => s.textContent),
                 meta: Object.fromEntries([...document.querySelectorAll('meta[property],meta[name],meta[itemprop]')]
@@ -148,20 +179,22 @@ async def _check(ctx, robots: RobotsCache, t: dict, structured_only: bool = Fals
         return dict(row, status="blocked", detail=f"{type(e).__name__}: {str(e)[:150]}")
 
 
-def fetch_targets(sample_per_source: int = 6) -> list[dict]:
+def fetch_targets(sample_per_source: int = 6, sources: list[str] | None = None) -> list[dict]:
     base, h = _sb()
     out: dict[str, dict] = {}
-    r = httpx.get(base + "/rest/v1/v_picks", params={"select": "item_key,source_id,url,price,original_price"}, headers=h, timeout=60)
-    r.raise_for_status()
-    for x in r.json():
-        out.setdefault(x["item_key"], dict(x, kind="pick"))
+    if not sources:   # 특정 채널만 확인할 때는 추천 상품을 섞지 않는다
+        r = httpx.get(base + "/rest/v1/v_picks", params={"select": "item_key,source_id,url,price,original_price"},
+                      headers=h, timeout=60)
+        r.raise_for_status()
+        for x in r.json():
+            out.setdefault(x["item_key"], dict(x, kind="pick"))
     if sample_per_source:
         # 화면 관문 때문에 숨겨진 채널(신뢰도 미달)도 다시 검증할 수 있도록 관문 없는 표본 RPC 를 쓴다
         tok = os.environ.get("PROMOHUB_INGEST_TOKEN")
         items: list[dict] = []
         if tok:
             rr = httpx.post(base + "/rest/v1/rpc/verify_sample", headers=h, timeout=60,
-                            json={"p_token": tok, "p_per_source": sample_per_source})
+                            json={"p_token": tok, "p_per_source": sample_per_source, "p_sources": sources})
             if rr.status_code == 200:
                 items = rr.json()
         if not items:

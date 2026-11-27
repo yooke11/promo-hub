@@ -9,6 +9,10 @@ on:
         description: "채널마다 대조할 무작위 상품 수"
         required: false
         default: "6"
+      only:
+        description: "이 채널들만 대조(쉼표 구분 id). sample 을 크게(예: 300) 주면 그 채널 상품 전부를 바로 확인"
+        required: false
+        default: ""
 
 concurrency:
   group: picks
@@ -28,4 +32,4 @@ jobs:
         with: { python-version: "3.12", cache: pip }
       - run: pip install -r requirements.txt && python -m playwright install --with-deps chromium
       - name: 추천 상품 계산 + 상품 페이지 가격 대조
-        run: python -m promohub.cli picks --sample ${{ github.event.inputs.sample || '12' }} --budget 1500
+        run: python -m promohub.cli picks --sample ${{ github.event.inputs.sample || '12' }} --budget 1500 --only "${{ github.event.inputs.only }}"

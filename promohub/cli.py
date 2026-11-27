@@ -42,6 +42,7 @@ def main(argv=None):
     pk = sub.add_parser("picks", help="추천 상품 계산 + 상품 페이지 대조(가격 확인된 상품만 최종 추천)")
     pk.add_argument("--sample", type=int, default=6, help="채널마다 무작위로 대조할 상품 수(가격 정확도 측정)")
     pk.add_argument("--budget", type=float, default=900, help="상품 페이지 대조 시간 예산(초, 단계마다)")
+    pk.add_argument("--only", default="", help="이 채널들만 대조(쉼표 구분). --sample 을 크게 주면 화면 상품 전부를 바로 확인")
     e = sub.add_parser("export")
     e.add_argument("out")
     args = ap.parse_args(argv)
@@ -161,7 +162,8 @@ def _run_picks(args):
         print(f"추천 {stage}단계:", counts, flush=True)
         if stage == 2:
             break
-        targets = [t for t in fetch_targets(args.sample if stage == 0 else 0) if t["item_key"] not in done]
+        only = [x for x in (getattr(args, "only", "") or "").split(",") if x] or None
+        targets = [t for t in fetch_targets(args.sample if stage == 0 else 0, only) if t["item_key"] not in done]
         rows = asyncio.run(verify(targets, mobile, budget_s=args.budget, structured_sources=strict_src))
         for r in rows:
             done[r["item_key"]] = r

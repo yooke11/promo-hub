@@ -28,3 +28,13 @@ def test_structured_only_ignores_other_card_prices():
     assert judge(63500, None, {74700}, "74% 63,500원 249,000원")[0] == "match"
     assert judge(63500, None, {74700}, "74% 63,500원 249,000원", structured_only=True)[0] == "mismatch"
     assert judge(74700, None, {74700}, "", structured_only=True)[0] == "match"
+
+
+def test_gone_reason():
+    from promohub.verify import gone_reason
+    u = "https://www.isoi.co.kr/product/goods_detail?goods_no=3706"
+    assert gone_reason(u, "https://www.isoi.co.kr/", "아이소이 공식몰")          # 첫 화면으로 이동(아이소이 판매 안 하는 상품)
+    assert not gone_reason(u, u, "40% 32,280원 장바구니 담기")
+    assert gone_reason("https://a.com/p/1", "https://a.com/p/1", "이 상품은 판매가 종료되었습니다")
+    assert not gone_reason("https://www.29cm.co.kr/product/catalog/1", "https://www.29cm.co.kr/products/1", "199,000원")
+    assert not gone_reason("https://a.com/goods?goodsNo=77", "https://a.com/goods/77", "10,000원")   # 주소만 바뀐 같은 상품
