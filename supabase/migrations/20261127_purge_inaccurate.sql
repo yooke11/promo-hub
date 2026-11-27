@@ -143,3 +143,16 @@ language sql stable security definer set search_path = public as $$
     'price_only_sources', coalesce((select jsonb_agg(source_id) from public.source_trust where level = 'price'), '[]'::jsonb),
     'bad_urls', coalesce((select jsonb_agg(url) from today where status in ('mismatch','not_found')), '[]'::jsonb))
 $$;
+
+-- ── 화면 조회 단계의 관문(2026-11-27 추가): 수집 직후·삭제 전에도 미확인 숫자가 보이지 않게 ──
+-- verified_prices(최근 3일 상품 페이지에서 맞은 가격), wrong_prices(최근 대조에서 틀린 가격) — purge 1단계에서 매번 다시 채움
+create table if not exists public.verified_prices (item_key text not null, price int not null, primary key (item_key, price));
+create table if not exists public.wrong_prices (item_key text not null, price int not null, primary key (item_key, price));
+-- (둘 다 RLS + anon 읽기 정책)
+-- v_items·v_promotions·v_promotions_food 의 상품 조건 '(i.price IS NOT NULL OR image_url <> '')' 을 아래로 교체:
+--   i.price > 0
+--   AND NOT EXISTS (wrong_prices: 같은 상품·같은 가격)
+--   AND EXISTS (source_trust: 등급이 bad 가 아니거나, bad 면 verified_prices 에 같은 상품·같은 가격이 있을 때)
+-- 그리고 정가 확인 안 되는 쇼핑몰(level='price')은 v_items 의 original_price·discount_rate 를 (그 가격이 확인되지 않았으면) NULL,
+-- v_promotions(_food) 의 items JSON 정가·할인율도 NULL.
+-- accuracy_leaks() 는 v_items(사이트에 실제로 보이는 것) 기준으로 센다.
