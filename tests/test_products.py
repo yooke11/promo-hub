@@ -249,3 +249,18 @@ def test_detail_price_replaces_coupon_price():
     p = Product(name="x", url="u", price=93740, original_price=109000)
     assert detail_price(p, {109000}, {109000})
     assert (p.price, p.original_price, p.discount_rate) == (109000, None, None)
+
+
+def test_detail_price_29cm_strikethrough():
+    import json
+    from promohub.collector import detail_price
+    from promohub.products import Product
+    from promohub.verify import strike_prices, structured_prices
+    ld = [json.dumps({"@type": "Product", "offers": {"@type": "Offer", "price": 305440, "priceSpecification": {
+        "@type": "UnitPriceSpecification", "priceType": "https://schema.org/StrikethroughPrice", "price": 368000}}})]
+    st, sk = structured_prices(ld, {}), strike_prices(ld)
+    assert st == {305440} and sk == {368000}
+    # 목록의 쿠폰가 220,690원 → 판매가 305,440원, 정가 368,000원(17%)
+    p = Product(name="코트", url="u", price=220690, original_price=None, discount_rate=40)
+    assert detail_price(p, st, {368000, 220690}, sk)
+    assert (p.price, p.original_price, p.discount_rate) == (305440, 368000, 17)

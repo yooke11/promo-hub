@@ -179,7 +179,7 @@ async def collect_source(browser: Browser, source: Source, diag: dict | None = N
         await ctx.close()
 
 
-def detail_price(p, structured: set[int], amounts: set[int]) -> bool:
+def detail_price(p, structured: set[int], amounts: set[int], strike: set[int] | None = None) -> bool:
     """상품 상세 페이지의 판매가로 p 를 고친다. 판매가를 하나로 정할 수 없으면 False(버림).
     목록에 보이는 쿠폰·회원·카드가 대신, 조건 없이 누구나 내는 상세 페이지 가격을 쓴다."""
     if not structured:
@@ -189,7 +189,10 @@ def detail_price(p, structured: set[int], amounts: set[int]) -> bool:
             return False
         p.price = next(iter(structured))
     orig = p.original_price
-    if not orig or orig <= p.price or (orig not in amounts and orig not in structured):
+    strike = {n for n in (strike or set()) if n > p.price}
+    if len(strike) == 1 and (not orig or orig not in strike):
+        orig = next(iter(strike))      # 상세 페이지가 밝힌 정가(StrikethroughPrice)
+    if not orig or orig <= p.price or (orig not in amounts and orig not in structured and orig not in strike):
         orig = None
     p.original_price = orig
     p.discount_rate = round((orig - p.price) * 100 / orig) if orig else None
@@ -197,7 +200,7 @@ def detail_price(p, structured: set[int], amounts: set[int]) -> bool:
 
 
 async def _confirm_detail_prices(page, robots, source: Source, promos) -> dict:
-    from .verify import structured_prices, text_amounts
+    from .verify import strike_prices, structured_prices, text_amounts
     seen: dict[str, tuple[set[int], set[int]] | None] = {}
     st = {"checked": 0, "kept": 0, "dropped": 0}
     for r in promos:
@@ -222,7 +225,7 @@ async def _confirm_detail_prices(page, robots, source: Source, promos) -> dict:
                                     .map(m => [m.getAttribute('property') || m.getAttribute('name') || m.getAttribute('itemprop'), m.content])),
                             text: (document.body ? document.body.innerText : '').slice(0, 30000)})""")
                         seen[p.url] = (structured_prices(data.get("ld") or [], data.get("meta") or {}),
-                                       text_amounts(data.get("text") or ""))
+                                       text_amounts(data.get("text") or ""), strike_prices(data.get("ld") or []))
                         st["checked"] += 1
                     except Exception as e:
                         log.debug("[%s] 상품 가격 확인 실패 %s: %s", source.id, p.url, e)

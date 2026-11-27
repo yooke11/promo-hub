@@ -57,12 +57,41 @@ def _int(v) -> int | None:
     return n if 100 <= n < 100_000_000 else None
 
 
-def structured_prices(ld_texts: list[str], metas: dict[str, str]) -> set[int]:
-    """JSON-LD(Product.offers.price/lowPrice/highPrice)와 meta 태그의 가격."""
+_STRIKE = re.compile(r"Strikethrough|ListPrice|MSRP|SRP", re.I)
+
+
+def strike_prices(ld_texts: list[str]) -> set[int]:
+    """JSON-LD 의 정가 표시(priceSpecification priceType=StrikethroughPrice/ListPrice) 금액."""
     out: set[int] = set()
 
     def walk(o):
         if isinstance(o, dict):
+            if _STRIKE.search(str(o.get("priceType") or "")):
+                n = _int(o.get("price"))
+                if n:
+                    out.add(n)
+            for v in o.values():
+                walk(v)
+        elif isinstance(o, list):
+            for v in o:
+                walk(v)
+
+    for t in ld_texts:
+        try:
+            walk(json.loads(t))
+        except Exception:
+            continue
+    return out
+
+
+def structured_prices(ld_texts: list[str], metas: dict[str, str]) -> set[int]:
+    """JSON-LD(Product.offers.price/lowPrice/highPrice)와 meta 태그의 판매가. 정가 표시(StrikethroughPrice)는 빼고."""
+    out: set[int] = set()
+
+    def walk(o):
+        if isinstance(o, dict):
+            if _STRIKE.search(str(o.get("priceType") or "")):
+                return
             t = o.get("@type")
             ts = t if isinstance(t, list) else [t]
             if any(x in ("Offer", "AggregateOffer") for x in ts) or "price" in o or "lowPrice" in o:
@@ -96,7 +125,7 @@ def text_amounts(text: str) -> set[int]:
 
 
 def judge(our_price: int, our_original: int | None, structured: set[int], text: str,
-          structured_only: bool = False) -> tuple[str, str]:
+          structured_only: bool = False, strike: set[int] | None = None) -> tuple[str, str]:
     """(status, detail) — 위 판정 규칙.
     structured_only: 페이지 구조화 가격(JSON-LD)이 있으면 그 값과만 맞춘다(추천 상품 카드의 쿠폰가 등 다른 금액과 우연히 맞는 것 방지)."""
     amounts = text_amounts(text)
@@ -106,7 +135,7 @@ def judge(our_price: int, our_original: int | None, structured: set[int], text: 
             return "mismatch", f"페이지 가격 {sorted(structured)[:3]} ≠ 우리 {our_price}"
         return "not_found", f"페이지에서 {our_price:,}원을 찾지 못함"
     if our_original and our_original != our_price:
-        if our_original in structured or our_original in amounts:
+        if our_original in structured or our_original in amounts or our_original in (strike or set()):
             return "match", ""
         return "price_only", f"정가 {our_original:,}원은 페이지에 없음"
     return "match", ""
@@ -171,8 +200,9 @@ async def _check(ctx, robots: RobotsCache, t: dict, structured_only: bool = Fals
         for i, v in enumerate(data.get("ip") or []):
             meta[f"itemprop{i}"] = v
         st = structured_prices(data.get("ld") or [], meta)
+        strike = strike_prices(data.get("ld") or [])
         st |= {n for k, v in meta.items() if k.startswith("itemprop") and (n := _int(v))}
-        status, detail = judge(t["price"], t.get("original_price"), st, data.get("text") or "", structured_only)
+        status, detail = judge(t["price"], t.get("original_price"), st, data.get("text") or "", structured_only, strike)
         pp = t["price"] if t["price"] in st else (min(st) if st else None)
         return dict(row, page_price=pp, status=status, detail=detail)
     except Exception as e:
