@@ -213,7 +213,7 @@ async def _confirm_detail_prices(page, robots, source: Source, promos) -> dict:
                     try:
                         await page.goto(p.url, wait_until="domcontentloaded", timeout=25_000)
                         try:
-                            await page.wait_for_load_state("networkidle", timeout=5_000)
+                            await page.wait_for_selector('script[type="application/ld+json"]', state="attached", timeout=6_000)
                         except Exception:
                             pass
                         data = await page.evaluate("""() => ({
