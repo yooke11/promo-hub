@@ -121,17 +121,21 @@ def main():
                 add("pipeline.picks", bool(pk) and pk[0]["pick_date"] == now.date().isoformat(), None,
                     f"추천 상품 기준일 {pk[0]['pick_date'] if pk else '없음'}",
                     "collect.yml 의 picks 잡 로그 확인 → python -m promohub.cli picks 재실행(수집 토큰 필요)")
-                # 5. 가격 정확도: 오늘 상품 페이지 대조에서 구조화 가격과 다르게 수집된 상품(mismatch)이 있는 채널
+                # 5. 가격 정확도(2026-11-27 운영 원칙: 확인되지 않은 숫자는 사이트에 남기지 않는다)
+                #    대조에서 틀린 것이 나와도 purge_inaccurate 가 지웠으면 정상. 사이트에 남은 것이 하나라도 있으면 장애.
                 r = c.post(f"{URL}/rest/v1/rpc/verify_summary", headers={"apikey": KEY, "Content-Type": "application/json"}, json={})
                 vs = r.json() if r.status_code == 200 else []
                 tot = sum(x["total"] for x in vs)
-                bad = [x for x in vs if x["mismatch"] > 0]
-                add("accuracy.prices", tot > 0 and not bad, None,
-                    f"오늘 상품 페이지 대조 {tot}개, 일치 {sum(x['match'] for x in vs)}, 가격만 일치 {sum(x['price_only'] for x in vs)}, "
-                    f"불일치 {sum(x['mismatch'] for x in vs)}, 확인 불가 {sum(x['not_found'] + x['blocked'] for x in vs)}"
-                    + ("; 불일치 채널 " + ", ".join(f"{x['source_id']}({x['kind']}) {x['mismatch']}건 예: {x['examples']}" for x in bad[:6]) if bad else ""),
-                    "verify_summary 의 불일치 채널: price_verifications(오늘, status=mismatch)의 our_price·page_price·url 로 "
-                    "수집 가격 규칙(promohub/products.py) 수정 → 해당 채널 재수집 → picks 재실행. 추천에는 이미 불일치 상품이 빠져 있음")
+                r = c.post(f"{URL}/rest/v1/rpc/accuracy_leaks", headers={"apikey": KEY, "Content-Type": "application/json"}, json={})
+                lk = r.json() if r.status_code == 200 else {}
+                leaks = {k: v for k, v in lk.items() if k != "trust_updated" and v}
+                fresh = bool(lk.get("trust_updated")) and lk["trust_updated"][:10] >= (now - timedelta(hours=30)).date().isoformat()
+                add("accuracy.prices", r.status_code == 200 and not leaks and fresh, None,
+                    f"사이트에 남은 미확인 숫자 {sum(leaks.values()) if leaks else 0}개 {leaks or ''} · 오늘 상품 페이지 대조 {tot}개"
+                    f"(일치 {sum(x['match'] for x in vs)}, 가격만 {sum(x['price_only'] for x in vs)}, 불일치 {sum(x['mismatch'] for x in vs)}, "
+                    f"확인 불가 {sum(x['not_found'] + x['blocked'] for x in vs)}) · 삭제 기준 갱신 {lk.get('trust_updated', '없음')}",
+                    "picks 잡의 '부정확 데이터 삭제' 단계 로그 확인 → python -m promohub.cli picks 재실행. "
+                    "불일치 쇼핑몰은 수집 가격 규칙(promohub/products.py) 수정 → 재수집 → picks 재실행으로 다시 대조")
             except Exception as e:
                 add("pipeline", False, None, e, "Supabase 조회 실패")
     ok = all(x["ok"] for x in checks)

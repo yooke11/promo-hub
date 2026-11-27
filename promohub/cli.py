@@ -142,13 +142,19 @@ def _run_picks(args):
     mobile = {s.id for s in load_config().sources if s.mobile}
     done: dict[str, dict] = {}
     report = {}
-    # 가격 기록(바뀐 날만, 60일 보관) — '최근 N일 중 최저가' 표시의 근거. 실패해도 추천은 계속
-    try:
-        report["prices"] = _rpc("record_prices", {"p_token": tok})
-        print("가격 기록:", report["prices"], flush=True)
-    except Exception as e:  # noqa: BLE001
-        print("가격 기록 실패:", e, flush=True)
     for stage in (0, 1, 2):
+        if stage == 2:
+            # 2026-11-27 운영 원칙: 확인되지 않은 숫자·상품이 아닌 항목은 사이트에 내보내기 전에 지운다(가격 대조 직후, 최종 추천 앞)
+            report["purge"] = {}
+            for step in (1, 2, 3):   # 3초 제한 안에 들도록 나눠서
+                report["purge"].update(_rpc("purge_inaccurate", {"p_token": tok, "p_step": step}) or {})
+            print("부정확 데이터 삭제:", report["purge"], flush=True)
+            # 가격 기록은 지우고 남은(확인된) 가격으로만 — '최근 N일 중 최저가' 근거
+            try:
+                report["prices"] = _rpc("record_prices", {"p_token": tok})
+                print("가격 기록:", report["prices"], flush=True)
+            except Exception as e:  # noqa: BLE001
+                print("가격 기록 실패:", e, flush=True)
         counts = {v: _rpc("refresh_picks_v", {"p_token": tok, "p_vertical": v, "p_strict": stage}) for v in verts}
         report[f"stage{stage}"] = counts
         print(f"추천 {stage}단계:", counts, flush=True)

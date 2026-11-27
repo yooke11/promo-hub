@@ -363,10 +363,12 @@ const VKEY = (() => {
 const VCUR = VERTS[VKEY] ? VKEY : "";
 const $ = id => document.getElementById(id);
 
-let DATA = [], SOURCES = [], DEMO = false, TRUST = {low:new Set(), bad:new Set()};
+let DATA = [], SOURCES = [], DEMO = false, TRUST = {low:new Set(), bad:new Set(), po:new Set()};
 // 대조에서 틀린 것으로 나온 채널·상품은 가격 숫자를 숨긴다(단위 가격·최저가 표시도)
 const hideUntrusted = r => { if(TRUST.low.has(r.source_id) || TRUST.bad.has(r.url)){ return {...r, price:null, original_price:null, discount_rate:null, market_lowest:null,
-  unit_price:null, low_days:null, priceHidden:true}; } return r; };
+  unit_price:null, low_days:null, priceHidden:true}; }
+  if(TRUST.po.has(r.source_id)) return {...r, original_price:null, discount_rate:null};
+  return r; };
 // 장보기픽은 먹는 것만(식품·건강식품). VCUR 은 아래에서 정해지므로 함수로 판단
 const isFoodOnly = () => typeof VCUR !== "undefined" && VCUR === "food";
 const st = {q:"", ctypes:new Set(), sources:new Set(), cats:new Set(), kind:"", status:"", bens:new Set(), sort:"ending", view:"picks",
@@ -436,10 +438,11 @@ async function applyPriceTrust(){
       headers:Object.assign({apikey:CFG.anonKey, "Content-Type":"application/json"},
         CFG.anonKey.startsWith("sb_") ? {} : {Authorization:"Bearer " + CFG.anonKey}), body:"{}"});
     if(!r.ok) return;
-    const t = await r.json(), low = new Set(t.low_sources || []), bad = new Set(t.bad_urls || []);
-    TRUST = {low, bad};
-    if(!low.size && !bad.size) return;
+    const t = await r.json(), low = new Set(t.low_sources || []), bad = new Set(t.bad_urls || []), po = new Set(t.price_only_sources || []);
+    TRUST = {low, bad, po};
+    if(!low.size && !bad.size && !po.size) return;
     DATA.forEach(pr => (pr.items||[]).forEach(p => {
+      if(po.has(pr.source_id)){ p.original_price = null; p.discount_rate = null; }   // 정가·할인율이 확인 안 된 쇼핑몰: 가격만
       if(low.has(pr.source_id) || bad.has(p.url)){
         p.price = null; p.original_price = null; p.discount_rate = null; p.market_lowest = null; p.priceHidden = true;
       }
