@@ -156,17 +156,27 @@ def fetch_targets(sample_per_source: int = 6) -> list[dict]:
     for x in r.json():
         out.setdefault(x["item_key"], dict(x, kind="pick"))
     if sample_per_source:
-        srcs = httpx.get(base + "/rest/v1/v_sources", params={"select": "id"}, headers=h, timeout=60).json()
-        for s in srcs:
-            try:
-                rr = httpx.get(base + "/rest/v1/v_items", headers=h, timeout=30, params={
-                    "select": "item_key,source_id,url,price,original_price", "source_id": f"eq.{s['id']}",
-                    "price": "not.is.null", "limit": "60"})
-                items = [x for x in rr.json() if x.get("url", "").startswith("http")] if rr.status_code == 200 else []
-            except Exception:
-                items = []
-            for x in random.sample(items, min(sample_per_source, len(items))):
-                out.setdefault(x["item_key"], dict(x, kind="sample"))
+        # 화면 관문 때문에 숨겨진 채널(신뢰도 미달)도 다시 검증할 수 있도록 관문 없는 표본 RPC 를 쓴다
+        tok = os.environ.get("PROMOHUB_INGEST_TOKEN")
+        items: list[dict] = []
+        if tok:
+            rr = httpx.post(base + "/rest/v1/rpc/verify_sample", headers=h, timeout=60,
+                            json={"p_token": tok, "p_per_source": sample_per_source})
+            if rr.status_code == 200:
+                items = rr.json()
+        if not items:
+            srcs = httpx.get(base + "/rest/v1/v_sources", params={"select": "id"}, headers=h, timeout=60).json()
+            for s in srcs:
+                try:
+                    rr = httpx.get(base + "/rest/v1/v_items", headers=h, timeout=30, params={
+                        "select": "item_key,source_id,url,price,original_price", "source_id": f"eq.{s['id']}",
+                        "price": "not.is.null", "limit": "60"})
+                    got = [x for x in rr.json() if x.get("url", "").startswith("http")] if rr.status_code == 200 else []
+                except Exception:
+                    got = []
+                items += random.sample(got, min(sample_per_source, len(got)))
+        for x in items:
+            out.setdefault(x["item_key"], dict(x, kind="sample"))
     return [t for t in out.values() if t.get("url", "").startswith("http") and t.get("price")]
 
 
