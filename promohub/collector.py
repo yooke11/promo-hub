@@ -172,9 +172,71 @@ async def collect_source(browser: Browser, source: Source, diag: dict | None = N
                 if len(diag["details"]) < 12:
                     diag["details"].append({"url": r.url[:160], "error": repr(e)[:160]})
             await asyncio.sleep(source.delay_sec)
+        if source.price_from_detail:
+            diag["detail_price"] = await _confirm_detail_prices(page, robots, source, merged)
         return merged
     finally:
         await ctx.close()
+
+
+def detail_price(p, structured: set[int], amounts: set[int]) -> bool:
+    """상품 상세 페이지의 판매가로 p 를 고친다. 판매가를 하나로 정할 수 없으면 False(버림).
+    목록에 보이는 쿠폰·회원·카드가 대신, 조건 없이 누구나 내는 상세 페이지 가격을 쓴다."""
+    if not structured:
+        return False
+    if p.price not in structured:
+        if len(structured) != 1:
+            return False
+        p.price = next(iter(structured))
+    orig = p.original_price
+    if not orig or orig <= p.price or (orig not in amounts and orig not in structured):
+        orig = None
+    p.original_price = orig
+    p.discount_rate = round((orig - p.price) * 100 / orig) if orig else None
+    return True
+
+
+async def _confirm_detail_prices(page, robots, source: Source, promos) -> dict:
+    from .verify import structured_prices, text_amounts
+    seen: dict[str, tuple[set[int], set[int]] | None] = {}
+    st = {"checked": 0, "kept": 0, "dropped": 0}
+    for r in promos:
+        keep = []
+        for p in r.products or []:
+            if not p.url or p.price is None:
+                st["dropped"] += 1
+                continue
+            if p.url not in seen:
+                if len(seen) >= source.detail_price_limit or (source.respect_robots and not await robots.allowed(p.url)):
+                    seen[p.url] = None
+                else:
+                    try:
+                        await page.goto(p.url, wait_until="domcontentloaded", timeout=25_000)
+                        try:
+                            await page.wait_for_load_state("networkidle", timeout=5_000)
+                        except Exception:
+                            pass
+                        data = await page.evaluate("""() => ({
+                            ld: [...document.querySelectorAll('script[type="application/ld+json"]')].map(s => s.textContent),
+                            meta: Object.fromEntries([...document.querySelectorAll('meta[property],meta[name],meta[itemprop]')]
+                                    .map(m => [m.getAttribute('property') || m.getAttribute('name') || m.getAttribute('itemprop'), m.content])),
+                            text: (document.body ? document.body.innerText : '').slice(0, 30000)})""")
+                        seen[p.url] = (structured_prices(data.get("ld") or [], data.get("meta") or {}),
+                                       text_amounts(data.get("text") or ""))
+                        st["checked"] += 1
+                    except Exception as e:
+                        log.debug("[%s] 상품 가격 확인 실패 %s: %s", source.id, p.url, e)
+                        seen[p.url] = None
+                    await asyncio.sleep(max(1.0, source.delay_sec / 2))
+            got = seen[p.url]
+            if got and detail_price(p, *got):
+                keep.append(p)
+                st["kept"] += 1
+            else:
+                st["dropped"] += 1
+        r.products = keep
+    log.info("[%s] 상세 가격 확인 %s", source.id, st)
+    return st
 
 
 async def run(config: Config, store: Store | None, only: list[str] | None = None, headless: bool = True,

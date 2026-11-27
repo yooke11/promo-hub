@@ -420,6 +420,7 @@ sources:
   - 29cm\.co\.kr/.*(exhibition|event|special|campaign|content|plan)
   product_patterns:
   - /products?/\d+
+  price_from_detail: true   # 2026-11-27 목록 가격이 쿠폰 적용가 → 상세 페이지 판매가로 확인
 - id: lfmall
   enabled: false   # 2026-11-24 운영자 결정: 정상 수집 채널만 운영 (A. robots.txt가 일반 수집기 금지)
   name: LF몰
@@ -492,6 +493,7 @@ sources:
   - kolonmall\.com/.*(event|exhibition|plan|special|promotion)
   product_patterns:
   - /Product/\d+|/products?/
+  price_from_detail: true   # 2026-11-27 목록 가격이 쿠폰 적용가 → 상세 페이지 판매가로 확인
 - id: hnsmall
   enabled: false   # 2026-11-24 운영자 결정: 정상 수집 채널만 운영 (A. robots.txt가 일반 수집기 금지)
   name: 홈앤쇼핑
@@ -809,6 +811,7 @@ sources:
   mobile: false
   entry_urls:
   - https://www.fashionplus.co.kr/
+  price_from_detail: true   # 2026-11-27 목록 가격이 쿠폰·혜택가 → 상세 페이지 판매가로 확인
 - id: hiver   # 2026-11-25 유형별 상위 선정(시험 수집 기획전 5건)
   enabled: false   # 2026-11-25 시험 수집 품질 미달
   name: 하이버

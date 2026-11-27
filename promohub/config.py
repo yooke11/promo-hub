@@ -31,6 +31,8 @@ class Source:
     product_link: dict | None = None   # {key: 상품번호 필드/데이터 속성, url: "...{id}..."} — 상품 주소가 없는 JSON·카드용
     discount_amount_round: bool = False   # 판매가 칸에 '할인 금액'(1,000원 단위)이 잡히는 곳: 정가-금액을 판매가로(코스트코)
     pct_needs_original: bool = False   # 정가 없이 할인율만 잡히면 버림(코스트코: 리뷰·추천 비율이 할인율로 잡힘)
+    price_from_detail: bool = False   # 목록 가격이 쿠폰·회원가인 곳: 상품 상세 페이지의 판매가(JSON-LD)로 바꾸고, 확인 못 한 상품은 버림
+    detail_price_limit: int = 120     # price_from_detail 일 때 채널당 확인할 상품 페이지 수(넘는 상품은 버림)
 
     def on_domain(self, url: str) -> bool:
         if not self.domains:
@@ -91,6 +93,8 @@ def load_config(path: Path | str = DEFAULT_CONFIG) -> Config:
             product_link=s.get("product_link"),
             pct_needs_original=s.get("pct_needs_original", False),
             discount_amount_round=s.get("discount_amount_round", False),
+            price_from_detail=s.get("price_from_detail", False),
+            detail_price_limit=s.get("detail_price_limit", 120),
         ))
     out.sort(key=lambda x: x.rank)
     return Config(out)

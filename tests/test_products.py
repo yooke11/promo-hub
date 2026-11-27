@@ -229,3 +229,23 @@ def test_fix_discount_amounts_big():
     from promohub.products import Product, fix_discount_amounts
     a = Product(name="카시오 셀비아노 그랜드 하이브리드", url="https://x/1", price=450000, original_price=2849000, discount_rate=84)
     assert fix_discount_amounts([a]) == 1 and a.price == 2399000
+
+
+def test_detail_price_replaces_coupon_price():
+    from promohub.collector import detail_price
+    from promohub.products import Product
+    # 코오롱몰: 목록 161,100원(쿠폰가) → 상세 판매가 179,000원, 정가 없음
+    p = Product(name="LUDIC 521", url="u", price=161100, original_price=None, discount_rate=10)
+    assert detail_price(p, {179000}, {179000})
+    assert (p.price, p.original_price, p.discount_rate) == (179000, None, None)
+    # 패션플러스: 정가가 페이지에 있으면 유지, 할인율은 다시 계산
+    p = Product(name="x", url="u", price=66220, original_price=320000, discount_rate=79)
+    assert detail_price(p, {67920}, {67920, 320000})
+    assert (p.price, p.original_price, p.discount_rate) == (67920, 320000, 79)
+    # 판매가를 하나로 정할 수 없거나 없으면 버림
+    assert not detail_price(Product(name="x", url="u", price=1000), {2000, 3000}, set())
+    assert not detail_price(Product(name="x", url="u", price=1000), set(), {1000})
+    # 정가가 페이지에 없으면 지움
+    p = Product(name="x", url="u", price=93740, original_price=109000)
+    assert detail_price(p, {109000}, {109000})
+    assert (p.price, p.original_price, p.discount_rate) == (109000, None, None)
