@@ -140,6 +140,7 @@ def _run_picks(args):
                                                        headers=h, timeout=30).json()})
     verts = ["all"] + verts
     mobile = {s.id for s in load_config().sources if s.mobile}
+    strict_src = {s.id for s in load_config().sources if s.price_from_detail}   # 상세 판매가 채널: 구조화 가격과만 대조
     done: dict[str, dict] = {}
     report = {}
     for stage in (0, 1, 2):
@@ -161,7 +162,7 @@ def _run_picks(args):
         if stage == 2:
             break
         targets = [t for t in fetch_targets(args.sample if stage == 0 else 0) if t["item_key"] not in done]
-        rows = asyncio.run(verify(targets, mobile, budget_s=args.budget))
+        rows = asyncio.run(verify(targets, mobile, budget_s=args.budget, structured_sources=strict_src))
         for r in rows:
             done[r["item_key"]] = r
         send(rows)

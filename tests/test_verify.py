@@ -21,3 +21,10 @@ def test_judge_mismatch_unit_price():
 
 def test_text_amounts():
     assert text_amounts("1,234원 / 56,000원 / 2026.11.26") >= {1234, 56000}
+
+
+def test_structured_only_ignores_other_card_prices():
+    # 코오롱몰: 추천 상품 카드의 쿠폰가 63,500원이 본문에 있어도 판매가(JSON-LD)는 74,700원
+    assert judge(63500, None, {74700}, "74% 63,500원 249,000원")[0] == "match"
+    assert judge(63500, None, {74700}, "74% 63,500원 249,000원", structured_only=True)[0] == "mismatch"
+    assert judge(74700, None, {74700}, "", structured_only=True)[0] == "match"

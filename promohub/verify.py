@@ -95,10 +95,12 @@ def text_amounts(text: str) -> set[int]:
     return {int(m.group(1).replace(",", "")) for m in _AMT.finditer(text)}
 
 
-def judge(our_price: int, our_original: int | None, structured: set[int], text: str) -> tuple[str, str]:
-    """(status, detail) — 위 판정 규칙."""
+def judge(our_price: int, our_original: int | None, structured: set[int], text: str,
+          structured_only: bool = False) -> tuple[str, str]:
+    """(status, detail) — 위 판정 규칙.
+    structured_only: 페이지 구조화 가격(JSON-LD)이 있으면 그 값과만 맞춘다(추천 상품 카드의 쿠폰가 등 다른 금액과 우연히 맞는 것 방지)."""
     amounts = text_amounts(text)
-    has_price = our_price in structured or our_price in amounts
+    has_price = our_price in structured or (our_price in amounts and not (structured_only and structured))
     if not has_price:
         if structured:
             return "mismatch", f"페이지 가격 {sorted(structured)[:3]} ≠ 우리 {our_price}"
@@ -110,7 +112,7 @@ def judge(our_price: int, our_original: int | None, structured: set[int], text: 
     return "match", ""
 
 
-async def _check(ctx, robots: RobotsCache, t: dict) -> dict:
+async def _check(ctx, robots: RobotsCache, t: dict, structured_only: bool = False) -> dict:
     row = {"item_key": t["item_key"], "source_id": t.get("source_id"), "kind": t["kind"], "url": t["url"],
            "our_price": t["price"], "our_original": t.get("original_price"), "page_price": None}
     try:
@@ -139,7 +141,7 @@ async def _check(ctx, robots: RobotsCache, t: dict) -> dict:
             meta[f"itemprop{i}"] = v
         st = structured_prices(data.get("ld") or [], meta)
         st |= {n for k, v in meta.items() if k.startswith("itemprop") and (n := _int(v))}
-        status, detail = judge(t["price"], t.get("original_price"), st, data.get("text") or "")
+        status, detail = judge(t["price"], t.get("original_price"), st, data.get("text") or "", structured_only)
         pp = t["price"] if t["price"] in st else (min(st) if st else None)
         return dict(row, page_price=pp, status=status, detail=detail)
     except Exception as e:
@@ -182,7 +184,7 @@ def send(rows: list[dict]) -> int:
 
 
 async def verify(targets: list[dict], mobile_sources: set[str] | None = None, budget_s: float = 900,
-                 per_host_delay: float = 1.0) -> list[dict]:
+                 per_host_delay: float = 1.0, structured_sources: set[str] | None = None) -> list[dict]:
     from playwright.async_api import async_playwright
     mobile_sources = mobile_sources or set()
     by_host: dict[str, list[dict]] = defaultdict(list)
@@ -209,7 +211,7 @@ async def verify(targets: list[dict], mobile_sources: set[str] | None = None, bu
                                             "our_price": t["price"], "our_original": t.get("original_price"),
                                             "page_price": None, "status": "blocked", "detail": "시간 예산 초과"})
                             continue
-                        results.append(await _check(ctx, robots, t))
+                        results.append(await _check(ctx, robots, t, t.get("source_id") in (structured_sources or set())))
                         await asyncio.sleep(per_host_delay)
                 finally:
                     await ctx.close()
